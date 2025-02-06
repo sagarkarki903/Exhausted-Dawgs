@@ -32,17 +32,23 @@ router.get('/:id', async (req, res) => {
 // POST /dogs - Create a new dog record
 router.post('/', async (req, res) => {
   try {
-    const { name, breed, size, healthIssues, status, demeanor, notes, imageUrl } = req.body;
+    const { name, breed, size, age, healthIssues, status, demeanor, notes, imageUrl } = req.body;
     
     // Validate required fields
-    if (!name) {
-      return res.status(400).json({ error: 'Name is required' });
+    if (!name || age === undefined) {
+      return res.status(400).json({ error: 'Name and Age is required' });
+    }
+
+    //ensure age is int 
+    const parsedAge = parseInt(age, 10);
+    if (isNaN(parsedAge) || parsedAge < 0) {
+      return res.status(400).json({ error: 'Age must be a valid non-negative number' });
     }
 
     const [result] = await pool.query(
-      `INSERT INTO dogs (name, breed, size, health_issues, status, demeanor, notes, image_url)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [name, breed, size, healthIssues, status, demeanor, notes, imageUrl]
+      `INSERT INTO dogs (name, breed, size, age, health_issues, status, demeanor, notes, image_url)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [name, breed, size, parsedAge, healthIssues, status, demeanor, notes, imageUrl]
     );
     res.status(201).json({ id: result.insertId, message: 'Dog created successfully' });
   } catch (err) {
@@ -54,11 +60,28 @@ router.post('/', async (req, res) => {
 // PUT /dogs/:id - Update an existing dog record
 router.put('/:id', async (req, res) => {
   try {
-    const { name, breed, size, healthIssues, status, demeanor, notes, imageUrl } = req.body;
+    const { name, breed, size, age, healthIssues, status, demeanor, notes, imageUrl } = req.body;
+   
+    // Get the existing age if not provided in the request
+    let parsedAge = age;
+    if (age !== undefined) {
+      parsedAge = parseInt(age, 10);
+      if (isNaN(parsedAge) || parsedAge < 0) {
+        return res.status(400).json({ error: 'Age must be a valid non-negative number' });
+      }
+    } else {
+      // Retrieve the current age from the database
+      const [rows] = await pool.query('SELECT age FROM dogs WHERE id = ?', [req.params.id]);
+      if (rows.length === 0) {
+        return res.status(404).json({ error: 'Dog not found' });
+      }
+      parsedAge = rows[0].age; // Keep the existing age if not provided
+    }
+        
     const [result] = await pool.query(
-      `UPDATE dogs SET name = ?, breed = ?, size = ?, health_issues = ?, status = ?, demeanor = ?, notes = ?, image_url = ?
+      `UPDATE dogs SET name = ?, breed = ?, size = ?, age = ?, health_issues = ?, status = ?, demeanor = ?, notes = ?, image_url = ?
        WHERE id = ?`,
-      [name, breed, size, healthIssues, status, demeanor, notes, imageUrl, req.params.id]
+      [name, breed, size, parsedAge, healthIssues, status, demeanor, notes, imageUrl, req.params.id]
     );
     
     if (result.affectedRows === 0) {

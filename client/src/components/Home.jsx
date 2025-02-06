@@ -63,8 +63,8 @@ const MiniDogAnimation = () => {
 export const Home = () => {
 
   return (
-    <div className="flex flex-col min-h-screen overflow-hidden">
-      <header className="border-b sticky top-0 bg-background/80 backdrop-blur-sm z-50">
+    <div className="flex flex-col min-h-screen">
+      <header className="shadow-mb sticky top-0 bg-background/80 backdrop-blur-sm z-50">
         <motion.div
           className="container flex h-16 items-center justify-between px-4"
           initial={{ y: -100 }}

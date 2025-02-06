@@ -100,6 +100,9 @@ const DogProfile = () => {
         </div>
       )}
     </div>
+
+
+
   );
 };
 

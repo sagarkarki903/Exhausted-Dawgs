@@ -33,7 +33,9 @@ export const DogList = () => {
               <h2 className="text-lg font-semibold mt-4">{dog.name}</h2>
               <p className="text-gray-600">{dog.breed}</p>
               <p className="text-gray-500 text-sm">Age: {dog.age} years</p>
-              <button className="mt-4 w-full bg-[#8B2232] text-white py-2 rounded-md">Learn More</button>
+              <Link to={`/dogs/${dog.id}`}>
+                <button className="mt-4 w-full bg-[#8B2232] text-white py-2 rounded-md">Learn More</button>
+              </Link>
             </div>
           ))}
         </div>

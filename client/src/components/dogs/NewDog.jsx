@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+
 
 export const NewDog = () => {
   const [formData, setFormData] = useState({
@@ -30,7 +31,7 @@ export const NewDog = () => {
     axios.post('http://127.0.0.1:8080/dogs', formData)
       .then(response => {
         console.log('Dog created successfully:', response.data);
-        navigate('/');
+        navigate('/dogs');
       })
       .catch(error => console.error('Error creating dog:', error));
   };
@@ -75,7 +76,8 @@ export const NewDog = () => {
           <label className="block font-semibold">Image URL</label>
           <input type="text" name="imageUrl" value={formData.imageUrl} onChange={handleChange} className="w-full p-2 border rounded focus:ring focus:ring-[#8B2232]" />
         </div>
-        <button type="submit" className="w-full bg-[#8B2232] text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:bg-[#a32a3e] transition duration-300">Add Dog Profile</button>
+        
+          <button type="submit" className="w-full bg-[#8B2232] text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:bg-[#a32a3e] transition duration-300">Add Dog Profile</button>
       </form>
     </div>
   );

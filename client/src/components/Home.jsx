@@ -66,7 +66,7 @@ export const Home = () => {
     <div className="flex flex-col min-h-screen min-w-screen bg-background text-gray-900">
       <header className=" sticky top-0 bg-background/80 backdrop-blur-sm z-50 shadow-md">
         <motion.div
-          className="flex h-20 items-center justify-between px-4"
+          className="flex h-20 items-center justify-around px-4"
           initial={{ y: -100 }}
           animate={{ y: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}

@@ -63,10 +63,10 @@ const MiniDogAnimation = () => {
 export const Home = () => {
 
   return (
-    <div className="flex flex-col min-h-screen min-w-screen bg-background text-gray-900">
+    <div className="flex flex-col min-h-screen bg-background text-gray-900">
       <header className=" sticky top-0 bg-background/80 backdrop-blur-sm z-50 shadow-md">
         <motion.div
-          className="flex h-20 items-center justify-between px-4"
+          className="flex h-20 items-center justify-between px-4 md:px-8"
           initial={{ y: -100 }}
           animate={{ y: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -87,7 +87,7 @@ export const Home = () => {
               className="hidden sm:block"
             />
           </div>
-          <nav className="flex items-center gap-6 text-base">
+          <nav className="hidden md:flex items-center gap-6 text-base">
             <a className="font-semibold hover:text-red-900 transition-colors" href="#available">
               Available Dogs
             </a>
@@ -104,10 +104,17 @@ export const Home = () => {
               <a href="/login">Sign In</a>
             </button>
           </nav>
+          {/* Mobile Menu Button */}
+          <button className="md:hidden">
+            {/* Replace with your mobile menu icon */}
+            <svg className="w-6 h-6" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
         </motion.div>
       </header>
       <main className="flex-1">
-        <section className="py-20 relative overflow-hidden">
+        <section className="py-20 relative overflow-hidden bg-neutral-100">
           <motion.div
             className="absolute inset-0 z-0"
             initial={{ opacity: 0 }}
@@ -154,24 +161,22 @@ export const Home = () => {
                     journey today.
                   </p>
                 </motion.div>
-                <motion.div className="flex flex-col gap-2 min-[400px]:flex-row" variants={fadeInUp}>
-                  <div className="flex gap-4">
+                <motion.div className="flex flex-col gap-2 sm:flex-row" variants={fadeInUp}>
                         <a
                           href="/dogs"
-                          className="inline-block rounded-lg bg-yellow-500 px-6 py-3 text-lg font-medium transition-colors hover:bg-yellow-400"
+                          className="inline-block rounded-lg bg-yellow-500 px-6 py-3 text-lg font-medium transition-colors hover:bg-yellow-400 text-center"
                         >
                           Meet Our Dogs
                         </a>
                         <button
-                          className="rounded-lg -2 shadow-md px-6 py-3 text-lg font-medium transition-colors hover:bg-red-800 hover:cursor-pointer hover:text-white"
+                          className="rounded-lg shadow-md px-6 py-3 text-lg font-medium transition-colors hover:bg-red-800 hover:cursor-pointer hover:text-white"
                         >
                           Learn More
                         </button>
-                  </div>
-
                 </motion.div>
               </motion.div>
               <motion.div
+                className="flex justify-center items-center"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
@@ -187,7 +192,7 @@ export const Home = () => {
             </div>
           </div>
         </section>
-        <section id="available" className="flex justify-center py-20 ">
+        <section id="available" className="flex justify-center py-20">
           <motion.div
             className="container px-4 md:px-6"
             initial="hidden"
@@ -196,15 +201,15 @@ export const Home = () => {
             variants={staggerChildren}
           >
             <motion.h2
-              className="flex justify-center text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-10"
+              className="text-center text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-10"
               variants={fadeInUp}
             >
               Available Dogs
             </motion.h2>
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {[1, 2, 3].map((i) => (
-        <motion.div key={i} variants={fadeInUp} initial="hidden" animate="visible">
-          <div className="rounded-lg bg-white border border-gray-300 shadow-md transition-shadow hover:shadow-lg">
+        <motion.div key={i} variants={fadeInUp} initial="hidden" animate="visible" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.9 }}>
+          <div className="rounded-lg bg-white border border-gray-300 shadow-md transition-shadow hover:shadow-2xl">
             <img
               src={`/dog.svg?height=100&width=100`}
               alt={`Dog ${i}`}

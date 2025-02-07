@@ -23,7 +23,7 @@ export const NewDog = () => {
     setFormData({
       ...formData,
       [name]: value
-    });
+    }); 
   };
 
   const handleSubmit = (e) => {

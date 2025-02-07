@@ -9,13 +9,13 @@ const pool = mysql.createPool({
     port: process.env.DB_PORT,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    ssl: {
-        rejectUnauthorized: true, // Ensures secure SSL connection
-        // Uncomment these if your cloud MySQL provider requires a CA cert
-        // ca: fs.readFileSync("/path/to/ca.pem"),
-        // cert: fs.readFileSync("/path/to/client-cert.pem"),
-        // key: fs.readFileSync("/path/to/client-key.pem")
-    }
+    // ssl: {
+    //     rejectUnauthorized: true, // Ensures secure SSL connection
+    //     // Uncomment these if your cloud MySQL provider requires a CA cert
+    //     // ca: fs.readFileSync("/path/to/ca.pem"),
+    //     // cert: fs.readFileSync("/path/to/client-cert.pem"),
+    //     // key: fs.readFileSync("/path/to/client-key.pem")
+    // }
 });
 
 // Convert pool to use Promises (to avoid callback hell)

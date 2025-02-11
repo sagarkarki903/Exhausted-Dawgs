@@ -2,7 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const dogsRouter = require('./dogsInventoryRoutes');
-const pool = require('./db');
+const authRoutes = require('./auth');
 
 // Load environment variables from the .env file
 dotenv.config();
@@ -24,6 +24,7 @@ app.get('/', (req, res) => {
 
 
 app.use('/dogs', dogsRouter);
+app.use('/auth', authRoutes);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

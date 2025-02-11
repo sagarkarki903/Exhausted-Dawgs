@@ -2,6 +2,8 @@
 import React from "react"
 import { motion, useAnimation, useMotionValue } from "framer-motion"
 import { Heart, PawPrint, Bone } from "lucide-react"
+import { Link, useNavigate } from 'react-router-dom';
+import { Navbar } from "./NavAndFoot/Navbar";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -64,55 +66,7 @@ export const Home = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-gray-900">
-      <header className=" sticky top-0 bg-background/80 backdrop-blur-sm z-50 shadow-md">
-        <motion.div
-          className="flex h-20 items-center justify-between px-4 md:px-8"
-          initial={{ y: -100 }}
-          animate={{ y: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        >
-          <div className="flex items-center gap-2">
-            <img
-              src="/thumbnail_ulm_p40_underdogs_icon_ii_color_2024.png"
-              alt="Underdogs Logo"
-              width={40}
-              height={40}
-              className="w-10 h-10"
-            />
-            <img
-              src="/thumbnail_ulm_p40_underdogs_wordmark_color_2024.png"
-              alt="Underdogs"
-              width={120}
-              height={30}
-              className="hidden sm:block"
-            />
-          </div>
-          <nav className="hidden md:flex items-center gap-6 text-base">
-            <a className="font-semibold hover:text-red-900 transition-colors" href="#available">
-              Available Dogs
-            </a>
-            <a className="font-semibold hover:text-red-900 transition-colors" href="/dogs">
-              Gallery
-            </a>
-            <a className="font-semibold hover:text-red-900 transition-colors" href="#process">
-              Adoption Process
-            </a>
-            <a className="font-semibold hover:text-red-900 transition-colors" href="#contact">
-              Contact
-            </a>
-            <button className="font-semibold hover:bg-yellow-400 transition-colors bg-yellow-500 px-4 py-2 rounded-md">
-              <a href="/login">Sign In</a>
-            </button>
-          </nav>
-          {/* Mobile Menu Button */}
-          <button className="md:hidden">
-            {/* Replace with your mobile menu icon */}
-            <svg className="w-6 h-6" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </motion.div>
-      </header>
+      <Navbar />
       <main className="flex-1">
         <section className="py-20 relative overflow-hidden bg-neutral-100">
           <motion.div

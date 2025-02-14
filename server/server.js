@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const dogsRouter = require('./dogsInventoryRoutes');
+const userRouter = require('./admin/users');
 const logsignRouter = require('./logsign');
 const pool = require('./db');
 
@@ -29,6 +30,8 @@ app.get('/', (req, res) => {
 app.use('/dogs', dogsRouter);
 
 app.use('/log-sign', logsignRouter);
+
+app.use('/users', userRouter);
 
 
 const PORT = process.env.PORT || 8080;

@@ -31,6 +31,7 @@ const [formData, setFormData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
+    role: "Walker",
 });
 const [message, setMessage] = useState("");
 const [error, setError] = useState("");
@@ -75,7 +76,8 @@ const handleChange = (e) => {
         lastname: formData.lastname,
         username: formData.username,
         email: formData.email,
-        password: formData.password
+        password: formData.password,
+        role: formData.role
       }, {
         headers: {
           "Content-Type": "application/json",
@@ -83,7 +85,7 @@ const handleChange = (e) => {
       });
 
       setMessage(response.data.message);
-      setFormData({firstname:"", lastname: "", username: "", email: "", password: "", confirmPassword: "" });
+      setFormData({firstname:"", lastname: "", username: "", email: "", password: "", confirmPassword: "", role: "Walker" });
 
       setTimeout(() => {
         navigate('/login');
@@ -238,7 +240,16 @@ const handleChange = (e) => {
                   </button>
                 </div>
               </motion.div>
-              
+              <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="w-full border p-2 rounded bg-white"
+                >
+                  <option value="Walker">Walker</option>
+                  <option value="Marshal">Marshal</option>
+                  <option value="Admin">Admin</option>
+                </select>
               <motion.button
                     type="submit"
                     disabled={loading}

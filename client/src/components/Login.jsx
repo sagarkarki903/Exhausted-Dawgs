@@ -58,8 +58,18 @@ const handleSubmit = async (e) => {
       headers: { "Content-Type": "application/json" },
       withCredentials: true, //needed to send cookies
     });
+    const { token, user } = response.data;
+
+    localStorage.setItem("token", token);
+    localStorage.setItem("userRole", user.role); // Store role
+    
+    console.log("User Role After Login:", user.role); // Debugging
      // Navigate to Home Page after successful login
-     navigate("/logout");
+     if (user.role === "Admin") {
+        navigate("/admin"); // Redirect Admins
+      } else {
+        navigate("/logout"); // Redirect Marshals & Walkers to home page
+      }
 
   } catch (err) {
     setError(err.response?.data?.message || "Login failed. Please try again.");
@@ -176,7 +186,7 @@ const handleSubmit = async (e) => {
             </div>
 
             <div className="text-center text-sm text-gray-500 mt-4">
-              Don't have an account? <Link to="/signup" className="text-[#8B2232] hover:underline">Sign up</Link>
+              Don&apos;t have an account? <Link to="/signup" className="text-[#8B2232] hover:underline">Sign up</Link>
             </div>
             <div className="text-center text-sm text-gray-500">
               <Link to="/" className="hover:text-[#8B2232]">Return to home</Link>

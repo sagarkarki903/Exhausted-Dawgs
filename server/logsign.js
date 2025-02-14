@@ -16,13 +16,16 @@ const COOKIE_OPTIONS = {
 
 //..............Sign up Start.......................................................................
 router.post('/register', async (req, res) => {
-    const { firstname, lastname, username, email, password } = req.body;
+    const { firstname, lastname, username, email, password, role } = req.body;
 
     if (!firstname || !lastname || !username || !email || !password) {
         return res.status(400).json({ message: "All fields are required." });
     }
 
     try {
+        // Validate the role (optional: only allow Admins to assign roles)
+        const validRoles = ["Admin", "Marshal", "Walker"];
+        const assignedRole = role && validRoles.includes(role) ? role : "Walker"; // Default to 'Walker' if not specified
         // Check if email already exists
         const [existingEmail] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
         if (existingEmail.length > 0) {
@@ -37,11 +40,12 @@ router.post('/register', async (req, res) => {
 
         // Hash password before storing
         const hashedPassword = await bcrypt.hash(password, 10);
+        console.log("Request Body:", req.body);
 
         // Insert new user into the database
         await pool.query(
-            "INSERT INTO users (firstname, lastname, username, email, password) VALUES (?, ?, ?, ?, ?)", 
-            [firstname, lastname, username, email, hashedPassword]
+            "INSERT INTO users (firstname, lastname, username, email, password, role) VALUES (?, ?, ?, ?, ?, ?)", 
+            [firstname, lastname, username, email, hashedPassword, assignedRole]
         );
 
         res.status(201).json({ message: "User registered successfully." });
@@ -67,7 +71,7 @@ router.post('/login-server', async (req, res) => {
     try {
         // Check if user exists by email or username
         const [users] = await pool.query(
-            "SELECT id, firstname, lastname, username, email, password FROM users WHERE email = ? OR username = ? LIMIT 1",
+            "SELECT id, firstname, lastname, username, email, password, role FROM users WHERE email = ? OR username = ? LIMIT 1",
             [emailOrUsername, emailOrUsername]
         );
 
@@ -85,8 +89,8 @@ router.post('/login-server', async (req, res) => {
 
          // Generate JWT Token (only store `id` to protect user data)
          const token = jwt.sign(
-            { id: user.id }, // Only store user ID in token
-            SECRET_KEY,
+            { id: user.id, role: user.role }, // Only store user ID in token
+            process.env.JWT_SECRET,
             { expiresIn: "1h" }
         );
 
@@ -102,6 +106,7 @@ router.post('/login-server', async (req, res) => {
                 lastname: user.lastname,
                 username: user.username,
                 email: user.email,
+                role: user.role
             },
         });
 

@@ -3,9 +3,11 @@ import { Home } from './components/Home';
 import { NewDog } from './components/dogs/NewDog';
 import { DogList } from './components/dogs/DogList';
 import Login from './components/Login';
-import SignUp from './components/SignUp';
+import SignUp from './components/Signup';
 import DogProfile from './components/dogs/DogProfile';
-import LogOutTest from './components/LogOutTest';
+import LogOutTest from './LogOutTest';
+import AdminDashboard from './components/dashboard/Admin';
+import AdminRoute from "./AdminRoute";
 
 
 function App() {
@@ -20,6 +22,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/logout" element={<LogOutTest />} />
+        {/* Protected Admin Route */}
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Route>
       </Routes>
     </Router>
   )

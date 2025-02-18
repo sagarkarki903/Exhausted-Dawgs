@@ -6,6 +6,8 @@ const dogsRouter = require('./dogsInventoryRoutes');
 const userRouter = require('./admin/users');
 const logsignRouter = require('./logsign');
 const scheduleRouter = require('./schedule');
+const newscheduleRouter = require('./newschedule');
+const reportRouter = require("./reportserver/report-list");
 const pool = require('./db');
 
 // Load environment variables from the .env file
@@ -36,6 +38,9 @@ app.use('/users', userRouter);
 
 app.use('/schedule', scheduleRouter);
 
+app.use('/newschedule', newscheduleRouter); 
+
+app.use("/report", reportRouter);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

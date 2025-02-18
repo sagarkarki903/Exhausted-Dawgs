@@ -1,7 +1,8 @@
 "use client"
-import React from "react"
-import { motion, useAnimation, useMotionValue } from "framer-motion"
+import { motion} from "framer-motion"
 import { Heart, PawPrint, Bone } from "lucide-react"
+import { Navbar } from "./NavAndFoot/Navbar";
+import { Footer } from "./NavAndFoot/Footer";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -12,107 +13,12 @@ const staggerChildren = {
   visible: { transition: { staggerChildren: 0.1 } },
 }
 
-const MiniDogAnimation = () => {
-  const dogX = useMotionValue(0)
-  const boneX = useMotionValue(100)
-  const controls = useAnimation()
-
-  React.useEffect(() => {
-    const animateDog = async () => {
-      await controls.start({ x: 100, transition: { duration: 2 } })
-      await controls.start({ y: -20, transition: { duration: 0.3 } })
-      await controls.start({ y: 0, transition: { duration: 0.3 } })
-      await controls.start({ x: 0, transition: { duration: 2 } })
-    }
-
-    const animateBone = async () => {
-      await boneX.set(100)
-      await new Promise((resolve) => setTimeout(resolve, 4000))
-      await boneX.set(-50)
-    }
-
-    const runAnimation = async () => {
-      await Promise.all([animateDog(), animateBone()])
-      runAnimation()
-    }
-
-    runAnimation()
-  }, [controls, boneX])
-
-  return (
-    <svg
-      width="200"
-      height="100"
-      viewBox="0 0 200 100"
-      className="absolute bottom-0 left-1/2 transform -translate-x-1/2"
-    >
-      <motion.path d="M15,70 Q25,50 35,70 Q45,90 55,70" stroke="#888" strokeWidth="2" fill="none" style={{ x: dogX }} />
-      <motion.circle cx="25" cy="70" r="5" fill="#888" style={{ x: dogX }} />
-      <motion.path d="M10,70 L20,60 L30,70 L20,80 Z" fill="#888" style={{ x: dogX }} animate={controls} />
-      <motion.path
-        d="M40,65 C40,65 50,65 50,70 C50,75 40,75 40,75"
-        stroke="#888"
-        strokeWidth="2"
-        fill="none"
-        style={{ x: boneX }}
-      />
-    </svg>
-  )
-}
 
 export const Home = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-gray-900">
-      <header className=" sticky top-0 bg-background/80 backdrop-blur-sm z-50 shadow-md">
-        <motion.div
-          className="flex h-20 items-center justify-between px-4 md:px-8"
-          initial={{ y: -100 }}
-          animate={{ y: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        >
-          <div className="flex items-center gap-2">
-            <img
-              src="/thumbnail_ulm_p40_underdogs_icon_ii_color_2024.png"
-              alt="Underdogs Logo"
-              width={40}
-              height={40}
-              className="w-10 h-10"
-            />
-            <img
-              src="/thumbnail_ulm_p40_underdogs_wordmark_color_2024.png"
-              alt="Underdogs"
-              width={120}
-              height={30}
-              className="hidden sm:block"
-            />
-          </div>
-          <nav className="hidden md:flex items-center gap-6 text-base">
-            <a className="font-semibold hover:text-red-900 transition-colors" href="#available">
-              Available Dogs
-            </a>
-            <a className="font-semibold hover:text-red-900 transition-colors" href="/dogs">
-              Gallery
-            </a>
-            <a className="font-semibold hover:text-red-900 transition-colors" href="#process">
-              Adoption Process
-            </a>
-            <a className="font-semibold hover:text-red-900 transition-colors" href="#contact">
-              Contact
-            </a>
-            <button className="font-semibold hover:bg-yellow-400 transition-colors bg-yellow-500 px-4 py-2 rounded-md">
-              <a href="/login">Sign In</a>
-            </button>
-          </nav>
-          {/* Mobile Menu Button */}
-          <button className="md:hidden">
-            {/* Replace with your mobile menu icon */}
-            <svg className="w-6 h-6" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </motion.div>
-      </header>
+      <Navbar />
       <main className="flex-1">
         <section className="py-20 relative overflow-hidden bg-neutral-100">
           <motion.div
@@ -370,39 +276,7 @@ export const Home = () => {
           </motion.div>
         </section>
       </main>
-      <motion.footer
-        className="border-t border-gray-300 py-6 bg-background/80 backdrop-blur-sm relative"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <MiniDogAnimation />
-        <div className="px-4 md:px-6">
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div className="flex items-center gap-2">
-              <img
-                src="/thumbnail_ulm_p40_underdogs_icon_ii_color_2024.png"
-                alt="Underdogs Logo"
-                width={30}
-                height={30}
-                className="w-8 h-8"
-              />
-              <span className="text-sm text-gray-500">© 2024 Underdogs. All rights reserved.</span>
-            </div>
-            <nav className="flex gap-4">
-              <a className="text-sm text-gray-500 hover:text-primary transition-colors" href="#">
-                Privacy Policy
-              </a>
-              <a className="text-sm text-gray-500 hover:text-primary transition-colors" href="#">
-                Terms of Service
-              </a>
-              <a className="text-sm text-gray-500 hover:text-primary transition-colors" href="#">
-                Contact
-              </a>
-            </nav>
-          </div>
-        </div>
-      </motion.footer>
+      <Footer />
     </div>
   )
 }

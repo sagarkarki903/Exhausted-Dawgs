@@ -8,6 +8,8 @@ import DogProfile from './components/dogs/DogProfile';
 import LogOutTest from './LogOutTest';
 import AdminDashboard from './components/dashboard/Admin';
 import AdminRoute from "./AdminRoute";
+import Walker from './components/dashboard/Walker';
+import Marshal from './components/dashboard/Marshal';
 
 
 function App() {
@@ -22,6 +24,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/logout" element={<LogOutTest />} />
+        <Route path="/walker" element={<Walker />} />
+        <Route path="/marshal" element={<Marshal />} />
         {/* Protected Admin Route */}
         <Route element={<AdminRoute />}>
           <Route path="/admin" element={<AdminDashboard />} />

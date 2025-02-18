@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import LogOutTest from '../../LogOutTest';
 
 const Admin = () => {
   const [users, setUsers] = useState([]);
@@ -66,6 +67,7 @@ const deleteUser = async (id) => {
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Admin Dashboard</h2>
+      <LogOutTest />
       <table className="min-w-full bg-white shadow-md">
         <thead>
           <tr>

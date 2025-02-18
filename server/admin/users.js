@@ -3,7 +3,7 @@ const pool = require("../db.js");
 const router = express.Router();
 const checkAdmin = require("./checkAdmin.js"); // Use the middleware
 
-// ✅ GET all users (Admins only)
+//  GET all users (Admins only)
 router.get('/', checkAdmin, async (req, res) => {
     try {
         const [users] = await pool.query("SELECT id, firstname, lastname, username, email, role FROM users");
@@ -14,7 +14,7 @@ router.get('/', checkAdmin, async (req, res) => {
     }
 });
 
-// ✅ UPDATE a user (Admins only)
+//  UPDATE a user (Admins only)
 router.put('/:id', checkAdmin, async (req, res) => {
     const { id } = req.params;
     const { role } = req.body;
@@ -36,7 +36,7 @@ router.put('/:id', checkAdmin, async (req, res) => {
             return res.status(404).json({ message: "User not found." });
         }
 
-        console.log("✅ User updated successfully.");
+        console.log("User updated successfully.");
         res.json({ message: "User updated successfully." });
     } catch (error) {
         console.error("Error updating user:", error);
@@ -44,7 +44,7 @@ router.put('/:id', checkAdmin, async (req, res) => {
     }
 });
 
-// ✅ DELETE a user (Admins only)
+//  DELETE a user (Admins only)
 router.delete('/:id', checkAdmin, async (req, res) => {
     const { id } = req.params;
 
@@ -57,7 +57,7 @@ router.delete('/:id', checkAdmin, async (req, res) => {
             return res.status(404).json({ message: "User not found." });
         }
 
-        console.log("✅ User deleted successfully.");
+        console.log(" User deleted successfully.");
         res.json({ message: "User deleted successfully." });
     } catch (error) {
         console.error("Error deleting user:", error);

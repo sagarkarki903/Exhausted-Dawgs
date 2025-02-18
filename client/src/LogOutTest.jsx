@@ -17,7 +17,7 @@ export default function LogOutTest() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
+    <div className="flex justify-end items-center p-4">
       <button 
         onClick={handleLogout} 
         className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"

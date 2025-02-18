@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const dogsRouter = require('./dogsInventoryRoutes');
 const userRouter = require('./admin/users');
 const logsignRouter = require('./logsign');
+const scheduleRouter = require('./schedule');
 const pool = require('./db');
 
 // Load environment variables from the .env file
@@ -32,6 +33,8 @@ app.use('/dogs', dogsRouter);
 app.use('/log-sign', logsignRouter);
 
 app.use('/users', userRouter);
+
+app.use('/schedule', scheduleRouter);
 
 
 const PORT = process.env.PORT || 8080;

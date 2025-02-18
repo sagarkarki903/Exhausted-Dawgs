@@ -67,8 +67,11 @@ const handleSubmit = async (e) => {
      // Navigate to Home Page after successful login
      if (user.role === "Admin") {
         navigate("/admin"); // Redirect Admins
-      } else {
-        navigate("/logout"); // Redirect Marshals & Walkers to home page
+      } else if (user.role === "Marshal") {
+        navigate("/marshal"); // Redirect Marshal
+      }
+      else {
+        navigate("/walker"); // Redirect Walkers to home page
       }
 
   } catch (err) {

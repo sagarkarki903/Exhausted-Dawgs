@@ -17,6 +17,7 @@ import { MarshalReport } from './components/reports/MarshalReport';
 import { WalkerReport } from './components/reports/WalkerReport';
 import { AdminDash } from './components/newDashboard/AdminDash';
 import { AllUsers } from './components/Users/AllUsers';
+import { PastReport } from './components/reports/PastReport';
 
 
 function App() {
@@ -41,7 +42,8 @@ function App() {
 
         <Route path="/marshal-report" element={<MarshalReport/>} />
         <Route path="/walker-report" element={<WalkerReport/>} />
-        <Route path="/all-users" element={<AllUsers/>}/>
+        <Route path="/past-report" element={<PastReport/>} />
+        <Route path="/all-users" element={<AllUsers/>}/> 
 
         {/* Protected Admin Route */}
         <Route element={<AdminRoute />}>

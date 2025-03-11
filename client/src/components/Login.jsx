@@ -54,7 +54,7 @@ const handleSubmit = async (e) => {
   setLoading(true);
 
   try {
-    const response = await axios.post("http://localhost:8080/log-sign/login-server", formData, {
+    const response = await axios.post("https://exhausted-dawgs.onrender.com/log-sign/login-server", formData, {
       headers: { "Content-Type": "application/json" },
       withCredentials: true, //needed to send cookies
     });

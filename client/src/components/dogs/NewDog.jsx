@@ -28,7 +28,7 @@ export const NewDog = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios.post('http://127.0.0.1:8080/dogs', formData)
+    axios.post('https://exhausted-dawgs.onrender.com/dogs', formData)
       .then(response => {
         console.log('Dog created successfully:', response.data);
         navigate('/dogs');

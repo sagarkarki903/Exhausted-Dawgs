@@ -18,7 +18,7 @@ export const CalendarPage = () => {
   //fetch user
   const fetchUser = async () => {
     try {
-        const response = await axios.get("http://localhost:8080/newschedule/me", {
+        const response = await axios.get("https://exhausted-dawgs.onrender.com/newschedule/me", {
             withCredentials: true,
         });
 
@@ -62,7 +62,7 @@ useEffect(() => {
     const formattedEndTime = endMoment.format("HH:mm:ss");
 
     try {
-        const response = await axios.post("http://localhost:8080/newschedule/schedule", {
+        const response = await axios.post("https://exhausted-dawgs.onrender.com/newschedule/schedule", {
             date: formattedDate,
             start_time: formattedStartTime,
             end_time: formattedEndTime,

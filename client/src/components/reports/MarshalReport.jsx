@@ -10,7 +10,7 @@ export const MarshalReport = () => {
 
     const fetchMarshalReports = async () => {
         try {
-            const response = await axios.get("http://localhost:8080/report/marshal-reports");
+            const response = await axios.get("https://exhausted-dawgs.onrender.com/report/marshal-reports");
             setSchedules(response.data);
         } catch (error) {
             console.error("Error fetching schedules:", error);

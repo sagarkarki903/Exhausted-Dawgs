@@ -20,7 +20,7 @@ const Scheduler = () => {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const response = await axios.get("http://localhost:8080/schedule/user", {
+      const response = await axios.get("https://exhausted-dawgs.onrender.com/schedule/user", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -33,7 +33,7 @@ const Scheduler = () => {
 
   const fetchSchedule = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/schedule");
+      const response = await axios.get("https://exhausted-dawgs.onrender.com/schedule");
       console.log("📅 Fetched Schedule Data:", response.data);
       setSchedule(response.data);
     } catch (error) {
@@ -55,7 +55,7 @@ const formatDate = (dateString) => {
     if (!token) return alert("You must be logged in.");
 
     try {
-      const response = await axios.post("http://localhost:8080/schedule", 
+      const response = await axios.post("https://exhausted-dawgs.onrender.com/schedule", 
         {
           date: date.toISOString().split("T")[0],
           time_slot: "10:00 AM - 12:00 PM",
@@ -83,7 +83,7 @@ const formatDate = (dateString) => {
 
     try {
       await axios.post(
-        "http://localhost:8080/schedule/appointments",
+        "https://exhausted-dawgs.onrender.com/schedule/appointments",
         {
           schedule_id: selectedSlot.id,
           walker_id: user.id,

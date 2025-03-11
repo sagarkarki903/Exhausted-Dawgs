@@ -9,7 +9,7 @@ export const DogList = () => {
   const [dogs, setDogs] = useState([]);
 
   useEffect(() => {
-    axios.get('http://127.0.0.1:8080/dogs')
+    axios.get('https://exhausted-dawgs.onrender.com/dogs')
       .then(response => setDogs(response.data))
       .catch(error => console.error('Error fetching dogs:', error));
   }, []);

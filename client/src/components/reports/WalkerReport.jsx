@@ -10,7 +10,7 @@ export const WalkerReport = () => {
 
     const fetchWalkerReports = async () => {
         try {
-            const response = await axios.get("http://localhost:8080/report/walker-reports");
+            const response = await axios.get("https://exhausted-dawgs.onrender.com/report/walker-reports");
             setAppointments(response.data);
         } catch (error) {
             console.error("Error fetching appointments:", error);

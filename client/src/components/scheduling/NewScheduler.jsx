@@ -17,7 +17,7 @@ export const NewScheduler = () => {
 
     const fetchSchedules = async () => {
         try {
-            const response = await axios.get("http://localhost:8080/newschedule/all-schedules");
+            const response = await axios.get("https://exhausted-dawgs.onrender.com/newschedule/all-schedules");
             setSchedules(response.data);
         } catch (error) {
             console.error("Error fetching schedules:", error);
@@ -26,7 +26,7 @@ export const NewScheduler = () => {
 
     const fetchUser = async () => {
         try {
-            const response = await axios.get("http://localhost:8080/newschedule/me", {
+            const response = await axios.get("https://exhausted-dawgs.onrender.com/newschedule/me", {
                 withCredentials: true,
             });
             setUser(response.data);
@@ -65,7 +65,7 @@ export const NewScheduler = () => {
 
         try {
             const response = await axios.post(
-                "http://localhost:8080/newschedule/book-walker",
+                "https://exhausted-dawgs.onrender.com/newschedule/book-walker",
                 {
                     schedule_id: schedule.id,  
                     dog_name: dogName,         

@@ -10,7 +10,7 @@ const DogProfile = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`http://127.0.0.1:8080/dogs/${id}`)
+    axios.get(`https://exhausted-dawgs.onrender.com/dogs/${id}`)
       .then(res => {
         setDog(res.data);
         setFormData(res.data);
@@ -32,7 +32,7 @@ const DogProfile = () => {
   };
 
   const handleSave = () => {
-    axios.put(`http://127.0.0.1:8080/dogs/${id}`, formData)
+    axios.put(`https://exhausted-dawgs.onrender.com/dogs/${id}`, formData)
       .then(() => {
         setDog(formData);
         setEditing(false);
@@ -42,7 +42,7 @@ const DogProfile = () => {
 
   const handleDelete = () => {
     if (window.confirm('Are you sure you want to delete this dog?')) {
-      axios.delete(`http://127.0.0.1:8080/dogs/${id}`)
+      axios.delete(`https://exhausted-dawgs.onrender.com/dogs/${id}`)
         .then(() => {
           console.log('Dog deleted successfully');
           navigate('/dogs');

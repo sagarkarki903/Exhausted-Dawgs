@@ -12,7 +12,7 @@ export const AllUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/users/", { withCredentials: true });
+      const response = await axios.get("https://exhausted-dawgs.onrender.com/users/", { withCredentials: true });
       setUsers(response.data);
       setLoading(false);
     } catch (error) {

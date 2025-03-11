@@ -71,7 +71,7 @@ const handleChange = (e) => {
       }
 
    try {
-      const response = await axios.post("http://localhost:8080/log-sign/register", {
+      const response = await axios.post("https://exhausted-dawgs.onrender.com/log-sign/register", {
         firstname: formData.firstname,
         lastname: formData.lastname,
         username: formData.username,

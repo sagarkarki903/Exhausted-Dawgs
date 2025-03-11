@@ -4,7 +4,7 @@ import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { NewScheduler } from '../scheduling/NewScheduler';
 import axios from 'axios';
-import { fetchUser } from "../utils/userService";
+import { fetchUser } from '../../utils/userService';
 
 const localizer = momentLocalizer(moment);
 

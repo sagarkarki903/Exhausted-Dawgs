@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 
 // Middleware to authenticate user from HTTP-only Cookie
 const authenticateUser = (req, res, next) => {
-    let token = req.cookies.auth_token || req.headers["authorization"];
+    let token = req.cookies.auth_token || req.headers["authorization"] || req.headers["Authorization"];
 
     if (!token) {
         console.log("🚨 No token provided.");
@@ -29,6 +29,7 @@ const authenticateUser = (req, res, next) => {
         return res.status(403).json({ message: "Invalid token." });
     }
 };
+
 
 
 // ✅ Route to fetch logged-in user data

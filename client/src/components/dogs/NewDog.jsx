@@ -72,10 +72,6 @@ export const NewDog = () => {
           <label className="block font-semibold">Notes</label>
           <textarea name="notes" value={formData.notes} onChange={handleChange} className="w-full p-2 border rounded focus:ring focus:ring-[#8B2232]"></textarea>
         </div>
-        <div>
-          <label className="block font-semibold">Image URL</label>
-          <input type="text" name="imageUrl" value={formData.imageUrl} onChange={handleChange} className="w-full p-2 border rounded focus:ring focus:ring-[#8B2232]" />
-        </div>
         
           <button type="submit" className="w-full bg-[#8B2232] text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:bg-[#a32a3e] transition duration-300">Add Dog Profile</button>
       </form>

@@ -1,8 +1,11 @@
 "use client"
+import { useEffect, useState } from "react";
 import { motion} from "framer-motion"
 import { Heart, PawPrint, Bone } from "lucide-react"
 import { Navbar } from "./NavAndFoot/Navbar";
 import { Footer } from "./NavAndFoot/Footer";
+import { useNavigate } from 'react-router-dom';
+import axios from "axios";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -15,6 +18,31 @@ const staggerChildren = {
 
 
 export const Home = () => {
+
+  const navigate = useNavigate();
+  const [dogs, setDogs] = useState([]);
+  const [displayCount, setDisplayCount] = useState(6);
+
+  useEffect(() => {
+    axios
+      .get("http://127.0.0.1:8080/dogs")
+      .then((response) => {
+        const shuffledDogs = response.data.sort(() => 0.5 - Math.random()); // Shuffle the array
+        setDogs(shuffledDogs);
+      })
+      .catch((error) => console.error("Error fetching dogs:", error));
+  }, []);
+
+   // Handle responsive display count
+   useEffect(() => {
+    const updateDisplayCount = () => {
+      setDisplayCount(window.innerWidth < 1024 ? 4 : 6); // 4 for small screens, 6 for large
+    };
+
+    updateDisplayCount();
+    window.addEventListener("resize", updateDisplayCount);
+    return () => window.removeEventListener("resize", updateDisplayCount);
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-gray-900">
@@ -113,30 +141,28 @@ export const Home = () => {
               Available Dogs
             </motion.h2>
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {[1, 2, 3].map((i) => (
-        <motion.div key={i} variants={fadeInUp} initial="hidden" animate="visible" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.9 }}>
+      {dogs.slice(0, displayCount).map((dog, index) => (
+        <motion.div key={index} variants={fadeInUp} initial="hidden" animate="visible" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.9 }}>
           <div className="rounded-lg bg-white border border-gray-300 shadow-md transition-shadow hover:shadow-2xl">
             <img
-              src={`/dog.svg?height=100&width=100`}
-              alt={`Dog ${i}`}
-              width={50}
-              height={50}
+              src={`http://127.0.0.1:8080/uploads/${dog.profile_picture}`}
+              alt={dog.name}
               className="p-4 h-96 w-full rounded-t-lg object-cover"
             />
             <div className="p-4">
-              <h3 className="text-lg font-semibold">Buddy {i}</h3>
-              <p className="text-sm text-gray-500">2 years old • Male • Friendly</p>
-              <div className="mt-4 flex items-center gap-4">
-                <button className="flex-1 rounded-md bg-red-900 px-4 py-2 text-white transition hover:bg-red-800">
-                  Meet Me
-                </button>
-                <button
-                  className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 text-gray-500 transition hover:bg-yellow-500"
-                  aria-label="Add to favorites"
-                >
-                  <Heart className="h-5 w-5" />
-                </button>
-              </div>
+              <h3 className="text-lg font-semibold">{dog.name}</h3>
+              <p className="text-sm text-gray-500">{dog.age} years old • {dog.breed}</p>
+              <div className='flex p-4 gap-6'>         
+                            <button  className="flex-1 rounded-md w-full bg-red-900 px-4 py-2 text-white transition hover:bg-red-800" onClick={() => navigate(`/dogs/${dog.id}`)}>
+                              Meet Me                      
+                            </button>
+                          <button
+                              className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 text-gray-500 transition hover:bg-yellow-500"
+                              aria-label="Add to favorites"
+                              >
+                            <Heart className="h-5 w-5" />
+                          </button>
+               </div>
             </div>
           </div>
         </motion.div>

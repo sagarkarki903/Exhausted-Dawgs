@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const path = require("path");
 const dogsRouter = require('./dogsInventoryRoutes');
 const userRouter = require('./admin/users');
 const logsignRouter = require('./logsign');
@@ -9,6 +10,7 @@ const scheduleRouter = require('./schedule');
 const newscheduleRouter = require('./newschedule');
 const reportRouter = require("./reportserver/report-list");
 const pool = require('./db');
+
 
 // Load environment variables from the .env file
 dotenv.config();
@@ -24,6 +26,7 @@ app.use(cors(corsOptions))
 app.use(cookieParser()); // ✅ Middleware to handle cookies
 app.use(express.json()); // Parse JSON request bodies
 
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
  
 app.get('/', (req, res) => {
     res.send('Hello, Dawgs!');

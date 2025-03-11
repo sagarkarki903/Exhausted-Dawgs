@@ -17,7 +17,9 @@ const app = express();
 const corsOptions = {
     origin: "https://exhausted-dawgs.vercel.app",
     methods: "GET,POST,PUT,DELETE",
-    credentials: true
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"], // ✅ Allow Authorization header
+
 };
 
 app.use(cors(corsOptions))

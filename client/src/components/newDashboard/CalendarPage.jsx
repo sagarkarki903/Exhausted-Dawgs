@@ -18,8 +18,12 @@ export const CalendarPage = () => {
   //fetch user
   const fetchUser = async () => {
     try {
+        const token = localStorage.getItem("token"); // Get token from localStorage
         const response = await axios.get("https://exhausted-dawgs.onrender.com/newschedule/me", {
-            withCredentials: true,
+            headers: {
+                Authorization: `Bearer ${token}`, // ✅ Send token in Authorization header
+            },
+            withCredentials: true, // ✅ Include cookies if needed
         });
 
         console.log("User Data:", response.data);

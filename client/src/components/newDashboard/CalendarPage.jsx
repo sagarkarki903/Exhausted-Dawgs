@@ -28,12 +28,35 @@ export const CalendarPage = () => {
         console.error("Error fetching user:", error);
     }
 };
+//*************************************************************************************************************** */
+const fetchEvents = async () => {
+  try {
+    const response = await axios.get("http://localhost:8080/newschedule/all-schedules", {
+      withCredentials: true,
+    });
+
+    console.log("Fetched Schedule Data:", response.data); // ✅ Log to check response
+
+    // Convert MySQL schedule data to the format needed for React Big Calendar
+    const formattedEvents = response.data.map(schedule => ({
+      id: schedule.id,
+      title: `Booked`,  // Customize if needed
+      start: moment.utc(`${schedule.date} ${schedule.start_time}`, "YYYY-MM-DD HH:mm:ss").toDate(),  // ✅ Correct Format
+      end: moment.utc(`${schedule.date} ${schedule.end_time}`, "YYYY-MM-DD HH:mm:ss").toDate(),      // ✅ Correct Format
+    }));
+
+    setEvents(formattedEvents); // ✅ Store fetched events in state
+  } catch (error) {
+    console.error("Error fetching schedules:", error);
+  }
+};
 
 
-
+//*************************************************************************************************************** */
 
 useEffect(() => {
   fetchUser();
+  fetchEvents();
 }, []);
 
 
@@ -57,8 +80,8 @@ useEffect(() => {
         return;
     }
 
-    const formattedDate = moment(selectedDate).format("YYYY-MM-DD"); // Matches MySQL `DATE` format
-    const formattedStartTime = startMoment.format("HH:mm:ss"); // Matches MySQL `TIME` format
+    const formattedDate = moment(selectedDate).format("YYYY-MM-DD"); // Matches MySQL DATE format
+    const formattedStartTime = startMoment.format("HH:mm:ss"); // Matches MySQL TIME format
     const formattedEndTime = endMoment.format("HH:mm:ss");
 
     try {

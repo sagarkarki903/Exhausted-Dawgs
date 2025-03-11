@@ -3,7 +3,7 @@ import { Home } from './components/Home';
 import { NewDog } from './components/dogs/NewDog';
 import { DogList } from './components/dogs/DogList';
 import Login from './components/Login';
-import SignUp from './components/Signup';
+import SignUp from './components/SignUp';
 import DogProfile from './components/dogs/DogProfile';
 import LogOutTest from './LogOutTest';
 import AdminDashboard from './components/dashboard/Admin';
@@ -17,6 +17,7 @@ import { MarshalReport } from './components/reports/MarshalReport';
 import { WalkerReport } from './components/reports/WalkerReport';
 import { AdminDash } from './components/newDashboard/AdminDash';
 import { AllUsers } from './components/Users/AllUsers';
+import {RoughCalendar} from './components/newDashboard/RoughCalendar';
 
 
 function App() {
@@ -42,7 +43,7 @@ function App() {
         <Route path="/marshal-report" element={<MarshalReport/>} />
         <Route path="/walker-report" element={<WalkerReport/>} />
         <Route path="/all-users" element={<AllUsers/>}/>
-
+        <Route path="/rough-calendar" element={<RoughCalendar />} />
         {/* Protected Admin Route */}
         <Route element={<AdminRoute />}>
           <Route path="/admin" element={<AdminDashboard />} />

@@ -3,7 +3,7 @@ import { Home } from './components/Home';
 import { NewDog } from './components/dogs/NewDog';
 import { DogList } from './components/dogs/DogList';
 import Login from './components/Login';
-import SignUp from './components/Signup';
+import SignUp from './components/SignUp';
 import DogProfile from './components/dogs/DogProfile';
 import LogOutTest from './LogOutTest';
 import AdminDashboard from './components/dashboard/Admin';

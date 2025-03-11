@@ -71,7 +71,7 @@ export const Footer = () => {
                     </div>
                     <nav className="flex gap-4">
                       <a className="text-sm text-gray-500 hover:text-primary transition-colors" href="#">
-                        Privacy Policy
+                        Privacy Policy - deploy_version
                       </a>
                       <a className="text-sm text-gray-500 hover:text-primary transition-colors" href="#">
                         Terms of Service

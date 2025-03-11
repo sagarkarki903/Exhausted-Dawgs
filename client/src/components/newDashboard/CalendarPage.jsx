@@ -4,6 +4,7 @@ import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { NewScheduler } from '../scheduling/NewScheduler';
 import axios from 'axios';
+import { fetchUser } from "../utils/userService";
 
 const localizer = momentLocalizer(moment);
 
@@ -16,35 +17,47 @@ export const CalendarPage = () => {
   const [user, setUser] = useState(null);
 
   //fetch user
-  const fetchUser = async () => {
-    try {
-        const token = localStorage.getItem("token"); // Get token from localStorage
-        const response = await axios.get("https://exhausted-dawgs.onrender.com/newschedule/me", {
-            headers: {
-                Authorization: `Bearer ${token}`, // ✅ Send token in Authorization header
-            },
-            withCredentials: true, // ✅ Include cookies if needed
-        });
+//   const fetchUser = async () => {
+//     try {
+//         const token = localStorage.getItem("token");
 
-        console.log("User Data:", response.data);
-        setUser(response.data);
-    } catch (error) {
-        console.error("Error fetching user:", error);
-    }
-};
+//         console.log("🔹 Fetch User: Token Sent to Backend:", token); // ✅ Debugging Log
 
+//         if (!token) {
+//             console.error("🚨 No token found in localStorage!");
+//             return;
+//         }
+
+//         const response = await axios.get("https://exhausted-dawgs.onrender.com/newschedule/me", {
+//             headers: {
+//                 Authorization: `Bearer ${token}`, // ✅ Ensure token is included
+//             },
+//             withCredentials: true, // ✅ Allow cookies
+//         });
+
+//         console.log("✅ User Data Fetched:", response.data);
+//         setUser(response.data);
+//     } catch (error) {
+//         console.error("🚨 Error fetching user:", error);
+//     }
+// };
 
 
 
 useEffect(() => {
-  fetchUser();
+  const getUser = async () => {
+      const userData = await fetchUser();
+      if (userData) {
+          setUser(userData);
+      }
+  };
+  getUser();
 }, []);
-
-
   const handleSelectSlot = ({ start }) => {
     setSelectedDate(start);
     setShowModal(true);
   };
+
 
   const handleBookAppointment = async () => {
     if (!startTime || !endTime || !selectedDate || !user) {

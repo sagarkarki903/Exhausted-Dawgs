@@ -54,32 +54,35 @@ const handleSubmit = async (e) => {
   setLoading(true);
 
   try {
-    const response = await axios.post("https://exhausted-dawgs.onrender.com/log-sign/login-server", formData, {
-      headers: { "Content-Type": "application/json" },
-      withCredentials: true, //needed to send cookies
-    });
-    const { token, user } = response.data;
+      const response = await axios.post("https://exhausted-dawgs.onrender.com/log-sign/login-server", formData, {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true, // Needed for cookies
+      });
 
-    localStorage.setItem("token", token);
-    localStorage.setItem("userRole", user.role); // Store role
-    
-    console.log("User Role After Login:", user.role); // Debugging
-     // Navigate to Home Page after successful login
-     if (user.role === "Admin") {
-        navigate("/admin-dash"); // Redirect Admins
-      } else if (user.role === "Marshal") {
-        navigate("/marshal-dash"); // Redirect Marshal
-      }
-      else {
-        navigate("/walker-dash"); // Redirect Walkers to home page
-      }
+      const { token, user } = response.data;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("userRole", user.role);
+
+      console.log("🔹 Token Stored in localStorage:", token);
+
+      // ✅ Small delay to ensure token is set before making requests
+      setTimeout(() => {
+          fetchUser(); // Fetch user immediately after storing token
+      }, 500);
+
+      console.log("User Role After Login:", user.role);
+      navigate(user.role === "Admin" ? "/admin-dash" :
+               user.role === "Marshal" ? "/marshal-dash" :
+               "/walker-dash");
 
   } catch (err) {
-    setError(err.response?.data?.message || "Login failed. Please try again.");
+      setError(err.response?.data?.message || "Login failed. Please try again.");
   } finally {
-    setLoading(false);
+      setLoading(false);
   }
 };
+
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#f9fafb] to-[#f3f4f6] relative overflow-hidden">

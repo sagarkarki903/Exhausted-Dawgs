@@ -35,7 +35,12 @@ export const Navbar = () => {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6 text-base">
           <a className="font-semibold hover:text-red-900 transition-colors" href="#available">Available Dogs</a>
-          <a className="font-semibold hover:text-red-900 transition-colors" href="/dogs">Gallery</a>
+          <Link 
+              to="/dogs" 
+              className="font-semibold hover:text-red-900 transition-colors"
+            >
+              Gallery
+          </Link>
           <a className="font-semibold hover:text-red-900 transition-colors" href="#process">Adoption Process</a>
           <a className="font-semibold hover:text-red-900 transition-colors" href="#contact">Contact</a>
           <Link to="/login">

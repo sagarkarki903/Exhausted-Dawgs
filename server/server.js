@@ -15,7 +15,7 @@ dotenv.config();
 const app = express();
 
 const corsOptions = {
-    origin: "https://exhausted-dawgs.vercel.app/",
+    origin: "https://exhausted-dawgs.vercel.app",
     methods: "GET,POST,PUT,DELETE",
     credentials: true
 };

@@ -5,19 +5,31 @@ const jwt = require('jsonwebtoken');
 
 // Middleware to authenticate user from HTTP-only Cookie
 const authenticateUser = (req, res, next) => {
-    try {
-        const token = req.cookies.auth_token; // Get token from cookies
-        if (!token) {
-            return res.status(401).json({ message: "Unauthorized. No token provided." });
-        }
+    let token = req.cookies.auth_token || req.headers["authorization"];
 
+    if (!token) {
+        console.log("🚨 No token provided.");
+        return res.status(401).json({ message: "Unauthorized. No token provided." });
+    }
+
+    // Remove "Bearer " prefix if present
+    if (token.startsWith("Bearer ")) {
+        token = token.slice(7, token.length);
+    }
+
+    console.log("🔹 Received Token:", token); // ✅ Debugging log
+
+    try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.userId = decoded.id;  // Attach user ID to request
+        console.log("✅ Token Verified! User ID:", decoded.id);
+        req.userId = decoded.id; // Attach user ID to request
         next();
-    } catch (error) {
-        return res.status(401).json({ message: "Invalid token." });
+    } catch (err) {
+        console.error("🚨 Invalid token error:", err.message);
+        return res.status(403).json({ message: "Invalid token." });
     }
 };
+
 
 // ✅ Route to fetch logged-in user data
 router.get("/me", authenticateUser, async (req, res) => {

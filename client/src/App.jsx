@@ -17,16 +17,15 @@ import { MarshalReport } from './components/reports/MarshalReport';
 import { WalkerReport } from './components/reports/WalkerReport';
 import { AdminDash } from './components/newDashboard/AdminDash';
 import { AllUsers } from './components/Users/AllUsers';
-import {RoughCalendar} from './components/newDashboard/RoughCalendar';
-
+import { RoughCalendar } from './components/newDashboard/RoughCalendar';
+import AboutP40 from "./components/AboutUs/aboutP40";
 
 function App() {
-
   return (
     <Router>
       <Routes>
-        <Route path = "/" element={<Home />} />
-        <Route path = "/dogs" element={<DogList />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/dogs" element={<DogList />} />
         <Route path="/dogs/:id" element={<DogProfile />} />
         <Route path="/new-dog" element={<NewDog />} />
         <Route path="/login" element={<Login />} />
@@ -36,24 +35,25 @@ function App() {
         <Route path="/marshal" element={<Marshal />} />
 
         <Route path="/marshal-dash" element={<MarshalDash />} />
-        <Route path="/walker-dash" element={<WalkerDash/>} />
-        <Route path="/calendar-dash" element={<CalendarPage/>} />
+        <Route path="/walker-dash" element={<WalkerDash />} />
+        <Route path="/calendar-dash" element={<CalendarPage />} />
 
-
-        <Route path="/marshal-report" element={<MarshalReport/>} />
-        <Route path="/walker-report" element={<WalkerReport/>} />
-        <Route path="/all-users" element={<AllUsers/>}/>
+        <Route path="/marshal-report" element={<MarshalReport />} />
+        <Route path="/walker-report" element={<WalkerReport />} />
+        <Route path="/all-users" element={<AllUsers />} />
         <Route path="/rough-calendar" element={<RoughCalendar />} />
+
+        {/* About P40 Route */}
+        <Route path="/aboutP40" element={<AboutP40 />} />  
+
         {/* Protected Admin Route */}
         <Route element={<AdminRoute />}>
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin-dash" element={<AdminDash />} />
-
-
         </Route>
       </Routes>
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;

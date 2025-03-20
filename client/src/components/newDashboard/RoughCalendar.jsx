@@ -1,144 +1,94 @@
-import { useState } from "react";
-import { Calendar, momentLocalizer } from "react-big-calendar";
-import moment from "moment";
-import "react-big-calendar/lib/css/react-big-calendar.css";
+import React, { useState } from "react";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import interactionPlugin from "@fullcalendar/interaction"; // Import for click interaction
 
-const localizer = momentLocalizer(moment);
+const predefinedDates = ["2025-03-20", "2025-03-21", "2025-03-22"]; // Available dates
+const availableTimeSlots = ["09:00 AM - 10:00 AM", "10:30 AM - 11:30 AM", "01:00 PM - 02:00 PM"];
 
-export const RoughCalendar = () => {
-  const [events, setEvents] = useState([
-    {
-      title: "Team Meeting",
-      start: new Date(2025, 2, 15, 10, 0), // March 15, 2025, 10:00 AM
-      end: new Date(2025, 2, 15, 11, 30), // March 15, 2025, 11:30 AM
-    },
-    {
-      title: "Lunch Break",
-      start: new Date(2025, 2, 15, 12, 0), // March 15, 2025, 12:00 PM
-      end: new Date(2025, 2, 15, 13, 0), // March 15, 2025, 1:00 PM
-    },
-  ]);
-
-  const [showModal, setShowModal] = useState(false);
+export default function RoughCalendar() {
   const [selectedDate, setSelectedDate] = useState(null);
-  const [title, setTitle] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
+  const [bookedSlots, setBookedSlots] = useState([]);
 
-  const handleSelectSlot = ({ start }) => {
-    setSelectedDate(start);
-    setShowModal(true);
+  // Handle date selection
+  const handleDateSelect = (info) => {
+    const clickedDate = info.startStr; // FullCalendar returns date as a string (YYYY-MM-DD)
+    if (predefinedDates.includes(clickedDate)) {
+      setSelectedDate(clickedDate);
+      setSelectedTime(""); // Reset selected time
+    } else {
+      alert("This date is not available for booking.");
+    }
   };
 
-  const handleAddEvent = () => {
-    if (!title || !startTime || !endTime || !selectedDate) {
-      alert("Please fill in all fields!");
-      return;
+  // Handle booking
+  const handleBooking = () => {
+    if (selectedDate && selectedTime) {
+      setBookedSlots([...bookedSlots, { date: selectedDate, time: selectedTime }]);
+      alert(`Booked ${selectedTime} on ${selectedDate}`);
+      setSelectedDate(null); // Close modal after booking
+      setSelectedTime("");
     }
-
-    const startDateTime = moment(selectedDate).set({
-      hour: moment(startTime, "HH:mm").hour(),
-      minute: moment(startTime, "HH:mm").minute(),
-    }).toDate();
-
-    const endDateTime = moment(selectedDate).set({
-      hour: moment(endTime, "HH:mm").hour(),
-      minute: moment(endTime, "HH:mm").minute(),
-    }).toDate();
-
-    if (endDateTime <= startDateTime) {
-      alert("End time must be after start time.");
-      return;
-    }
-
-    const newEvent = {
-      title,
-      start: startDateTime,
-      end: endDateTime,
-    };
-
-    setEvents([...events, newEvent]);
-    setShowModal(false);
-    setTitle("");
-    setStartTime("");
-    setEndTime("");
   };
 
   return (
-    <div className="p-6 bg-white shadow-lg rounded-lg">
-      <h2 className="text-xl font-bold text-gray-800 mb-4">Rough Calendar</h2>
-      <div className="h-[500px]">
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          selectable
-          onSelectSlot={handleSelectSlot}
-          defaultView="month"
-          views={["month", "week", "day"]}
-          style={{ height: "500px" }}
-          className="bg-gray-100 rounded-lg p-2"
+    <div className="flex flex-col items-center p-6">
+      <h2 className="text-xl font-bold mb-4">Dog Walk Booking Calendar</h2>
+
+      {/* Calendar Display */}
+      <div className="mt-6 w-full max-w-2xl">
+        <FullCalendar
+          plugins={[dayGridPlugin, interactionPlugin]} // Added interaction plugin
+          initialView="dayGridMonth"
+          selectable={true} // Allow date selection
+          select={handleDateSelect} // Use select instead of dateClick
+          events={bookedSlots.map((slot) => ({
+            title: "Booked",
+            start: slot.date,
+            display: "background", // Highlight date instead of showing text
+            backgroundColor: "rgba(0, 128, 0, 0.5)", // Light green highlight
+          }))}
+          dayCellContent={(e) => (
+            <div className="flex items-center justify-center w-full h-full">
+              {e.dayNumberText} {/* Keep normal date numbers */}
+            </div>
+          )}
         />
       </div>
 
-      {/* Modal for Adding Event */}
-      {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-[400px]">
-            <h2 className="text-xl font-semibold mb-4 text-center">
-              Add Event
-            </h2>
-            <p className="text-gray-700 mb-3 text-center">
-              Selected Date: <strong>{moment(selectedDate).format("MMM D, YYYY")}</strong>
-            </p>
-            <label className="block text-gray-700 font-medium mb-1">
-              Event Title:
-            </label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded-md mb-3"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
+      {/* Modal for Selecting Time Slot */}
+      {selectedDate && (
+        <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-80">
+            <h3 className="text-lg font-semibold mb-2">Select Time Slot</h3>
+            <p className="text-gray-600 mb-3">Booking for {selectedDate}</p>
 
-            <div className="flex flex-col sm:flex-row justify-between gap-4">
-              <div className="w-full">
-                <label className="block text-gray-700 font-medium mb-1">
-                  Start Time:
-                </label>
-                <input
-                  type="time"
-                  className="w-full p-2 border rounded-md"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                />
-              </div>
-              <div className="w-full">
-                <label className="block text-gray-700 font-medium mb-1">
-                  End Time:
-                </label>
-                <input
-                  type="time"
-                  className="w-full p-2 border rounded-md"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                />
-              </div>
-            </div>
+            {/* Time Slot Dropdown */}
+            <select
+              className="border p-2 w-full rounded mb-3"
+              value={selectedTime}
+              onChange={(e) => setSelectedTime(e.target.value)}
+            >
+              <option value="">Select a Time Slot</option>
+              {availableTimeSlots.map((slot) => (
+                <option key={slot} value={slot} disabled={bookedSlots.some((b) => b.date === selectedDate && b.time === slot)}>
+                  {slot} {bookedSlots.some((b) => b.date === selectedDate && b.time === slot) ? "(Booked)" : ""}
+                </option>
+              ))}
+            </select>
 
-            <div className="flex justify-between mt-6">
-              <button
-                onClick={() => setShowModal(false)}
-                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-              >
+            {/* Buttons */}
+            <div className="flex justify-between">
+              <button className="bg-gray-400 text-white px-4 py-2 rounded" onClick={() => setSelectedDate(null)}>
                 Cancel
               </button>
               <button
-                onClick={handleAddEvent}
-                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
+                disabled={!selectedTime}
+                onClick={handleBooking}
               >
-                Add Event
+                Confirm
               </button>
             </div>
           </div>
@@ -146,4 +96,4 @@ export const RoughCalendar = () => {
       )}
     </div>
   );
-};
+}

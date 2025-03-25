@@ -19,6 +19,9 @@ import { AdminDash } from './components/newDashboard/AdminDash';
 import { AllUsers } from './components/Users/AllUsers';
 import Profile from './components/profile/Profile';
 import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
+import AboutP40 from './components/AboutUs/aboutP40';
+import { ContactPage } from './components/Contact/ContactPage';
+
 
 
 
@@ -46,6 +49,11 @@ function App() {
         <Route path="/marshal-report" element={<MarshalReport/>} />
         <Route path="/walker-report" element={<WalkerReport/>} />
         <Route path="/all-users" element={<AllUsers/>}/>
+
+        <Route path="/about" element={<AboutP40/>} />
+        <Route path="/contact-page" element={<ContactPage/>} />
+ 
+        
         {/* <Route path="/rough-calendar" element={<RoughCalendar />}/> */}
 
 

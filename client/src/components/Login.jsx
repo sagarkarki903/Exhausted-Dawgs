@@ -1,10 +1,11 @@
 "use client"
 import { motion } from "framer-motion"
-import { PawPrint, Bone, Dog } from "lucide-react"
+import { PawPrint, Bone, Dog, MoveLeft } from "lucide-react"
 import { Link, useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { Footer } from "./NavAndFoot/Footer";
 import { useState, useEffect } from "react";
+import { Navbar } from "./NavAndFoot/Navbar";
 
 const fadeIn = {
   hidden: { opacity: 0, y: -20 },
@@ -84,6 +85,15 @@ const handleSubmit = async (e) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#f9fafb] to-[#f3f4f6] relative overflow-hidden">
+ <motion.div
+          className="flex gap-4 my-4 text-black px-4 py-2 w-56 items-center"
+          whileHover={{ scale: 1.03 }}
+        >
+          <MoveLeft />
+          <Link to="/" className="font-semibold text-xl hover:text-red-900">
+            Back to Home
+          </Link>
+        </motion.div>
       {pawPrints.map((style, index) => (
         <motion.div
           key={index}

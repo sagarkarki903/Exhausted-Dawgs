@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { motion} from "framer-motion"
 import { Heart, PawPrint, Bone } from "lucide-react"
 import { Navbar } from "./NavAndFoot/Navbar";
+import { NavUser } from "./NavAndFoot/NavUser";
+import { NavAdmin } from "./NavAndFoot/NavAdmin";
 import { Footer } from "./NavAndFoot/Footer";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
@@ -15,6 +17,9 @@ const fadeInUp = {
 const staggerChildren = {
   visible: { transition: { staggerChildren: 0.1 } },
 }
+
+
+
 
 
 export const Home = () => {
@@ -39,14 +44,49 @@ export const Home = () => {
       setDisplayCount(window.innerWidth < 1024 ? 4 : 6); // 4 for small screens, 6 for large
     };
 
+    
+
     updateDisplayCount();
     window.addEventListener("resize", updateDisplayCount);
     return () => window.removeEventListener("resize", updateDisplayCount);
   }, []);
 
+
+
+  //****************check if a user is logged in and is an admin or other*****************/
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [role, setRole] = useState(""); // Track user role
+  
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await axios.get("http://localhost:8080/auth/profile", {
+          withCredentials: true,
+        });
+        if (res.status === 200) {
+          setLoggedIn(true);
+          setRole(res.data.role); // Capture role from response
+        }
+      } catch (err) {
+        setLoggedIn(false);
+        setRole(""); // Reset role if not logged in
+      }
+    };
+  
+    checkAuth();
+  }, []);
+//**************************************************************** */
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-gray-900">
-      <Navbar />
+     {!loggedIn ? (
+          <Navbar />
+        ) : role === "Admin" ? (
+          <NavAdmin />
+        ) : (
+          <NavUser />
+        )}
+
       <main className="flex-1">
         <section className="py-20 relative overflow-hidden bg-neutral-100">
           <motion.div

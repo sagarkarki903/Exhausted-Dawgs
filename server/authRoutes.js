@@ -8,7 +8,7 @@ const router = express.Router();
 router.get("/profile", authenticateUser, async (req, res) => {
     try {
         const [users] = await pool.query(
-            "SELECT id, firstname, lastname, username, email, created_at, role, phone FROM users WHERE id = ?",
+            "SELECT id, firstname, lastname, username, email, created_at, role, phone, profile_pic FROM users WHERE id = ?",
             [req.user.id]
         );
 

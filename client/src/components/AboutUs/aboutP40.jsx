@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { PawPrint } from "lucide-react";
 import { Navbar } from "../NavAndFoot/Navbar";
+import { NavUser } from "../NavAndFoot/NavUser";
 import { Footer } from "../NavAndFoot/Footer";
+import axios from "axios"; 
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -14,9 +16,34 @@ const staggerChildren = {
 };
 
 const AboutP40 = () => {
+
+
+    //****************check if a user is logged in*****************/
+    const [loggedIn, setLoggedIn] = useState(false);
+
+    useEffect(() => {
+      const checkAuth = async () => {
+        try {
+          const res = await axios.get("http://localhost:8080/auth/profile", {
+            withCredentials: true,
+          });
+          if (res.status === 200) {
+            setLoggedIn(true);
+          }
+        } catch (err) {
+          setLoggedIn(false); // Not logged in
+        }
+      };
+    
+      checkAuth();
+    }, []);
+    //**************************************************************** */
+
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-200 text-black">
-      <Navbar className="bg-gray-700 text-gold" />
+      {/* <Navbar className="text-gold" /> */}
+      {loggedIn ? <NavUser /> : <Navbar />}
       <main className="flex-1">
         {/* Hero Section */}
         <section className="py-20 relative overflow-hidden bg-maroon-700 text-center text-gold border-b-8 border-gold">

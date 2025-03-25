@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Edit, Save, X, User, Home, Phone } from "lucide-react";
 import { NavUser } from "../NavAndFoot/NavUser";
 import { Footer } from "../NavAndFoot/Footer";
+
 import axios from "axios";
 
 const Profile = () => {
@@ -12,19 +13,19 @@ const Profile = () => {
   const [editedPhone, setEditedPhone] = useState("");
   const [editedRole, setEditedRole] = useState("");
   const [formattedDate, setFormattedDate] = useState("");
+  const [activeTab, setActiveTab] = useState(0); // 0 = first tab, 1 = second, etc.
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await axios.get("http://localhost:8080/auth/profile", {
-          withCredentials: true, // Ensures cookies (auth token) are sent
+          withCredentials: true,
         });
 
         setUser(response.data);
-        setEditedPhone(response.data.phone || ""); 
+        setEditedPhone(response.data.phone || "");
         setEditedRole(response.data.role || "");
 
-        // ✅ Safely format date
         if (response.data.created_at) {
           const date = new Date(response.data.created_at).toLocaleDateString("en-US", {
             year: "numeric",
@@ -44,7 +45,6 @@ const Profile = () => {
     fetchUser();
   }, []);
 
-  // Handle Save (Admin Updates User)
   const handleSave = async () => {
     try {
       const response = await axios.put(
@@ -64,8 +64,38 @@ const Profile = () => {
     }
   };
 
+  const renderTabContent = () => {
+    if (user?.role === "Admin") {
+      switch (activeTab) {
+        case 0:
+          return <p>Upcoming Walks for Admin</p>;
+        case 1:
+          return <p>Daily Reports section</p>;
+        case 2:
+          return <p>Notifications center</p>;
+        default:
+          return null;
+      }
+    } else {
+      switch (activeTab) {
+        case 0:
+          return <p>Your scheduled walks go here.</p>;
+        case 1:
+          return <p>Saved dogs / Favorites</p>;
+        case 2:
+          return <p>Your adoption applications</p>;
+        default:
+          return null;
+      }
+    }
+  };
+
   if (loading) return <p className="text-center text-gray-500 mt-5">Loading profile...</p>;
   if (error) return <p className="text-center text-red-500 mt-5">{error}</p>;
+
+  const tabs = user?.role === "Admin"
+    ? ["Upcoming Walks", "Daily Reports", "Notifications"]
+    : ["My Walks", "Favorites", "Applications"];
 
   return (
     <div className="min-h-screen bg-white">
@@ -75,10 +105,20 @@ const Profile = () => {
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
             {/* Profile Picture */}
             <div className="relative">
-              <div className="w-36 h-36 rounded-full bg-gray-200 flex items-center justify-center">
-                <span className="text-gray-400">+</span>
+              <div className="w-36 h-36 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                {user?.profile_pic ? (
+                  <img
+                    src={user.profile_pic}
+                    alt="Profile"
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <User className="w-16 h-16 text-gray-400" />
+                )}
               </div>
             </div>
+
+
 
             {/* Profile Info */}
             <div className="space-y-4">
@@ -87,13 +127,11 @@ const Profile = () => {
               </h1>
 
               <div className="flex flex-col space-y-2">
-                {/* Email */}
                 <div className="flex items-center text-gray-600">
                   <User className="h-5 w-5 mr-2" />
-                  {user ? user.email : "Email not available"}
+                  {user?.email}
                 </div>
 
-                {/* Phone */}
                 <div className="flex items-center text-gray-600">
                   <Phone className="h-5 w-5 mr-2" />
                   {isEditing ? (
@@ -108,7 +146,6 @@ const Profile = () => {
                   )}
                 </div>
 
-                {/* Role */}
                 <div className="flex items-center text-gray-600">
                   <User className="h-5 w-5 mr-2" />
                   {isEditing ? (
@@ -125,14 +162,12 @@ const Profile = () => {
                   )}
                 </div>
 
-                {/* Joined Date */}
                 <div className="flex items-center text-gray-600">
                   <Home className="h-5 w-5 mr-2" />
                   Joined {formattedDate}
                 </div>
               </div>
 
-              {/* Admin Edit Button */}
               {user?.role === "Admin" && (
                 <div className="flex gap-3">
                   {isEditing ? (
@@ -167,40 +202,23 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* ✅ Tabs Section (Re-Added) */}
+        {/* Tabs */}
         <div className="flex border rounded-md mb-6">
-          <button className="flex-1 py-3 px-4 font-medium bg-gray-100">Profile Details</button>
-          <button className="flex-1 py-3 px-4 text-gray-600">Saved Dogs</button>
-          <button className="flex-1 py-3 px-4 text-gray-600">Applications</button>
+          {tabs.map((tab, index) => (
+            <button
+              key={index}
+              className={`flex-1 py-3 px-4 font-medium cursor-pointer ${
+                activeTab === index ? "bg-gray-100 text-black" : "text-gray-600"
+              }`}
+              onClick={() => setActiveTab(index)}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
 
-        {/* Adoption Preferences */}
-        <div className="border rounded-lg p-6">
-          <h2 className="text-xl font-bold mb-6 flex items-center">
-            <User className="mr-2" size={20} />
-            Adoption Preferences
-          </h2>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Preferred Dog Size */}
-            <div>
-              <h3 className="font-medium mb-3">Preferred Dog Size</h3>
-              <div className="flex gap-2">
-                <span className="bg-amber-300 px-4 py-1 rounded-full text-sm">Medium</span>
-                <span className="bg-amber-300 px-4 py-1 rounded-full text-sm">Large</span>
-              </div>
-            </div>
-
-            {/* Preferred Dog Age */}
-            <div>
-              <h3 className="font-medium mb-3">Preferred Dog Age</h3>
-              <div className="flex gap-2">
-                <span className="bg-amber-300 px-4 py-1 rounded-full text-sm">Young</span>
-                <span className="bg-amber-300 px-4 py-1 rounded-full text-sm">Adult</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Tab Content */}
+        <div className="border rounded-lg p-6">{renderTabContent()}</div>
       </div>
 
       <Footer />

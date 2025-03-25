@@ -25,12 +25,11 @@ import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRou
 
 
 function App() {
-
   return (
     <Router>
       <Routes>
-        <Route path = "/" element={<Home />} />
-        <Route path = "/dogs" element={<DogList />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/dogs" element={<DogList />} />
         <Route path="/dogs/:id" element={<DogProfile />} />
         <Route path="/new-dog" element={<NewDog />} />
         <Route path="/login" element={<Login />} />
@@ -70,7 +69,7 @@ function App() {
 
       </Routes>
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;

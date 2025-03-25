@@ -39,6 +39,7 @@ export const Navbar = () => {
           <a className="font-semibold hover:text-red-900 transition-colors" href="/dogs">Dogs</a>
           <a className="font-semibold hover:text-red-900 transition-colors" href="#process">Schedule</a>
           <a className="font-semibold hover:text-red-900 transition-colors" href="#contact">Contact</a>
+          <a className="font-semibold hover:text-red-900 transition-colors" href=" /aboutP40">About P40</a>
           <Link to="/login">
             <button className="font-semibold hover:bg-yellow-400 transition-colors bg-yellow-500 px-4 py-2 rounded-md">
               Sign In

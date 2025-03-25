@@ -17,6 +17,9 @@ import { MarshalReport } from './components/reports/MarshalReport';
 import { WalkerReport } from './components/reports/WalkerReport';
 import { AdminDash } from './components/newDashboard/AdminDash';
 import { AllUsers } from './components/Users/AllUsers';
+import Profile from './components/profile/Profile';
+import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
+
 
 
 
@@ -45,13 +48,26 @@ function App() {
         <Route path="/walker-report" element={<WalkerReport/>} />
         <Route path="/all-users" element={<AllUsers/>}/>
         {/* <Route path="/rough-calendar" element={<RoughCalendar />}/> */}
+
+
         {/* Protected Admin Route */}
-        <Route element={<AdminRoute />}>
+        {/* <Route element={<AdminRoute />}>
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin-dash" element={<AdminDash />} />
+          
+        </Route> */}
 
 
-        </Route>
+      {/* 🔒 Protect Profile Route */}
+      <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
       </Routes>
     </Router>
   )

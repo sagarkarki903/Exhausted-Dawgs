@@ -65,14 +65,15 @@ const handleSubmit = async (e) => {
     
     console.log("User Role After Login:", user.role); // Debugging
      // Navigate to Home Page after successful login
-     if (user.role === "Admin") {
-        navigate("/admin-dash"); // Redirect Admins
-      } else if (user.role === "Marshal") {
-        navigate("/marshal-dash"); // Redirect Marshal
-      }
-      else {
-        navigate("/walker-dash"); // Redirect Walkers to home page
-      }
+    //  if (user.role === "Admin") {
+    //     navigate("/admin-dash"); // Redirect Admins
+    //   } else if (user.role === "Marshal") {
+    //     navigate("/marshal-dash"); // Redirect Marshal
+    //   }
+    //   else {
+    //     navigate("/walker-dash"); // Redirect Walkers to home page
+    //   }
+    navigate("/profile");
 
   } catch (err) {
     setError(err.response?.data?.message || "Login failed. Please try again.");

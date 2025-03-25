@@ -11,6 +11,11 @@ const newscheduleRouter = require('./newschedule');
 const reportRouter = require("./reportserver/report-list");
 const pool = require('./db');
 
+//for login authorization added by Sagar on 3/20/2025 3: 46am
+const authRouter = require("./authRoutes")
+
+
+
 
 // Load environment variables from the .env file
 dotenv.config();
@@ -44,6 +49,9 @@ app.use('/schedule', scheduleRouter);
 app.use('/newschedule', newscheduleRouter); 
 
 app.use("/report", reportRouter);
+
+app.use("/auth", authRouter)
+
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

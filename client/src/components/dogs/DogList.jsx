@@ -69,21 +69,19 @@ export const DogList = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {dogs.map((dog, index) => {
             // Use the profile picture if available, otherwise fallback to default image
-            const profilePic = dog.profile_picture
-              ? `http://127.0.0.1:8080/uploads/${dog.profile_picture}`
-              : "/dog2.jpeg"; // Default image
+            const profilePic = dog.profile_picture_url || "/dog2.jpeg"; // Default image
 
             return (
               <motion.div
                 key={index}
-                className="rounded-lg border border-gray-300 shadow-md transition-shadow hover:shadow-2xl bg-background/80 backdrop-blur-sm"
+                className="rounded-lg border border-gray-300 shadow-md transition-shadow hover:shadow-2xl"
                 whileHover={{ scale: 1.03 }}
               >
                 {/* Display profile picture */}
                 <img
                   src={profilePic}
                   alt={dog.name}
-                  className="p-4 h-96 w-full rounded-t-lg object-cover"
+                  className="h-70 w-full object-cover rounded-t-lg mx-auto"
                   onError={(e) => (e.target.src = "/dog2.jpeg")} // Handle broken image links
                 />
 

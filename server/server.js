@@ -16,9 +16,6 @@ const pool = require('./db');
 //for login authorization added by Sagar on 3/20/2025 3: 46am
 const authRouter = require("./authRoutes")
 
-//for photo uploads
-// const uploadRoutes = require("./uploadRoute/upload");
-
 
 
 
@@ -58,9 +55,6 @@ app.use("/report", reportRouter);
 app.use("/auth", authRouter);
 
 app.use("/calendar", calendarRouter);
-
-
-// app.use("/upload", uploadRoutes);
 
 
 

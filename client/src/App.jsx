@@ -21,6 +21,7 @@ import Profile from './components/profile/Profile';
 import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRoute
 import AboutP40 from './components/AboutUs/aboutP40';
 import { ContactPage } from './components/Contact/ContactPage';
+import RoughCalendar from './components/newDashboard/RoughCalendar';
 
 
 
@@ -53,8 +54,7 @@ function App() {
         <Route path="/about" element={<AboutP40/>} />
         <Route path="/contact-page" element={<ContactPage/>} />
  
-        
-        {/* <Route path="/rough-calendar" element={<RoughCalendar />}/> */}
+        <Route path='/rough-calendar' element={<RoughCalendar />} />
 
 
         {/* Protected Admin Route */}

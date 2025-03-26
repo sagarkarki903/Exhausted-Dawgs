@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Edit, Save, X, User, Home, Phone } from "lucide-react";
+import { NavAdmin } from "../NavAndFoot/NavAdmin";
 import { NavUser } from "../NavAndFoot/NavUser";
 import { Footer } from "../NavAndFoot/Footer";
 
@@ -99,7 +100,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <NavUser />
+      {user?.role === "Admin" ? <NavAdmin /> : <NavUser />}
       <div className="max-w-3xl mx-auto pb-10">
         <div className="py-8">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">

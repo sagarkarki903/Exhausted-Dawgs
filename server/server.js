@@ -9,6 +9,8 @@ const logsignRouter = require('./logsign');
 const scheduleRouter = require('./schedule');
 const newscheduleRouter = require('./newschedule');
 const reportRouter = require("./reportserver/report-list");
+const calendarRouter = require('./calendar/calendar'); // adjust the path if needed
+
 const pool = require('./db');
 
 //for login authorization added by Sagar on 3/20/2025 3: 46am
@@ -53,7 +55,10 @@ app.use('/newschedule', newscheduleRouter);
 
 app.use("/report", reportRouter);
 
-app.use("/auth", authRouter)
+app.use("/auth", authRouter);
+
+app.use("/calendar", calendarRouter);
+
 
 // app.use("/upload", uploadRoutes);
 

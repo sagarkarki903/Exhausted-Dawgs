@@ -105,7 +105,7 @@ export const NavAdmin = () => {
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/all-users">Users</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/dogs">Dogs</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="#">Gallery</Link>
-          <Link className="font-semibold hover:text-red-900 transition-colors" to="/calendar-dash">Schedule</Link>
+          <Link className="font-semibold hover:text-red-900 transition-colors" to="/rough-calendar">Schedule</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/admin-dash">Reports</Link>
           {/* <Link className="font-semibold hover:text-red-900 transition-colors" to="/my-walks">My Walks</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/adopt">Adopt</Link> */}
@@ -167,7 +167,7 @@ export const NavAdmin = () => {
               className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 border border-gray-300"
               onClick={(e) => e.stopPropagation()} // Prevent premature closing
             >
-              <Link to="/schedule">
+              <Link to="/rough-calendar">
                 <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
                   Schedule
                 </button>

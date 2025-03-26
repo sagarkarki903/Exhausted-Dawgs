@@ -5,7 +5,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { Footer } from "./NavAndFoot/Footer";
 import { useState, useEffect } from "react";
-import { Navbar } from "./NavAndFoot/Navbar";
 
 const fadeIn = {
   hidden: { opacity: 0, y: -20 },

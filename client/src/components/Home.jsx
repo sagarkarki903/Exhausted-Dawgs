@@ -18,10 +18,6 @@ const staggerChildren = {
   visible: { transition: { staggerChildren: 0.1 } },
 }
 
-
-
-
-
 export const Home = () => {
 
   const navigate = useNavigate();
@@ -41,7 +37,7 @@ export const Home = () => {
    // Handle responsive display count
    useEffect(() => {
     const updateDisplayCount = () => {
-      setDisplayCount(window.innerWidth < 1024 ? 4 : 6); // 4 for small screens, 6 for large
+      setDisplayCount(window.innerWidth < 1024 ? 2 : 4); // 4 for small screens, 6 for large
     };
 
     
@@ -67,7 +63,7 @@ export const Home = () => {
           setLoggedIn(true);
           setRole(res.data.role); // Capture role from response
         }
-      } catch (err) {
+      } catch {
         setLoggedIn(false);
         setRole(""); // Reset role if not logged in
       }
@@ -180,14 +176,14 @@ export const Home = () => {
             >
               Available Dogs
             </motion.h2>
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {dogs.slice(0, displayCount).map((dog, index) => (
         <motion.div key={index} variants={fadeInUp} initial="hidden" animate="visible" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.9 }}>
           <div className="rounded-lg bg-white border border-gray-300 shadow-md transition-shadow hover:shadow-2xl">
             <img
-              src={`http://127.0.0.1:8080/uploads/${dog.profile_picture}`}
+              src={dog.profile_picture_url || "/dog2.jpeg"}
               alt={dog.name}
-              className="p-4 h-96 w-full rounded-t-lg object-cover"
+              className="h-70 w-full rounded-t-lg object-cover"
             />
             <div className="p-4">
               <h3 className="text-lg font-semibold">{dog.name}</h3>

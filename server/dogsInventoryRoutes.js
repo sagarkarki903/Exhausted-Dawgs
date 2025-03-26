@@ -1,28 +1,10 @@
 
 const express = require('express');
-const multer = require("multer");
 const pool = require("./db.js") //imports mysql pool
 const router = express.Router();
-const fs = require("fs");
-const path = require("path");
-
-// Create directory for storing images if it doesn't exist
-const uploadDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer storage configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-
-const upload = multer({ storage });
+const cloudinary = require('./config/cloudinary');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' }); // Temporary storage before uploading to Cloudinary
 
 // GET /dogs - Retrieve all dog records
 router.get('/', async (req, res) => {
@@ -52,7 +34,7 @@ router.get('/:id', async (req, res) => {
 // POST /dogs - Create a new dog record
 router.post('/', async (req, res) => {
   try {
-    const { name, breed, size, age, healthIssues, status, demeanor, notes, imageUrl } = req.body;
+    const { name, breed, size, age, healthIssues, status, demeanor, notes } = req.body;
     
     // Validate required fields
     if (!name || age === undefined) {
@@ -66,9 +48,9 @@ router.post('/', async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO dogs (name, breed, size, age, health_issues, status, demeanor, notes, image_url)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [name, breed, size, parsedAge, healthIssues, status, demeanor, notes, imageUrl]
+      `INSERT INTO dogs (name, breed, size, age, health_issues, status, demeanor, notes)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [name, breed, size, parsedAge, healthIssues, status, demeanor, notes]
     );
     res.status(201).json({ id: result.insertId, message: 'Dog created successfully' });
   } catch (err) {
@@ -80,7 +62,7 @@ router.post('/', async (req, res) => {
 // PUT /dogs/:id - Update an existing dog record
 router.put('/:id', async (req, res) => {
   try {
-    const { name, breed, size, age, healthIssues, status, demeanor, notes, imageUrl } = req.body;
+    const { name, breed, size, age, healthIssues, status, demeanor, notes} = req.body;
    
     // Get the existing age if not provided in the request
     let parsedAge = age;
@@ -99,9 +81,9 @@ router.put('/:id', async (req, res) => {
     }
         
     const [result] = await pool.query(
-      `UPDATE dogs SET name = ?, breed = ?, size = ?, age = ?, health_issues = ?, status = ?, demeanor = ?, notes = ?, image_url = ?
+      `UPDATE dogs SET name = ?, breed = ?, size = ?, age = ?, health_issues = ?, status = ?, demeanor = ?, notes = ?
        WHERE id = ?`,
-      [name, breed, size, parsedAge, healthIssues, status, demeanor, notes, imageUrl, req.params.id]
+      [name, breed, size, parsedAge, healthIssues, status, demeanor, notes, req.params.id]
     );
     
     if (result.affectedRows === 0) {
@@ -131,111 +113,124 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Upload multiple images
-router.post("/:id/upload", upload.array("images", 5), async (req, res) => {
-  const dogId = req.params.id;
-  const imagePaths = req.files.map((file) => file.filename);
-
+// GET /dogs/:id/images - Retrieve all images for a specific dog
+router.get('/:id/images', async (req, res) => {
   try {
-      // Fetch existing images
-      const [dog] = await pool.query("SELECT images FROM dogs WHERE id = ?", [dogId]);
+    const { id } = req.params;
 
-      let existingImages = [];
+    // Retrieve image URLs from the database
+    const [images] = await pool.query('SELECT image_url FROM dog_images WHERE dog_id = ?', [id]);
 
-      // ✅ Ensure `images` is always an array (prevent JSON errors)
-      if (dog.length && dog[0].images) {
-          try {
-              existingImages = JSON.parse(dog[0].images);
-              if (!Array.isArray(existingImages)) {
-                  existingImages = [];
-              }
-          } catch (error) {
-              console.error("Error parsing images JSON:", error);
-              existingImages = []; // Reset to empty array on error
-          }
-      }
-
-      // ✅ Append new images to existing ones
-      const updatedImages = [...existingImages, ...imagePaths];
-
-      // ✅ Update the database with merged images
-      await pool.query("UPDATE dogs SET images = ? WHERE id = ?", [JSON.stringify(updatedImages), dogId]);
-
-      res.json({ success: true, images: updatedImages });
+    res.status(200).json(images);
   } catch (error) {
-      console.error("Error uploading images:", error);
-      res.status(500).json({ error: "Error uploading images" });
+    console.error('Error retrieving images:', error);
+    res.status(500).json({ error: 'Failed to retrieve images' });
   }
 });
 
-
-
-router.put("/:id/profile-picture", async (req, res) => {
-  const { profilePicture } = req.body;
-  const dogId = req.params.id;
-
+// POST /dogs/:id/upload - Upload an image for a specific dog
+router.post('/:id/upload', upload.single('image'), async (req, res) => {
   try {
-      await pool.query("UPDATE dogs SET profile_picture = ? WHERE id = ?", [profilePicture, dogId]);
+    const { path } = req.file;
+    const { id } = req.params;
 
-      res.json({ success: true, profilePicture });
+    // Check the current number of images for the dog
+    const [images] = await pool.query('SELECT image_url FROM dog_images WHERE dog_id = ?', [id]);
+    if (images.length >= 5) {
+      return res.status(400).json({ error: 'Maximum of 5 images allowed per dog.' });
+    }
+
+    // Upload image to Cloudinary in the dog's specific folder
+    const result = await cloudinary.uploader.upload(path, {
+      folder: `dog_profiles/${id}`,
+      public_id: `${Date.now()}`,
+    });
+
+    // Store image URL in the database
+    await pool.query('INSERT INTO dog_images (dog_id, image_url) VALUES (?, ?)', [id, result.secure_url]);
+
+    res.status(200).json({ imageUrl: result.secure_url });
   } catch (error) {
-      console.error("Error setting profile picture:", error);
-      res.status(500).json({ error: "Error setting profile picture" });
+    console.error('Error uploading image:', error);
+    res.status(500).json({ error: 'Image upload failed' });
   }
 });
 
-
-
-// Delete an image
-router.delete("/:id/image/:imageName", async (req, res) => {
-  const { id, imageName } = req.params;
-
+// PUT /dogs/:id/profile-picture - Set profile picture for a specific dog
+router.put('/:id/profile-picture', async (req, res) => {
   try {
-      // Fetch existing images from the database
-      const [dog] = await pool.query("SELECT images, profile_picture FROM dogs WHERE id = ?", [id]);
+    const { id } = req.params;
+    const { imageUrl } = req.body;
 
-      if (!dog.length) {
-          return res.status(404).json({ error: "Dog not found" });
-      }
+    // Update the dog's profile picture URL in the database
+    await pool.query('UPDATE dogs SET profile_picture_url = ? WHERE id = ?', [imageUrl, id]);
 
-      let existingImages = [];
-      if (dog[0].images) {
-          try {
-              existingImages = JSON.parse(dog[0].images);
-              if (!Array.isArray(existingImages)) {
-                  existingImages = [];
-              }
-          } catch (error) {
-              console.error("Error parsing images JSON:", error);
-              existingImages = [];
-          }
-      }
-
-      // Remove the image from the array
-      const updatedImages = existingImages.filter(img => img !== imageName);
-
-      // If the deleted image was the profile picture, reset it to NULL
-      let newProfilePicture = dog[0].profile_picture;
-      if (dog[0].profile_picture === imageName) {
-          newProfilePicture = null;
-      }
-
-      // ✅ Update the database
-      await pool.query("UPDATE dogs SET images = ?, profile_picture = ? WHERE id = ?", 
-                       [JSON.stringify(updatedImages), newProfilePicture, id]);
-
-      // ✅ Delete the actual file from `uploads/` folder
-      const imagePath = path.join(__dirname, "uploads", imageName);
-      if (fs.existsSync(imagePath)) {
-          fs.unlinkSync(imagePath);
-      }
-
-      res.json({ success: true, images: updatedImages, profilePicture: newProfilePicture });
-
+    res.status(200).json({ message: 'Profile picture updated successfully.' });
   } catch (error) {
-      console.error("Error deleting image:", error);
-      res.status(500).json({ error: "Error deleting image" });
+    console.error('Error setting profile picture:', error);
+    res.status(500).json({ error: 'Failed to set profile picture' });
   }
 });
+
+// DELETE /dogs/:id/images?imageUrl=...
+router.delete('/:id/images', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { imageUrl } = req.query;
+    if (!imageUrl) {
+      return res.status(400).json({ error: 'imageUrl query parameter is required' });
+    }
+
+    // Retrieve the image record from the database using image_url
+    const [rows] = await pool.query('SELECT image_url FROM dog_images WHERE dog_id = ? AND image_url = ?', [id, imageUrl]);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Image not found' });
+    }
+
+    // Extract the public_id from the image URL
+    const publicId = getPublicIdFromUrl(imageUrl);
+    if (!publicId) {
+      return res.status(500).json({ error: 'Could not determine public_id from URL' });
+    }
+
+    // Delete the image from Cloudinary
+    await cloudinary.uploader.destroy(publicId);
+
+    // Delete the image record from the database
+    await pool.query('DELETE FROM dog_images WHERE dog_id = ? AND image_url = ?', [id, imageUrl]);
+
+    res.json({ message: 'Image deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting image:', error);
+    res.status(500).json({ error: 'Failed to delete image' });
+  }
+});
+
+// Helper function: Extract Cloudinary public_id from image URL
+function getPublicIdFromUrl(url) {
+  try {
+    // Example URL:
+    // https://res.cloudinary.com/your_cloud_name/image/upload/v1742960744/dog_profiles/19/1742960743930.png
+    let parts = url.split('/upload/');
+    if (parts.length < 2) return null;
+    let remainder = parts[1]; // "v1742960744/dog_profiles/19/1742960743930.png"
+    // Remove version part if present
+    let segments = remainder.split('/');
+    if (segments[0].startsWith('v')) {
+      segments.shift();
+    }
+    let pathAndFile = segments.join('/'); // "dog_profiles/19/1742960743930.png"
+    // Remove file extension to get the public_id
+    const dotIndex = pathAndFile.lastIndexOf('.');
+    if (dotIndex !== -1) {
+      return pathAndFile.substring(0, dotIndex);
+    }
+    return pathAndFile;
+  } catch (err) {
+    console.error('Error extracting public id from url:', err);
+    return null;
+  }
+}
+
 
 module.exports = router;

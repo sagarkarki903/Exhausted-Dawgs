@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 
 export const NewDog = () => {
@@ -13,7 +13,6 @@ export const NewDog = () => {
     status: '',
     demeanor: '',
     notes: '',
-    imageUrl: ''
   });
   const navigate = useNavigate();
 

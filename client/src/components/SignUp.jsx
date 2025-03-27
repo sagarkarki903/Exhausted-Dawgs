@@ -247,8 +247,8 @@ const handleChange = (e) => {
                   className="w-full border p-2 rounded bg-white"
                 >
                   <option value="Walker">Walker</option>
-                  <option value="Marshal">Marshal</option>
-                  <option value="Admin">Admin</option>
+                  {/* <option value="Marshal">Marshal</option>
+                  <option value="Admin">Admin</option> */}
                 </select>
               <motion.button
                     type="submit"

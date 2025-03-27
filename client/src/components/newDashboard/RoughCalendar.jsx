@@ -118,8 +118,16 @@ export default function RoughCalendar() {
     const dateStr = arg.dateStr;
     setSelectedDate(dateStr);
     try {
-      const res = await axios.get(`http://localhost:8080/calendar/sessions/${dateStr}`);
-      setSessionDetails(res.data);
+      const res = await axios.get(`http://localhost:8080/calendar/sessions/${dateStr}`, 
+        {  withCredentials: true,
+      });
+      const sortedSessions = res.data.sort((a, b) => {
+        const timeA = new Date(`1970-01-01T${a.time}`);
+        const timeB = new Date(`1970-01-01T${b.time}`);
+        return timeA - timeB;
+      });
+      setSessionDetails(sortedSessions);
+      
     } catch (err) {
       console.error("Error fetching session details:", err);
       setSessionDetails([]);
@@ -154,6 +162,11 @@ export default function RoughCalendar() {
     const day = date.getUTCDay(); // ✅ Use getUTCDay() to avoid timezone confusion
     return day === 0 || day === 6;
   };
+  
+//to prevent flickering
+  // if (!role) {
+  //   return <div className="p-6">Loading...</div>;
+  // }
   
 
   return (
@@ -378,109 +391,115 @@ export default function RoughCalendar() {
                 </div>
               )}
 
-              {/* Sessions */}
-              {sessionDetails.length > 0 ? (
-                sessionDetails.map((session, idx) => (
-                  <div key={idx} className="mb-4 border p-4 rounded bg-white shadow-sm">
-                    <p><strong>Date:</strong> {new Date(session.date).toLocaleDateString("en-US")}</p>
-                    <p><strong>Time:</strong> {session.time}</p>
-                    <p><strong>Marshal:</strong> {session.marshal_name}</p>
-                    <p><strong>Walkers Booked:</strong> {session.walkers_booked}</p>
-                    {loggedIn && role === "Walker" && (
+{/* Sessions */}
+{!loggedIn ? (
+  <p className="text-blue-600 font-semibold mt-3">
+    Log in to view session details
+  </p>
+) : sessionDetails.length > 0 ? (
+  sessionDetails.map((session, idx) => (
+    <div key={idx} className="mb-4 border p-4 rounded bg-white shadow-sm">
+      <p><strong>Date:</strong> {new Date(session.date).toLocaleDateString("en-US")}</p>
+      <p><strong>Time:</strong> {session.time}</p>
+      <p><strong>Marshal:</strong> {session.marshal_name}</p>
+      <p><strong>Walkers Booked:</strong> {session.walkers_booked}</p>
 
-                      <>
-                        {session.walkers_booked >= 4 ? (
-                          <p className="mt-3 text-sm font-semibold text-red-600">Slots full</p>
-                        ) : bookingScheduleId === session.id ? (
-                          <form
-                            onSubmit={async (e) => {
-                              e.preventDefault();
-                              try {
-                                await axios.post(
-                                  "http://localhost:8080/calendar/book-slot",
-                                  {
-                                    schedule_id: session.id,
-                                    dog_id: walkerDogId,
-                                  },
-                                  { withCredentials: true }
-                                );
-                                alert("Slot booked successfully!");
-                                setWalkerDogId("");
-                                setBookingScheduleId(null);
-                                handleDateClick({ dateStr: selectedDate }); // Refresh sessions
+      {role === "Walker" && (
+        <>
+          {session.user_booked ? (
+            <p className="mt-3 text-green-600 font-semibold">You Booked this Slot</p>
+          ) : session.walkers_booked >= 4 ? (
+            <p className="mt-3 text-sm font-semibold text-red-600">Slots full</p>
+          ) : bookingScheduleId === session.id ? (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                try {
+                  await axios.post(
+                    "http://localhost:8080/calendar/book-slot",
+                    {
+                      schedule_id: session.id,
+                      dog_id: walkerDogId,
+                    },
+                    { withCredentials: true }
+                  );
+                  alert("Slot booked successfully!");
+                  setWalkerDogId("");
+                  setBookingScheduleId(null);
+                  handleDateClick({ dateStr: selectedDate });
 
-                                  // Refresh red background dates after booking
-                              const res = await axios.get("http://localhost:8080/calendar/sessions");
-                              const uniqueDates = [
-                                ...new Set(
-                                  res.data
-                                    .map((s) => {
-                                      const parsedDate = new Date(s);
-                                      return isNaN(parsedDate.getTime()) ? null : parsedDate.toISOString().split("T")[0];
-                                    })
-                                    .filter(Boolean)
-                                ),
-                              ];
-                              setAvailableDates(uniqueDates);
+                  const res = await axios.get("http://localhost:8080/calendar/sessions");
+                  const uniqueDates = [
+                    ...new Set(
+                      res.data
+                        .map((s) => {
+                          const parsedDate = new Date(s);
+                          return isNaN(parsedDate.getTime()) ? null : parsedDate.toISOString().split("T")[0];
+                        })
+                        .filter(Boolean)
+                    ),
+                  ];
+                  setAvailableDates(uniqueDates);
+                } catch (err) {
+                  const msg = err.response?.data?.message;
+                  if (msg === "You have already booked this session") {
+                    alert("You already booked this session.");
+                  } else if (msg === "This session is already full") {
+                    alert("Session is full.");
+                  } else if (msg === "This dog is already booked for this time") {
+                    alert("This dog is already booked at that time.");
+                  } else {
+                    alert(msg || "Failed to book slot.");
+                  }
+                }
+              }}
+              className="mt-3 space-y-2"
+            >
+              <input
+                type="number"
+                placeholder="Enter Dog ID"
+                value={walkerDogId}
+                onChange={(e) => setWalkerDogId(e.target.value)}
+                className="w-full border px-2 py-1 rounded"
+                required
+              />
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 text-sm"
+                >
+                  Confirm Booking
+                </button>
+                <button
+                  type="button"
+                  className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500 text-sm"
+                  onClick={() => {
+                    setBookingScheduleId(null);
+                    setWalkerDogId("");
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            !session.user_booked && (
+              <button
+                className="mt-3 bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700"
+                onClick={() => setBookingScheduleId(session.id)}
+              >
+                Book this Slot
+              </button>
+            )
+          )}
+        </>
+      )}
+    </div>
+  ))
+) : (
+  <p className="text-gray-500 text-sm">No sessions booked for this date.</p>
+)}
 
-                              } catch (err) {
-                                const msg = err.response?.data?.message;
-                                if (msg === "You have already booked this session") {
-                                  alert("You already booked this session.");
-                                } else if (msg === "This session is already full") {
-                                  alert("Session is full.");
-                                } else if (msg === "This dog is already booked for this time") {
-                                  alert("This dog is already booked at that time.");
-                                } else {
-                                  alert(msg || "Failed to book slot.");
-                                }
-                              }
-                            }}
-                            className="mt-3 space-y-2"
-                          >
-                            <input
-                              type="number"
-                              placeholder="Enter Dog ID"
-                              value={walkerDogId}
-                              onChange={(e) => setWalkerDogId(e.target.value)}
-                              className="w-full border px-2 py-1 rounded"
-                              required
-                            />
-                            <div className="flex gap-2">
-                              <button
-                                type="submit"
-                                className="bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 text-sm"
-                              >
-                                Confirm Booking
-                              </button>
-                              <button
-                                type="button"
-                                className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500 text-sm"
-                                onClick={() => {
-                                  setBookingScheduleId(null);
-                                  setWalkerDogId("");
-                                }}
-                              >
-                                Cancel
-                              </button>
-                            </div>
-                          </form>
-                        ) : (
-                          <button
-                            className="mt-3 bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700"
-                            onClick={() => setBookingScheduleId(session.id)}
-                          >
-                            Book this Slot
-                          </button>
-                        )}
-                      </>
-                    )}
-
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-500 text-sm">No sessions booked for this date.</p>
-              )}
             </>
           )}
         </div>

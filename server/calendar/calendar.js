@@ -23,9 +23,12 @@ router.get("/sessions", async (req, res) => {
   
 
 
+
 // GET detailed walk sessions for a specific date
-router.get("/sessions/:date", async (req, res) => {
+router.get("/sessions/:date", authenticateUser, async (req, res) => {
+
   const date = req.params.date;
+  const userId = req.user?.id || null;
 
   try {
     const [rows] = await pool.query(
@@ -39,7 +42,14 @@ router.get("/sessions/:date", async (req, res) => {
           SELECT COUNT(*) 
           FROM walker_schedule w 
           WHERE w.schedule_id = m.id
-        ) AS walkers_booked
+        ) AS walkers_booked,
+        ${
+          userId
+            ? `(SELECT COUNT(*) > 0 FROM walker_schedule w WHERE w.schedule_id = m.id AND w.user_id = ${pool.escape(
+                userId
+              )}) AS user_booked`
+            : `false AS user_booked`
+        }
       FROM marshal_schedule m
       JOIN users u ON m.created_by = u.id
       WHERE DATE(m.date) = ?`,
@@ -52,6 +62,7 @@ router.get("/sessions/:date", async (req, res) => {
     res.status(500).json({ message: "Failed to fetch session details" });
   }
 });
+
 
   
 // POST to open a new walk session
@@ -202,6 +213,20 @@ router.post("/book-slot", authenticateUser, async (req, res) => {
     if (count >= 4) {
       return res.status(409).json({ message: "This session is already full" });
     }
+
+    // Check if the user already has a booking at the same date and time
+      const [timeConflict] = await pool.query(
+          `SELECT ws.* 
+          FROM walker_schedule ws
+          JOIN marshal_schedule ms ON ws.schedule_id = ms.id
+          WHERE ms.date = ? AND ms.time = ? AND ws.user_id = ?`,
+          [session.date, session.time, userId]
+        );
+
+        if (timeConflict.length > 0) {
+          return res.status(409).json({ message: "You already have a session booked at this time." });
+        }
+
 
     // Insert the booking
     await pool.query(

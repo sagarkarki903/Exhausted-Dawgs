@@ -76,7 +76,7 @@ res.json(Object.values(sessions));
           ms.time,
           d.name AS dog_name,
           CONCAT(wu.firstname, ' ', wu.lastname) AS walker_name,
-          CONCAT(mu.firstname, ' ', mu.lastname) AS marshal_name
+          CONCAT(mu.firstname, ' ', mu.lastname) AS marshal_name, ws.checked_in
         FROM marshal_schedule ms
         JOIN walker_schedule ws ON ms.id = ws.schedule_id
         JOIN users wu ON ws.user_id = wu.id
@@ -146,6 +146,76 @@ res.json(Object.values(sessions));
       res.status(500).json({ message: "Failed to fetch marshal walks" });
     }
   });
+
+
+
+  router.put("/walker/check-in/:scheduleId", authenticateUser, async (req, res) => {
+    const userId = req.user?.id;
+    const userRole = req.user?.role;
+    const scheduleId = req.params.scheduleId;
+    const { code } = req.body;
+  
+    const hardcodedCode = "sagar"; // 👉 Hardcoded code
+  
+    if (userRole !== "Walker") {
+      return res.status(403).json({ message: "Only walkers can check in." });
+    }
+  
+    if (code !== hardcodedCode) {
+      return res.status(401).json({ message: "Invalid check-in code." });
+    }
+  
+    try {
+      const [result] = await pool.query(
+        `UPDATE walker_schedule
+         SET checked_in = TRUE
+         WHERE schedule_id = ? AND user_id = ?`,
+        [scheduleId, userId]
+      );
+  
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "No matching walk session found or already checked in." });
+      }
+  
+      res.json({ message: "Check-in successful!" });
+    } catch (err) {
+      console.error("Error during walker check-in:", err);
+      res.status(500).json({ message: "Failed to check in." });
+    }
+  });
+  
+
+  // DELETE walk session (Admin or Marshal)
+    router.delete("/delete-session/:id", authenticateUser, async (req, res) => {
+        const sessionId = req.params.id;
+        const userId = req.user?.id;
+        const userRole = req.user?.role;
+    
+        try {
+        // For Marshals, allow deletion only of sessions they created
+        const [rows] = await pool.query(
+            `SELECT * FROM marshal_schedule WHERE id = ?`,
+            [sessionId]
+        );
+    
+        if (rows.length === 0) {
+            return res.status(404).json({ message: "Session not found" });
+        }
+    
+        const session = rows[0];
+        if (userRole === "Marshal" && session.created_by !== userId) {
+            return res.status(403).json({ message: "Unauthorized to delete this session" });
+        }
+    
+        await pool.query(`DELETE FROM marshal_schedule WHERE id = ?`, [sessionId]);
+    
+        res.json({ message: "Session deleted successfully" });
+        } catch (err) {
+        console.error("Error deleting session:", err);
+        res.status(500).json({ message: "Failed to delete session" });
+        }
+    });
+  
   
   
 

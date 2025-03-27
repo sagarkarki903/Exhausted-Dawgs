@@ -87,6 +87,38 @@ const Profile = () => {
     fetchUser();
   }, []);
 
+
+  //handles walker check in
+  const handleCheckIn = async (scheduleId) => {
+    const code = prompt("Enter the check-in code:");
+  
+    if (!code) return;
+  
+    try {
+      const response = await axios.put(
+        `http://localhost:8080/reports/walker/check-in/${scheduleId}`,
+        { code },
+        { withCredentials: true }
+      );
+  
+      alert(response.data.message);
+  
+      // Refresh the myWalks list
+      const res = await axios.get("http://localhost:8080/reports/walker/my-walks", {
+        withCredentials: true,
+      });
+      setMyWalks(res.data);
+    } catch (err) {
+      console.error("Check-in failed:", err);
+      alert(err.response?.data?.message || "Failed to check in.");
+    }
+  };
+  
+
+
+
+
+
   const handleSave = async () => {
     try {
       const response = await axios.put(
@@ -106,6 +138,36 @@ const Profile = () => {
     }
   };
 
+  
+  const handleDeleteSession = async (sessionId) => {
+    const confirmDelete = window.confirm("Are you sure you want to cancel this session? This will cancel all the walks for this session.");
+    if (!confirmDelete) return;
+  
+    try {
+      await axios.delete(`http://localhost:8080/reports/delete-session/${sessionId}`, {
+        withCredentials: true,
+      });
+  
+      alert("Session deleted successfully.");
+  
+      // Refresh relevant data
+      if (user.role === "Admin") {
+        const res = await axios.get("http://localhost:8080/reports/admin/upcoming-walks", {
+          withCredentials: true,
+        });
+        setUpcomingWalks(res.data);
+      } else if (user.role === "Marshal") {
+        const res = await axios.get("http://localhost:8080/reports/marshal/my-walks", {
+          withCredentials: true,
+        });
+        setMarshalSessions(res.data);
+      }
+    } catch (err) {
+      console.error("Error deleting session:", err);
+      alert(err.response?.data?.message || "Failed to delete session.");
+    }
+  };
+  
 
   //helper function
   const SessionCard = ({ session, isAdminOrMarshal }) => (
@@ -149,10 +211,10 @@ const Profile = () => {
             Complete Walk
           </button>
           <button
-            className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-1 px-3 rounded text-sm"
-            onClick={() => alert("Mark as Incomplete clicked")}
+            className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-3 rounded text-sm"
+            onClick={() => handleDeleteSession(session.session_id)}
           >
-            Incomplete
+            Cancel
           </button>
         </div>
       )}
@@ -199,15 +261,29 @@ const Profile = () => {
               ) : (
                 <div className="max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {myWalks.map((walk, idx) => (
-                      <div key={idx} className="bg-white border border-gray-200 rounded-lg shadow-md p-4">
-                        <p className="text-gray-700"><strong>Date:</strong> {new Date(walk.date).toLocaleDateString()}</p>
-                        <p className="text-gray-700"><strong>Time:</strong> {walk.time}</p>
-                        <p className="text-gray-700"><strong>Dog:</strong> {walk.dog_name}</p>
-                        <p className="text-gray-700"><strong>Walker:</strong> {walk.walker_name}</p>
-                        <p className="text-gray-700"><strong>Marshal:</strong> {walk.marshal_name}</p>
-                      </div>
-                    ))}
+                  {myWalks.map((walk, idx) => (
+                    <div key={idx} className="bg-white border border-gray-200 rounded-lg shadow-md p-4">
+                      <p className="text-gray-700"><strong>Date:</strong> {new Date(walk.date).toLocaleDateString()}</p>
+                      <p className="text-gray-700"><strong>Time:</strong> {walk.time}</p>
+                      <p className="text-gray-700"><strong>Dog:</strong> {walk.dog_name}</p>
+                      <p className="text-gray-700"><strong>Walker:</strong> {walk.walker_name}</p>
+                      <p className="text-gray-700"><strong>Marshal:</strong> {walk.marshal_name}</p>
+
+                      {walk.checked_in ? (
+                        <p className="mt-2 text-green-600 font-medium">✅ Checked In</p>
+                      ) : (
+                        <button
+                          onClick={() => handleCheckIn(walk.session_id)}
+                          className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm"
+                        >
+                          Check In
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+
+
                   </div>
                 </div>
               )}

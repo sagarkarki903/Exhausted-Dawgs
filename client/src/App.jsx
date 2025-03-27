@@ -22,6 +22,7 @@ import ProtectedRoute from "./components/ProtectedRoute"; // Import ProtectedRou
 import AboutP40 from './components/AboutUs/aboutP40';
 import { ContactPage } from './components/Contact/ContactPage';
 import RoughCalendar from './components/newDashboard/RoughCalendar';
+import MainReport  from './components/reports/MainReport';  // Ensure you import the component
 
 
 
@@ -57,13 +58,17 @@ function App() {
         <Route path='/rough-calendar' element={<RoughCalendar />} />
 
 
-        {/* Protected Admin Route */}
-        {/* <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin-dash" element={<AdminDash />} />
           
-        </Route> */}
 
+      {/* Protect the Report Route for Admin */}
+      <Route
+                path="/main-report"
+                element={
+                  <ProtectedRoute>
+                    <MainReport />
+                  </ProtectedRoute>
+                }
+              />
 
       {/* 🔒 Protect Profile Route */}
       <Route

@@ -88,6 +88,9 @@ const Profile = () => {
   }, []);
 
 
+  
+
+
   //handles walker check in
   const handleCheckIn = async (scheduleId) => {
     const code = prompt("Enter the check-in code:");
@@ -111,6 +114,36 @@ const Profile = () => {
     } catch (err) {
       console.error("Check-in failed:", err);
       alert(err.response?.data?.message || "Failed to check in.");
+    }
+  };
+  
+
+  const handleCompleteWalk = async (sessionId) => {
+    if (!window.confirm("Are you sure you want to complete this walk?")) return;
+  
+    try {
+      const response = await axios.post(
+        `http://localhost:8080/reports/complete-walk/${sessionId}`,
+        {},
+        { withCredentials: true }
+      );
+      alert(response.data.message);
+  
+      // Refresh data
+      if (user?.role === "Admin") {
+        const res = await axios.get("http://localhost:8080/reports/admin/upcoming-walks", {
+          withCredentials: true
+        });
+        setUpcomingWalks(res.data);
+      } else if (user?.role === "Marshal") {
+        const res = await axios.get("http://localhost:8080/reports/marshal/my-walks", {
+          withCredentials: true
+        });
+        setMarshalSessions(res.data);
+      }
+    } catch (err) {
+      console.error("Error completing walk:", err);
+      alert("Failed to complete walk.");
     }
   };
   
@@ -206,8 +239,8 @@ const Profile = () => {
         <div className="mt-4 flex gap-2">
           <button
             className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-1 px-3 rounded text-sm"
-            onClick={() => alert("Mark as Completed clicked")}
-          >
+            onClick={() => handleCompleteWalk(session.session_id)}
+            >
             Complete Walk
           </button>
           <button

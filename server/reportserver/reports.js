@@ -216,6 +216,81 @@ res.json(Object.values(sessions));
         }
     });
   
+
+
+
+    router.post("/complete-walk/:scheduleId", authenticateUser, async (req, res) => {
+        const { scheduleId } = req.params;
+      
+        try {
+          // 1. Get all session details along with check-in status
+          const [rows] = await pool.query(`
+            SELECT 
+              ms.date,
+              ms.time,
+              d.name AS dog,
+              CONCAT(wu.firstname, ' ', wu.lastname) AS walker,
+              CONCAT(mu.firstname, ' ', mu.lastname) AS marshal,
+              ws.checked_in
+            FROM marshal_schedule ms
+            JOIN walker_schedule ws ON ms.id = ws.schedule_id
+            JOIN users wu ON ws.user_id = wu.id
+            JOIN users mu ON ms.created_by = mu.id
+            JOIN dogs d ON ws.dog_id = d.id
+            WHERE ms.id = ?
+          `, [scheduleId]);
+      
+          if (rows.length === 0) {
+            return res.status(404).json({ message: "Session not found or no walkers assigned." });
+          }
+      
+          // 2. Insert into report_table including check_in_status
+          const insertPromises = rows.map(row => {
+            const status = row.checked_in ? "Checked In" : "Not Checked In";
+            return pool.query(`
+              INSERT INTO report_table (date, time, dog, walker, marshal, status, check_in_status)
+              VALUES (?, ?, ?, ?, ?, 'Completed', ?)
+            `, [row.date, row.time, row.dog, row.walker, row.marshal, status]);
+          });
+      
+          await Promise.all(insertPromises);
+      
+          // 3. Delete session (and cascade walker_schedule)
+          await pool.query(`DELETE FROM marshal_schedule WHERE id = ?`, [scheduleId]);
+      
+          res.json({ message: "Walk marked as completed and session deleted." });
+        } catch (err) {
+          console.error("Error completing walk:", err);
+          res.status(500).json({ message: "Failed to complete walk." });
+        }
+      });
+      
+
+        // GET all reports (for Admin to see all completed walks)
+        router.get("/all", authenticateUser, async (req, res) => {
+            const userRole = req.user?.role;
+            
+            if (userRole !== "Admin") {
+            return res.status(403).json({ message: "Access denied" });
+            }
+        
+            try {
+            // Query to get all reports from the report_table
+            const [reports] = await pool.query(`
+                SELECT date, time, dog, walker, marshal, status, check_in_status
+                FROM report_table
+                ORDER BY date DESC, time DESC
+            `);
+        
+            // Respond with the fetched reports
+            res.json(reports);
+            } catch (err) {
+            console.error("Error fetching reports:", err);
+            res.status(500).json({ message: "Failed to fetch reports" });
+            }
+        });
+
+      
   
   
 

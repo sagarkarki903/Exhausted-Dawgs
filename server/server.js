@@ -10,6 +10,8 @@ const scheduleRouter = require('./schedule');
 const newscheduleRouter = require('./newschedule');
 const reportRouter = require("./reportserver/report-list");
 const calendarRouter = require('./calendar/calendar'); // adjust the path if needed
+const reportsRoutes = require("./reportserver/reports");
+
 
 const pool = require('./db');
 
@@ -55,6 +57,9 @@ app.use("/report", reportRouter);
 app.use("/auth", authRouter);
 
 app.use("/calendar", calendarRouter);
+
+app.use("/reports", reportsRoutes);
+
 
 
 

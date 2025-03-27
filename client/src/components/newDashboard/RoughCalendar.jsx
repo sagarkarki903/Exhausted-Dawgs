@@ -3,7 +3,10 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import axios from "axios";
-
+import { Navbar } from "../NavAndFoot/Navbar";
+import { NavUser } from "../NavAndFoot/NavUser";
+import { NavAdmin } from "../NavAndFoot/NavAdmin";
+import { Footer } from "../NavAndFoot/Footer";
 
 const generateTimeSlots = () => {
   const slots = [];
@@ -170,12 +173,27 @@ export default function RoughCalendar() {
   
 
   return (
-    <div className="flex flex-col md:flex-row gap-10 p-6">
-      <div className="w-full md:w-2/3">
+    <div className="flex flex-col min-h-screen bg-background text-gray-900">
+        {/* NAVBAR */}
+        {!loggedIn ? (
+          <Navbar />
+        ) : role === "Admin" ? (
+          <NavAdmin />
+        ) : (
+          <NavUser />
+        )}
+
+         {/* MAIN CALENDAR CONTENT */}
+        <main className="flex-1">
+
+    <div className="flex flex-col md:flex-row gap-10 p-4">
+    <div className="w-full md:w-[60%] max-w-4xl mx-auto">
+
         <h2 className="text-2xl font-bold mb-4">Select Date & Time</h2>
         <FullCalendar
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
+              height="auto"
             dateClick={handleDateClick}
             datesSet={(arg) => {
               const weekends = generateWeekendsInRange(arg.startStr, arg.endStr);
@@ -504,6 +522,10 @@ export default function RoughCalendar() {
           )}
         </div>
       )}
+
     </div>
+  </main>
+  <Footer />
+  </div>
   );
 }

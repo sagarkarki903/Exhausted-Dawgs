@@ -14,6 +14,25 @@ const generateTimeSlots = () => {
   return slots.slice(0, -1);
 };
 
+const generateWeekendsInRange = (startDateStr, endDateStr) => {
+  const weekends = [];
+  const date = new Date(startDateStr);
+  const endDate = new Date(endDateStr);
+
+  while (date <= endDate) {
+    const day = date.getDay();
+    if (day === 0 || day === 6) {
+      weekends.push(date.toISOString().split("T")[0]);
+    }
+    date.setDate(date.getDate() + 1);
+  }
+
+  return weekends;
+};
+
+
+
+
 const timeSlots = generateTimeSlots();
 
 const convertTo24Hour = (timeStr) => {
@@ -31,7 +50,6 @@ export default function RoughCalendar() {
 
   const [showOpenSlotForm, setShowOpenSlotForm] = useState(false);
   const [selectedTime, setSelectedTime] = useState("");
-  const [dogId, setDogId] = useState("");
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [role, setRole] = useState("");
@@ -47,6 +65,13 @@ export default function RoughCalendar() {
   const [closedDates, setClosedDates] = useState([]);
 
   const [showCloseForm, setShowCloseForm] = useState(false);
+
+  const [weekendDates, setWeekendDates] = useState([]);
+
+//for booking the slot
+  const [bookingScheduleId, setBookingScheduleId] = useState(null);
+  const [walkerDogId, setWalkerDogId] = useState("");
+
 
 
   useEffect(() => {
@@ -101,6 +126,8 @@ export default function RoughCalendar() {
     }
   };
 
+  const [resUserId, setResUserId] = useState(null);
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -110,14 +137,17 @@ export default function RoughCalendar() {
         if (res.status === 200) {
           setLoggedIn(true);
           setRole(res.data.role);
+          setResUserId(res.data.id); // 👈 Save current user's ID
         }
       } catch (err) {
         setLoggedIn(false);
         setRole("");
+        setResUserId(null);
       }
     };
     checkAuth();
   }, []);
+
 
   const isWeekend = (dateStr) => {
     const date = new Date(dateStr);
@@ -131,25 +161,33 @@ export default function RoughCalendar() {
       <div className="w-full md:w-2/3">
         <h2 className="text-2xl font-bold mb-4">Select Date & Time</h2>
         <FullCalendar
-          plugins={[dayGridPlugin, interactionPlugin]}
-          initialView="dayGridMonth"
-          dateClick={handleDateClick}
-          events={[
-            ...availableDates.map((date) => ({
-              start: date,
-              display: "background",
-              backgroundColor: "#991B1B",
-            })),
+            plugins={[dayGridPlugin, interactionPlugin]}
+            initialView="dayGridMonth"
+            dateClick={handleDateClick}
+            datesSet={(arg) => {
+              const weekends = generateWeekendsInRange(arg.startStr, arg.endStr);
+              setWeekendDates(weekends);
+            }}
+            
+            events={[
+              ...availableDates.map((date) => ({
+                start: date,
+                display: "background",
+                backgroundColor: "#991B1B",
+              })),
+              ...closedDates.map((date) => ({
+                start: date,
+                display: "background",
+                backgroundColor: "#9CA3AF",
+              })),
+              ...weekendDates.map((date) => ({
+                start: date,
+                display: "background",
+                backgroundColor: "#9CA3AF", // dark gray
+              })),
+            ]}
+          />
 
-              //for closed dates
-            ...closedDates.map((date) => ({
-              start: date,
-              display: "background",
-              backgroundColor: "#9CA3AF", // gray-400
-            })),
-          
-          ]}
-        />
       </div>
 
       {selectedDate && (
@@ -169,9 +207,30 @@ export default function RoughCalendar() {
             Sorry! Shelter is closed on Saturdays and Sundays.
           </p>
         ) : isClosedDate(selectedDate) ? (
-          <p className="text-red-600 font-semibold">
-            Sorry! Shelter is closed on this date.
-          </p>
+          <div className="text-red-600 font-semibold mb-4">
+          Shelter is closed on this date.
+          {loggedIn && role === "Admin" && (
+            <button
+              onClick={async () => {
+                try {
+                  await axios.delete(`http://localhost:8080/calendar/closures/${selectedDate}`, {
+                    withCredentials: true,
+                  });
+                  alert("Date reopened!");
+                  const res = await axios.get("http://localhost:8080/calendar/closures");
+                  const formatted = res.data.map((d) => new Date(d).toISOString().split("T")[0]);
+                  setClosedDates(formatted);
+                } catch (err) {
+                  alert(err.response?.data?.message || "Failed to reopen date.");
+                }
+              }}
+              className="block mt-2 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+            >
+              Mark as Open
+            </button>
+          )}
+        </div>
+        
         ) : isPastDate(selectedDate) ? (
 
           <p className="text-yellow-600 font-semibold">
@@ -203,14 +262,13 @@ export default function RoughCalendar() {
                               {
                                 date: selectedDate,
                                 time: convertTo24Hour(selectedTime),
-                                dog_id: dogId,
+            
                               },
                               { withCredentials: true }
                             );
                             alert("Slot opened!");
                             setShowOpenSlotForm(false);
                             setSelectedTime("");
-                            setDogId("");
 
                             // Refresh UI
                             const res = await axios.get("http://localhost:8080/calendar/sessions");
@@ -228,9 +286,17 @@ export default function RoughCalendar() {
                             ];
                             setAvailableDates(uniqueDates);
                             handleDateClick({ dateStr: selectedDate });
-                          } catch (err) {
-                            alert(err.response?.data?.message || "Failed to open slot.");
+                          }catch (err) {
+                            const msg = err.response?.data?.message;
+
+                            if (msg === "You already have a session at this time.") {
+                              alert("You already have a session booked at this time. Please choose a different time slot.");
+                            } else {
+                              alert(msg || "Something went wrong while creating the slot.");
+                            }
+                            
                           }
+                          
                         }}
                       >
                         <div>
@@ -250,16 +316,7 @@ export default function RoughCalendar() {
                           </select>
                         </div>
 
-                        <div>
-                          <label className="block text-sm font-medium">Dog ID</label>
-                          <input
-                            type="number"
-                            className="w-full border p-2 rounded"
-                            value={dogId}
-                            onChange={(e) => setDogId(e.target.value)}
-                            required
-                          />
-                        </div>
+
 
                         <button
                           type="submit"
@@ -328,20 +385,97 @@ export default function RoughCalendar() {
                     <p><strong>Date:</strong> {new Date(session.date).toLocaleDateString("en-US")}</p>
                     <p><strong>Time:</strong> {session.time}</p>
                     <p><strong>Marshal:</strong> {session.marshal_name}</p>
-                    <p><strong>Dog:</strong> {session.dog_name}</p>
                     <p><strong>Walkers Booked:</strong> {session.walkers_booked}</p>
-                    {loggedIn && (
-                      session.walkers_booked >= 4 ? (
-                        <p className="mt-3 text-sm font-semibold text-red-600">Slots full</p>
-                      ) : (
-                        <button
-                          className="mt-3 bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700"
-                          onClick={() => console.log("Book slot for schedule ID:", session.id)}
-                        >
-                          Book this Slot
-                        </button>
-                      )
+                    {loggedIn && role === "Walker" && (
+
+                      <>
+                        {session.walkers_booked >= 4 ? (
+                          <p className="mt-3 text-sm font-semibold text-red-600">Slots full</p>
+                        ) : bookingScheduleId === session.id ? (
+                          <form
+                            onSubmit={async (e) => {
+                              e.preventDefault();
+                              try {
+                                await axios.post(
+                                  "http://localhost:8080/calendar/book-slot",
+                                  {
+                                    schedule_id: session.id,
+                                    dog_id: walkerDogId,
+                                  },
+                                  { withCredentials: true }
+                                );
+                                alert("Slot booked successfully!");
+                                setWalkerDogId("");
+                                setBookingScheduleId(null);
+                                handleDateClick({ dateStr: selectedDate }); // Refresh sessions
+
+                                  // Refresh red background dates after booking
+                              const res = await axios.get("http://localhost:8080/calendar/sessions");
+                              const uniqueDates = [
+                                ...new Set(
+                                  res.data
+                                    .map((s) => {
+                                      const parsedDate = new Date(s);
+                                      return isNaN(parsedDate.getTime()) ? null : parsedDate.toISOString().split("T")[0];
+                                    })
+                                    .filter(Boolean)
+                                ),
+                              ];
+                              setAvailableDates(uniqueDates);
+
+                              } catch (err) {
+                                const msg = err.response?.data?.message;
+                                if (msg === "You have already booked this session") {
+                                  alert("You already booked this session.");
+                                } else if (msg === "This session is already full") {
+                                  alert("Session is full.");
+                                } else if (msg === "This dog is already booked for this time") {
+                                  alert("This dog is already booked at that time.");
+                                } else {
+                                  alert(msg || "Failed to book slot.");
+                                }
+                              }
+                            }}
+                            className="mt-3 space-y-2"
+                          >
+                            <input
+                              type="number"
+                              placeholder="Enter Dog ID"
+                              value={walkerDogId}
+                              onChange={(e) => setWalkerDogId(e.target.value)}
+                              className="w-full border px-2 py-1 rounded"
+                              required
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                type="submit"
+                                className="bg-blue-700 text-white px-3 py-1 rounded hover:bg-blue-800 text-sm"
+                              >
+                                Confirm Booking
+                              </button>
+                              <button
+                                type="button"
+                                className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500 text-sm"
+                                onClick={() => {
+                                  setBookingScheduleId(null);
+                                  setWalkerDogId("");
+                                }}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <button
+                            className="mt-3 bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700"
+                            onClick={() => setBookingScheduleId(session.id)}
+                          >
+                            Book this Slot
+                          </button>
+                        )}
+                      </>
                     )}
+
                   </div>
                 ))
               ) : (

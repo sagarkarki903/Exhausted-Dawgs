@@ -3,6 +3,8 @@ import { Edit, Save, X, User, Home, Phone } from "lucide-react";
 import { NavAdmin } from "../NavAndFoot/NavAdmin";
 import { NavUser } from "../NavAndFoot/NavUser";
 import { Footer } from "../NavAndFoot/Footer";
+import { useNavigate } from "react-router-dom";
+
 
 import axios from "axios";
 
@@ -22,8 +24,14 @@ const Profile = () => {
   const [myWalks, setMyWalks] = useState([]);
   const [marshalSessions, setMarshalSessions] = useState([]);
   
+  const navigate = useNavigate();
 
 
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/login");
+    }
+  }, [loading, user]);
 
 
   useEffect(() => {
@@ -380,7 +388,7 @@ const Profile = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      {user?.role === "Admin" ? <NavAdmin /> : <NavUser />}
+      {loading ? null : user?.role === "Admin" ? <NavAdmin /> : user?.role ? <NavUser /> : null}
       <main className="flex-grow w-full max-w-screen-lg mx-auto px-4 md:px-8 pb-10">
         <div className="py-8">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">

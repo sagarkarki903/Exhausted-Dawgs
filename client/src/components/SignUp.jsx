@@ -152,7 +152,7 @@ const handleChange = (e) => {
             </div>
 
             {/* Success/Error Messages */}
-            {message && <p className="text-green-500 text-center">{message}</p>}
+            {message && <p className="text-green-500 text-center">{message}  Redirecting to login...</p>}
             {error && <p className="text-red-500 text-center">{error}</p>}
 
 

@@ -61,8 +61,8 @@ const handleSubmit = async (e) => {
     });
     const { token, user } = response.data;
 
-    localStorage.setItem("token", token);
-    localStorage.setItem("userRole", user.role); // Store role
+    // localStorage.setItem("token", token);
+    // localStorage.setItem("userRole", user.role); // Store role
     
     console.log("User Role After Login:", user.role); // Debugging
      // Navigate to Home Page after successful login

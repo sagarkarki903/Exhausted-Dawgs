@@ -20,6 +20,8 @@ const staggerChildren = {
 
 export const ContactPage = () => {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -32,6 +34,8 @@ export const ContactPage = () => {
         if (res.status === 200) setLoggedIn(true);
       } catch (err) {
         setLoggedIn(false);
+      } finally {
+        setLoading(false); 
       }
     };
     checkAuth();
@@ -68,7 +72,10 @@ export const ContactPage = () => {
       </motion.div>
 
       {/* Navbar */}
-      <div className=" relative">{loggedIn ? <NavUser /> : <Navbar />}</div>
+      <div className="relative">
+        {loading ? null : loggedIn ? <NavUser /> : <Navbar />}
+      </div>
+
 
       {/* Main Section */}
       <main className="flex-1 relative z-10">

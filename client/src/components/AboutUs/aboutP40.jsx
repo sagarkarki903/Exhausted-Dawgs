@@ -20,6 +20,7 @@ const AboutP40 = () => {
 
     //****************check if a user is logged in*****************/
     const [loggedIn, setLoggedIn] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
       const checkAuth = async () => {
@@ -34,6 +35,8 @@ const AboutP40 = () => {
           }
         } catch (err) {
           setLoggedIn(false); // Not logged in
+        } finally {
+          setLoading(false); // ✅ Done checking
         }
       };
     
@@ -45,7 +48,7 @@ const AboutP40 = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-200 text-black">
       {/* <Navbar className="text-gold" /> */}
-      {loggedIn ? <NavUser /> : <Navbar />}
+      {loading ? null : (loggedIn ? <NavUser /> : <Navbar />)}
       <main className="flex-1">
         {/* Hero Section */}
         <section className="py-20 relative overflow-hidden bg-maroon-700 text-center text-gold border-b-8 border-gold">

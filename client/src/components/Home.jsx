@@ -40,7 +40,7 @@ export const Home = () => {
    // Handle responsive display count
    useEffect(() => {
     const updateDisplayCount = () => {
-      setDisplayCount(window.innerWidth < 1024 ? 2 : 4); // 4 for small screens, 6 for large
+      setDisplayCount(window.innerWidth < 1024 ? 2 : 4);
     };
 
     

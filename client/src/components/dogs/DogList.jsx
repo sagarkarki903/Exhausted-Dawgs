@@ -18,7 +18,7 @@ export const DogList = () => {
       .catch((error) => console.error("Error fetching dogs:", error));
 
   }, []);
-
+  console.log(dogs)
   return (
     <>
       <motion.div

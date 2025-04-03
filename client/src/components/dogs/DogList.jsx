@@ -71,48 +71,49 @@ export const DogList = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {dogs.map((dog, index) => {
-            // Use the profile picture if available, otherwise fallback to default image
-            const profilePic = dog.profile_picture_url || "/dog2.jpeg"; // Default image
+        {Array.isArray(dogs) ? (
+  dogs.map((dog, index) => {
+    const profilePic = dog.profile_picture_url || "/dog2.jpeg";
+    return (
+      <motion.div
+        key={index}
+        className="rounded-lg border border-gray-300 shadow-md transition-shadow hover:shadow-2xl"
+        whileHover={{ scale: 1.03 }}
+      >
+        <img
+          src={profilePic}
+          alt={dog.name}
+          className="h-70 w-full object-cover rounded-t-lg mx-auto"
+          onError={(e) => (e.target.src = "/dog2.jpeg")}
+        />
+        <div className="flex flex-col gap-4 p-4">
+          <div>
+            <h2 className="text-lg font-semibold mt-4">{dog.name}</h2>
+            <p className="text-gray-600">{dog.breed}</p>
+            <p className="text-gray-500 text-sm">Age: {dog.age} years</p>
+          </div>
+          <div className="flex p-4 gap-6">
+            <button
+              className="flex-1 rounded-md w-full bg-red-900 px-4 py-2 text-white transition hover:bg-red-800"
+              onClick={() => navigate(`/dogs/${dog.id}`)}
+            >
+              Meet Me
+            </button>
+            <button
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 text-gray-500 transition hover:bg-yellow-500"
+              aria-label="Add to favorites"
+            >
+              <Heart className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  })
+) : (
+  <p className="text-center text-gray-500">No dogs available or error fetching dogs.</p>
+)}
 
-            return (
-              <motion.div
-                key={index}
-                className="rounded-lg border border-gray-300 shadow-md transition-shadow hover:shadow-2xl"
-                whileHover={{ scale: 1.03 }}
-              >
-                {/* Display profile picture */}
-                <img
-                  src={profilePic}
-                  alt={dog.name}
-                  className="h-70 w-full object-cover rounded-t-lg mx-auto"
-                  onError={(e) => (e.target.src = "/dog2.jpeg")} // Handle broken image links
-                />
-
-                <div className="flex flex-col gap-4 p-4">
-                  <div>
-                    <h2 className="text-lg font-semibold mt-4">{dog.name}</h2>
-                    <p className="text-gray-600">{dog.breed}</p>
-                    <p className="text-gray-500 text-sm">Age: {dog.age} years</p>
-                  </div>
-                  <div className="flex p-4 gap-6">
-                    <button
-                      className="flex-1 rounded-md w-full bg-red-900 px-4 py-2 text-white transition hover:bg-red-800"
-                      onClick={() => navigate(`/dogs/${dog.id}`)}
-                    >
-                      Meet Me
-                    </button>
-                    <button
-                      className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 text-gray-500 transition hover:bg-yellow-500"
-                      aria-label="Add to favorites"
-                    >
-                      <Heart className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })}
         </div>
       </div>
     </>

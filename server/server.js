@@ -34,12 +34,14 @@ const corsOptions = {
 app.use(cors(corsOptions))
 app.use(cookieParser()); // ✅ Middleware to handle cookies
 app.use(express.json()); // Parse JSON request bodies
+app.use("/auth", authRouter);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
  
 app.get('/', (req, res) => {
     res.send('Hello, Dawgs!');
 });
+
 
 
 app.use('/dogs', dogsRouter);
@@ -54,7 +56,6 @@ app.use('/newschedule', newscheduleRouter);
 
 app.use("/report", reportRouter);
 
-app.use("/auth", authRouter);
 
 app.use("/calendar", calendarRouter);
 

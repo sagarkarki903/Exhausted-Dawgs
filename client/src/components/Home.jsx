@@ -24,6 +24,8 @@ export const Home = () => {
   const navigate = useNavigate();
   const [dogs, setDogs] = useState([]);
   const [displayCount, setDisplayCount] = useState(6);
+  const [loading, setLoading] = useState(true); // NEW
+
 
   useEffect(() => {
     axios
@@ -67,6 +69,8 @@ export const Home = () => {
       } catch {
         setLoggedIn(false);
         setRole(""); // Reset role if not logged in
+      } finally {
+        setLoading(false);
       }
     };
   
@@ -76,13 +80,9 @@ export const Home = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-gray-900">
-     {!loggedIn ? (
-          <Navbar />
-        ) : role === "Admin" ? (
-          <NavAdmin />
-        ) : (
-          <NavUser />
-        )}
+     {loading ? null : (
+  !loggedIn ? <Navbar /> : role === "Admin" ? <NavAdmin /> : <NavUser />
+)}
 
       <main className="flex-1">
         <section className="py-20 relative overflow-hidden bg-neutral-100">

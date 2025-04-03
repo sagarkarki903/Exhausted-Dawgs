@@ -9,9 +9,8 @@ const SECRET_KEY = process.env.JWT_SECRET || "your_jwt_secret";
 
 const COOKIE_OPTIONS = {
     httpOnly: true, // Prevents JavaScript from accessing the cookie
-    secure: false,  // Set to `true` in production (only send cookies over HTTPS)
-    // secure: process.env.NODE_ENV === "production", // Send cookies over HTTPS in production
-    sameSite: "lax", // Allows sending cookies within the same domain
+    secure: process.env.NODE_ENV === "production",  
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax", // Allows sending cookies within the same domain
 };
 
 //..............Sign up Start.......................................................................

@@ -71,7 +71,8 @@ const handleChange = (e) => {
       }
 
    try {
-      const response = await axios.post("http://localhost:8080/log-sign/register", {
+    const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
+      const response = await axios.post(`${backendUrl}/log-sign/register`, {
         firstname: formData.firstname,
         lastname: formData.lastname,
         username: formData.username,

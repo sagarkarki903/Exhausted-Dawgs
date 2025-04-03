@@ -18,6 +18,8 @@ const authenticateUser = (req, res, next) => {
     } catch (error) {
         return res.status(401).json({ message: "Invalid token." });
     }
+
+
 };
 
 // ✅ Marshal creates a schedule slot

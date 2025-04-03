@@ -54,7 +54,8 @@ const handleSubmit = async (e) => {
   setLoading(true);
 
   try {
-    const response = await axios.post("http://localhost:8080/log-sign/login-server", formData, {
+    const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
+    const response = await axios.post(`${backendUrl}/log-sign/login-server`, formData, {
       headers: { "Content-Type": "application/json" },
       withCredentials: true, //needed to send cookies
     });

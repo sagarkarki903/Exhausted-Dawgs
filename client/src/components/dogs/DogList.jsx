@@ -7,12 +7,16 @@ import { Heart, PawPrint, MoveLeft } from "lucide-react";
 export const DogList = () => {
   const navigate = useNavigate();
   const [dogs, setDogs] = useState([]);
+  
 
   useEffect(() => {
+    const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
+    
     axios
-      .get("http://127.0.0.1:8080/dogs") // Fetch dog data including profile_picture
+      .get(`${backendUrl}/dogs`) // Fetch dog data including profile_picture
       .then((response) => setDogs(response.data))
       .catch((error) => console.error("Error fetching dogs:", error));
+
   }, []);
 
   return (

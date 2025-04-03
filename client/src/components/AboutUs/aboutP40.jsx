@@ -24,7 +24,9 @@ const AboutP40 = () => {
     useEffect(() => {
       const checkAuth = async () => {
         try {
-          const res = await axios.get("http://localhost:8080/auth/profile", {
+          const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
+
+          const res = await axios.get(`${backendUrl}/auth/profile`, {
             withCredentials: true,
           });
           if (res.status === 200) {

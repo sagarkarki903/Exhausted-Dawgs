@@ -47,6 +47,7 @@ const convertTo24Hour = (timeStr) => {
 };
 
 export default function RoughCalendar() {
+  const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
   const [selectedDate, setSelectedDate] = useState(null);
   const [availableDates, setAvailableDates] = useState([]);
   const [sessionDetails, setSessionDetails] = useState([]);
@@ -80,7 +81,7 @@ export default function RoughCalendar() {
   useEffect(() => {
     const fetchClosedDates = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/calendar/closures");
+        const res = await axios.get(`${backendUrl}/calendar/closures`);
         const formatted = res.data.map((d) => new Date(d).toISOString().split("T")[0]);
         setClosedDates(formatted);
       } catch (err) {
@@ -97,7 +98,7 @@ export default function RoughCalendar() {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/calendar/sessions");
+        const res = await axios.get(`${backendUrl}/calendar/sessions`);
         const uniqueDates = [
           ...new Set(
             res.data
@@ -121,7 +122,7 @@ export default function RoughCalendar() {
     const dateStr = arg.dateStr;
     setSelectedDate(dateStr);
     try {
-      const res = await axios.get(`http://localhost:8080/calendar/sessions/${dateStr}`, 
+      const res = await axios.get(`${backendUrl}/calendar/sessions/${dateStr}`, 
         {  withCredentials: true,
       });
       const sortedSessions = res.data.sort((a, b) => {
@@ -142,7 +143,7 @@ export default function RoughCalendar() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/auth/profile", {
+        const res = await axios.get(`${backendUrl}/auth/profile`, {
           withCredentials: true,
         });
         if (res.status === 200) {
@@ -244,11 +245,11 @@ export default function RoughCalendar() {
             <button
               onClick={async () => {
                 try {
-                  await axios.delete(`http://localhost:8080/calendar/closures/${selectedDate}`, {
+                  await axios.delete(`${backendUrl}/calendar/closures/${selectedDate}`, {
                     withCredentials: true,
                   });
                   alert("Date reopened!");
-                  const res = await axios.get("http://localhost:8080/calendar/closures");
+                  const res = await axios.get(`${backendUrl}/calendar/closures`);
                   const formatted = res.data.map((d) => new Date(d).toISOString().split("T")[0]);
                   setClosedDates(formatted);
                 } catch (err) {
@@ -289,7 +290,7 @@ export default function RoughCalendar() {
                           e.preventDefault();
                           try {
                             await axios.post(
-                              "http://localhost:8080/calendar/add-session",
+                              `${backendUrl}/calendar/add-session`,
                               {
                                 date: selectedDate,
                                 time: convertTo24Hour(selectedTime),
@@ -302,7 +303,7 @@ export default function RoughCalendar() {
                             setSelectedTime("");
 
                             // Refresh UI
-                            const res = await axios.get("http://localhost:8080/calendar/sessions");
+                            const res = await axios.get(`${backendUrl}/calendar/sessions`);
                             const uniqueDates = [
                               ...new Set(
                                 res.data
@@ -376,7 +377,7 @@ export default function RoughCalendar() {
             e.preventDefault();
             try {
               await axios.post(
-                "http://localhost:8080/calendar/closures",
+                `${backendUrl}/calendar/closures`,
                 { date: selectedDate },
                 { withCredentials: true }
               );
@@ -385,7 +386,7 @@ export default function RoughCalendar() {
               setShowCloseForm(false);
 
               // Refresh closures
-              const res = await axios.get("http://localhost:8080/calendar/closures");
+              const res = await axios.get(`${backendUrl}/calendar/closures`);
               const formatted = res.data.map((d) => new Date(d).toISOString().split("T")[0]);
               setClosedDates(formatted);
             } catch (err) {
@@ -434,7 +435,7 @@ export default function RoughCalendar() {
                 e.preventDefault();
                 try {
                   await axios.post(
-                    "http://localhost:8080/calendar/book-slot",
+                    `${backendUrl}/calendar/book-slot`,
                     {
                       schedule_id: session.id,
                       dog_id: walkerDogId,
@@ -446,7 +447,7 @@ export default function RoughCalendar() {
                   setBookingScheduleId(null);
                   handleDateClick({ dateStr: selectedDate });
 
-                  const res = await axios.get("http://localhost:8080/calendar/sessions");
+                  const res = await axios.get(`${backendUrl}/calendar/sessions`);
                   const uniqueDates = [
                     ...new Set(
                       res.data

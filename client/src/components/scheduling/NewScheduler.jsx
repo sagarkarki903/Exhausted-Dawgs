@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 export const NewScheduler = () => {
+    const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
     const [schedules, setSchedules] = useState([]);
     const [expandedSlot, setExpandedSlot] = useState(null);
     const [user, setUser] = useState(null);
@@ -17,7 +18,7 @@ export const NewScheduler = () => {
 
     const fetchSchedules = async () => {
         try {
-            const response = await axios.get("http://localhost:8080/newschedule/all-schedules");
+            const response = await axios.get(`${backendUrl}/newschedule/all-schedules`);
             setSchedules(response.data);
         } catch (error) {
             console.error("Error fetching schedules:", error);
@@ -26,7 +27,7 @@ export const NewScheduler = () => {
 
     const fetchUser = async () => {
         try {
-            const response = await axios.get("http://localhost:8080/newschedule/me", {
+            const response = await axios.get(`${backendUrl}/newschedule/me`, {
                 withCredentials: true,
             });
             setUser(response.data);
@@ -65,7 +66,7 @@ export const NewScheduler = () => {
 
         try {
             const response = await axios.post(
-                "http://localhost:8080/newschedule/book-walker",
+                `${backendUrl}/newschedule/book-walker`,
                 {
                     schedule_id: schedule.id,  
                     dog_name: dogName,         

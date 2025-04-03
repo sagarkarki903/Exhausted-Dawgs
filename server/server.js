@@ -11,7 +11,7 @@ const newscheduleRouter = require('./newschedule');
 const reportRouter = require("./reportserver/report-list");
 const calendarRouter = require('./calendar/calendar'); // adjust the path if needed
 const reportsRoutes = require("./reportserver/reports");
-
+const FRONTEND_URL = process.env.FRONTEND || 'http://localhost:5173';
 
 const pool = require('./db');
 
@@ -26,7 +26,7 @@ dotenv.config();
 const app = express();
 
 const corsOptions = {
-    origin: "http://localhost:5173",
+    origin: FRONTEND_URL,
     methods: "GET,POST,PUT,DELETE",
     credentials: true
 };

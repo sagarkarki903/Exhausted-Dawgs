@@ -38,13 +38,13 @@ const DogProfile = () => {
   const [images, setImages] = useState([]);
   const [showImageModal, setShowImageModal] = useState(false);
   const navigate = useNavigate();
-
+  const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
   // Authentication state
   const [loggedIn, setLoggedIn] = useState(false);
   const [role, setRole] = useState("");
 
   useEffect(() => {
-    axios.get(`http://127.0.0.1:8080/dogs/${id}`)
+    axios.get(`${backendUrl}/dogs/${id}`)
       .then(res => {
         setDog(res.data);
         setFormData(res.data);
@@ -54,7 +54,7 @@ const DogProfile = () => {
 
   const fetchDogData = async () => {
     try {
-      const res = await axios.get(`http://127.0.0.1:8080/dogs/${id}`);
+      const res = await axios.get(`${backendUrl}/dogs/${id}`);
       setDog(res.data);
     } catch (err) {
       console.error("Error fetching dog details:", err);
@@ -63,7 +63,7 @@ const DogProfile = () => {
 
   const fetchDogImages = async () => {
     try {
-      const res = await axios.get(`http://127.0.0.1:8080/dogs/${id}/images`);
+      const res = await axios.get(`${backendUrl}/dogs/${id}/images`);
       setImages(res.data);
     } catch (err) {
       console.error('Error fetching dog images:', err);
@@ -78,7 +78,7 @@ const DogProfile = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/auth/profile", {
+        const res = await axios.get(`${backendUrl}/auth/profile`, {
           withCredentials: true,
         });
         if (res.status === 200) {
@@ -103,7 +103,7 @@ const DogProfile = () => {
 
   const handleProfilePictureChange = async (imageUrl) => {
     try {
-      await axios.put(`http://127.0.0.1:8080/dogs/${id}/profile-picture`, { imageUrl });
+      await axios.put(`${backendUrl}/dogs/${id}/profile-picture`, { imageUrl });
       setDog((prevDog) => ({ ...prevDog, profile_picture_url: imageUrl }));
       setShowImageModal(false);
     } catch (err) {
@@ -118,7 +118,7 @@ const DogProfile = () => {
   };
 
   const handleSave = () => {
-    axios.put(`http://127.0.0.1:8080/dogs/${id}`, formData)
+    axios.put(`${backendUrl}/dogs/${id}`, formData)
       .then(() => {
         setDog(formData);
         setEditing(false);
@@ -128,7 +128,7 @@ const DogProfile = () => {
 
   const handleDelete = () => {
     if (window.confirm('Are you sure you want to delete this dog?')) {
-      axios.delete(`http://127.0.0.1:8080/dogs/${id}`)
+      axios.delete(`${backendUrl}/dogs/${id}`)
         .then(() => {
           navigate('/dogs');
         })
@@ -145,7 +145,7 @@ const DogProfile = () => {
     const imageFormData = new FormData();
     imageFormData.append('image', selectedFile);
     try {
-      const res = await axios.post(`http://127.0.0.1:8080/dogs/${id}/upload`, imageFormData, {
+      const res = await axios.post(`${backendUrl}/dogs/${id}/upload`, imageFormData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setDog(prev => ({ ...prev, imageUrl: res.data.imageUrl }));
@@ -158,7 +158,7 @@ const DogProfile = () => {
   
 const handleDeleteImage = async (imageUrl) => {
   try {
-    await axios.delete(`http://127.0.0.1:8080/dogs/${id}/images`, {
+    await axios.delete(`${backendUrl}/dogs/${id}/images`, {
       params: { imageUrl }
     });
     fetchDogImages();

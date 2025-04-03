@@ -20,13 +20,14 @@ const staggerChildren = {
 
 export const Home = () => {
 
+  const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
   const navigate = useNavigate();
   const [dogs, setDogs] = useState([]);
   const [displayCount, setDisplayCount] = useState(6);
 
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:8080/dogs")
+      .get(`${backendUrl}/dogs`)
       .then((response) => {
         const shuffledDogs = response.data.sort(() => 0.5 - Math.random()); // Shuffle the array
         setDogs(shuffledDogs);
@@ -56,7 +57,7 @@ export const Home = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/auth/profile", {
+        const res = await axios.get(`${backendUrl}/auth/profile`, {
           withCredentials: true,
         });
         if (res.status === 200) {

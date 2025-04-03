@@ -4,11 +4,13 @@ import LogOutTest from '../../LogOutTest';
 
 const Admin = () => {
   const [users, setUsers] = useState([]);
+  const backendUrl = process.env.REACT_APP_BACKEND; // Access the BACKEND variable
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/users", { 
+        
+        const response = await axios.get(`${backendUrl}/users`, { 
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } 
         });
         setUsers(response.data);
@@ -29,7 +31,7 @@ const editUser = async (id) => {
   try {
     console.log(`Editing user ID: ${id} - New Role: ${newRole}`);
 
-    const response = await axios.put(`http://localhost:8080/users/${id}`, 
+    const response = await axios.put(`${backendUrl}/users/${id}`, 
       { role: newRole }, 
       { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
     );
@@ -49,7 +51,7 @@ const deleteUser = async (id) => {
   try {
     console.log(`Deleting user ID: ${id}`);
 
-    const response = await axios.delete(`http://localhost:8080/users/${id}`, {
+    const response = await axios.delete(`${backendUrl}/users/${id}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
     });
 

@@ -7,7 +7,9 @@ export default function LogOutTest() {
 
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:8080/log-sign/logout-server", {}, { withCredentials: true });
+      const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
+
+      await axios.post(`${backendUrl}/log-sign/logout-server`, {}, { withCredentials: true });
 
       // Redirect to login page after logout
       navigate("/login");

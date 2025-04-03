@@ -12,7 +12,8 @@ export const AllUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/users/", { withCredentials: true });
+      const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
+      const response = await axios.get(`${backendUrl}/users/`, { withCredentials: true });
       setUsers(response.data);
       setLoading(false);
     } catch (error) {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 export const WalkerReport = () => {
+    const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
     const [appointments, setAppointments] = useState([]);
 
     useEffect(() => {
@@ -10,7 +11,7 @@ export const WalkerReport = () => {
 
     const fetchWalkerReports = async () => {
         try {
-            const response = await axios.get("http://localhost:8080/report/walker-reports");
+            const response = await axios.get(`${backendUrl}/report/walker-reports`);
             setAppointments(response.data);
         } catch (error) {
             console.error("Error fetching appointments:", error);

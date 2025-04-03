@@ -13,14 +13,14 @@ export const NavAdmin = () => {
     const mobileDropdownRef = useRef(null);
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
-
+    const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
 
 
     // 🔐 Fetch user info
     useEffect(() => {
      const fetchUser = async () => {
        try {
-         const res = await axios.get("http://localhost:8080/auth/profile", {
+         const res = await axios.get(`${backendUrl}/auth/profile`, {
            withCredentials: true,
          });
          if (res.status === 200) {
@@ -60,7 +60,7 @@ export const NavAdmin = () => {
   
       try {
         const response = await axios.post(
-          "http://localhost:8080/log-sign/logout-server",
+          `${backendUrl}/log-sign/logout-server`,
           {},
           { withCredentials: true }
         );

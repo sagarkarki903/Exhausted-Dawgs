@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 export const MarshalReport = () => {
+    const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
     const [schedules, setSchedules] = useState([]);
 
     useEffect(() => {
@@ -10,7 +11,7 @@ export const MarshalReport = () => {
 
     const fetchMarshalReports = async () => {
         try {
-            const response = await axios.get("http://localhost:8080/report/marshal-reports");
+            const response = await axios.get(`${backendUrl}/report/marshal-reports`);
             setSchedules(response.data);
         } catch (error) {
             console.error("Error fetching schedules:", error);

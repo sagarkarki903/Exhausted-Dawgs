@@ -26,8 +26,9 @@ export const NewDog = () => {
   };
 
   const handleSubmit = (e) => {
+    const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
     e.preventDefault();
-    axios.post('http://127.0.0.1:8080/dogs', formData)
+    axios.post(`${backendUrl}/dogs`, formData)
       .then(response => {
         console.log('Dog created successfully:', response.data);
         navigate('/dogs');

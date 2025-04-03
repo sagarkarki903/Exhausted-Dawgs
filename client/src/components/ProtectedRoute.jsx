@@ -10,7 +10,8 @@ export default function ProtectedRoute({ children }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/auth/profile", { withCredentials: true });
+        const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
+        const response = await axios.get(`${backendUrl}/auth/profile`, { withCredentials: true });
         if (response.status === 200) {
           setAuthorized(true);
         } else {

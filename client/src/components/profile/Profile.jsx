@@ -9,6 +9,7 @@ import axios from "axios";
 
 
 const Profile = () => {
+  const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,13 +21,14 @@ const Profile = () => {
   const [upcomingWalks, setUpcomingWalks] = useState([]);
   const [myWalks, setMyWalks] = useState([]);
   const [marshalSessions, setMarshalSessions] = useState([]);
+  
 
 
 
 
   useEffect(() => {
     if (user?.role === "Admin") {
-      axios.get("http://localhost:8080/reports/admin/upcoming-walks", {
+      axios.get(`${backendUrl}/reports/admin/upcoming-walks`, {
         withCredentials: true,
       })
       .then((res) => setUpcomingWalks(res.data))
@@ -36,7 +38,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (user?.role === "Walker") {
-      axios.get("http://localhost:8080/reports/walker/my-walks", {
+      axios.get(`${backendUrl}/reports/walker/my-walks`, {
         withCredentials: true,
       })
       .then((res) => setMyWalks(res.data))
@@ -46,7 +48,7 @@ const Profile = () => {
   
   useEffect(() => {
     if (user?.role === "Marshal") {
-      axios.get("http://localhost:8080/reports/marshal/my-walks", {
+      axios.get(`${backendUrl}/reports/marshal/my-walks`, {
         withCredentials: true,
       })
       .then((res) => setMarshalSessions(res.data))
@@ -60,7 +62,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/auth/profile", {
+        const response = await axios.get(`${backendUrl}/auth/profile`, {
           withCredentials: true,
         });
 
@@ -99,7 +101,7 @@ const Profile = () => {
   
     try {
       const response = await axios.put(
-        `http://localhost:8080/reports/walker/check-in/${scheduleId}`,
+        `${backendUrl}/reports/walker/check-in/${scheduleId}`,
         { code },
         { withCredentials: true }
       );
@@ -107,7 +109,7 @@ const Profile = () => {
       alert(response.data.message);
   
       // Refresh the myWalks list
-      const res = await axios.get("http://localhost:8080/reports/walker/my-walks", {
+      const res = await axios.get(`${backendUrl}/reports/walker/my-walks`, {
         withCredentials: true,
       });
       setMyWalks(res.data);
@@ -123,7 +125,7 @@ const Profile = () => {
   
     try {
       const response = await axios.post(
-        `http://localhost:8080/reports/complete-walk/${sessionId}`,
+        `${backendUrl}/reports/complete-walk/${sessionId}`,
         {},
         { withCredentials: true }
       );
@@ -131,12 +133,12 @@ const Profile = () => {
   
       // Refresh data
       if (user?.role === "Admin") {
-        const res = await axios.get("http://localhost:8080/reports/admin/upcoming-walks", {
+        const res = await axios.get(`${backendUrl}/reports/admin/upcoming-walks`, {
           withCredentials: true
         });
         setUpcomingWalks(res.data);
       } else if (user?.role === "Marshal") {
-        const res = await axios.get("http://localhost:8080/reports/marshal/my-walks", {
+        const res = await axios.get(`${backendUrl}/reports/marshal/my-walks`, {
           withCredentials: true
         });
         setMarshalSessions(res.data);
@@ -155,7 +157,7 @@ const Profile = () => {
   const handleSave = async () => {
     try {
       const response = await axios.put(
-        `http://localhost:8080/auth/update-user/${user.id}`,
+        `${backendUrl}/auth/update-user/${user.id}`,
         { phone: editedPhone, role: editedRole },
         { withCredentials: true }
       );
@@ -177,7 +179,7 @@ const Profile = () => {
     if (!confirmDelete) return;
   
     try {
-      await axios.delete(`http://localhost:8080/reports/delete-session/${sessionId}`, {
+      await axios.delete(`${backendUrl}/reports/delete-session/${sessionId}`, {
         withCredentials: true,
       });
   
@@ -185,12 +187,12 @@ const Profile = () => {
   
       // Refresh relevant data
       if (user.role === "Admin") {
-        const res = await axios.get("http://localhost:8080/reports/admin/upcoming-walks", {
+        const res = await axios.get(`${backendUrl}/reports/admin/upcoming-walks`, {
           withCredentials: true,
         });
         setUpcomingWalks(res.data);
       } else if (user.role === "Marshal") {
-        const res = await axios.get("http://localhost:8080/reports/marshal/my-walks", {
+        const res = await axios.get(`${backendUrl}/reports/marshal/my-walks`, {
           withCredentials: true,
         });
         setMarshalSessions(res.data);

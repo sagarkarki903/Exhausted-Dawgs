@@ -5,13 +5,14 @@ import { NavUser } from "../NavAndFoot/NavUser";
 import { Footer } from "../NavAndFoot/Footer";
 
 const MainReport = () => {
+  const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
   const [user, setUser] = useState(null);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch user info
   useEffect(() => {
-    axios.get("http://localhost:8080/auth/profile", { withCredentials: true })
+    axios.get(`${backendUrl}/auth/profile`, { withCredentials: true })
       .then((res) => {
         setUser(res.data);
       })
@@ -22,7 +23,7 @@ const MainReport = () => {
 
   // Fetch reports
   useEffect(() => {
-    axios.get("http://localhost:8080/reports/all", { withCredentials: true })
+    axios.get(`${backendUrl}/reports/all`, { withCredentials: true })
       .then((res) => setReports(res.data))
       .catch((err) => console.error("Failed to fetch reports:", err))
       .finally(() => setLoading(false));

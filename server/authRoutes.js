@@ -4,6 +4,12 @@ const pool = require("./db"); // Import database
 
 const router = express.Router();
 
+//testing...will b removed later
+router.get("/test", (req, res) => {
+    res.send("✅ Auth route is reachable!");
+  });
+  
+
 // Protected Route to Get Authenticated User Data
 router.get("/profile", authenticateUser, async (req, res) => {
     try {

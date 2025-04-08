@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import { Edit, Save, X, User, Home, Phone } from "lucide-react";
 import { NavAdmin } from "../NavAndFoot/NavAdmin";
 import { NavUser } from "../NavAndFoot/NavUser";
@@ -25,6 +26,56 @@ const Profile = () => {
   const [marshalSessions, setMarshalSessions] = useState([]);
   
   const navigate = useNavigate();
+
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewURL, setPreviewURL] = useState(null);
+  const [uploadMessage, setUploadMessage] = useState("");
+
+  
+  const handleFileChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setSelectedFile(file);
+    const preview = URL.createObjectURL(file);
+    setPreviewURL(preview);
+  }
+};
+
+
+const handleUpload = async () => {
+  if (!selectedFile) {
+    setUploadMessage("Please select a file first.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('image', selectedFile);
+
+  
+
+
+  try {
+    const res = await axios.post(`${backendUrl}/auth/profile/upload`, formData, {
+      withCredentials: true,
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+
+    setUploadMessage("Profile picture updated!");
+    // update user context/state with new profile picture from backend
+    // assuming you have something like setUser
+    if (res.data?.profile_pic) {
+      setUser(prev => ({ ...prev, profile_pic: res.data.profile_pic }));
+      setPreviewURL(null); // clear preview, now we have the real one
+      setSelectedFile(null); // reset selection
+      window.location.reload(); // reload to see the new image
+    }
+
+  } catch (error) {
+    console.error("Error uploading profile picture:", error);
+    setUploadMessage("Error uploading profile picture.");
+  }
+};
+
 
 
   useEffect(() => {
@@ -111,9 +162,8 @@ const Profile = () => {
       const response = await axios.put(
         `${backendUrl}/reports/walker/check-in/${scheduleId}`,
         { code },
-        { withCredentials: true }
       );
-  
+
       alert(response.data.message);
   
       // Refresh the myWalks list
@@ -196,8 +246,7 @@ const Profile = () => {
       // Refresh relevant data
       if (user.role === "Admin") {
         const res = await axios.get(`${backendUrl}/reports/admin/upcoming-walks`, {
-          withCredentials: true,
-        });
+  });
         setUpcomingWalks(res.data);
       } else if (user.role === "Marshal") {
         const res = await axios.get(`${backendUrl}/reports/marshal/my-walks`, {
@@ -263,6 +312,11 @@ const Profile = () => {
       )}
     </div>
   );
+
+  SessionCard.propTypes = {
+    session: PropTypes.object.isRequired,
+    isAdminOrMarshal: PropTypes.bool.isRequired,
+  };
   
   
 
@@ -300,7 +354,7 @@ const Profile = () => {
             <div className="space-y-4">
               <h2 className="text-xl font-semibold mb-4">My Walks</h2>
               {myWalks.length === 0 ? (
-                <p>You haven't booked any walks yet.</p>
+                <p>You have not booked any walks yet.</p>
               ) : (
                 <div className="max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -346,7 +400,7 @@ const Profile = () => {
             <div className="space-y-4">
               <h2 className="text-xl font-semibold mb-4">My Sessions</h2>
               {marshalSessions.length === 0 ? (
-                <p>You haven't opened any sessions with walkers yet.</p>
+                <p>You have not opened any sessions with walkers yet.</p>
               ) : (
                 <div className="max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -392,20 +446,53 @@ const Profile = () => {
       <main className="flex-grow w-full max-w-screen-lg mx-auto px-4 md:px-8 pb-10">
         <div className="py-8">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-            {/* Profile Picture */}
-            <div className="relative">
-              <div className="w-36 h-36 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                {user?.profile_pic ? (
-                  <img
-                    src={user.profile_pic}
-                    alt="Profile"
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                ) : (
-                  <User className="w-16 h-16 text-gray-400" />
-                )}
-              </div>
+            
+
+            <div className="flex flex-col items-center justify-center">
+                  {/* Profile Picture with Select Button on Hover */}
+                  <div className="relative w-36 h-36 group">
+                    <div className="w-full h-full rounded-full bg-gray-100 overflow-hidden flex items-center justify-center shadow-sm">
+                      {user?.profile_pic ? (
+                        <img
+                          src={previewURL || user?.profile_pic}
+                          alt="Profile"
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      ) : (
+                        <User className="w-16 h-16 text-gray-400" />
+                      )}
+
+                      {/* Hover overlay for selecting image */}
+                      <div className="absolute inset-0 bg-gray-700 bg-opacity-50 flex items-center rounded-full justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <label className="text-white text-xs cursor-pointer">
+                          Change Image
+                          <input
+                            type="file"
+                            onChange={handleFileChange}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Upload Button appears ONLY after image is selected */}
+                  {previewURL && (
+                    <button
+                      onClick={handleUpload}
+                      className="mt-3 text-xs text-white bg-gray-700 px-4 py-2 rounded hover:bg-gray-600 transition hover:cursor-pointer"
+                    >
+                      Upload
+                    </button>
+                  )}
+
+                  {/* Upload message, disappears automatically */}
+                  {uploadMessage && (
+                    <p className="text-xs text-green-600 mt-2 text-center">{uploadMessage}</p>
+                  )}
             </div>
+
+
 
 
 

@@ -1,6 +1,9 @@
 const express = require("express");
 const authenticateUser = require("./middleware/authMiddleware"); // Import middleware
 const pool = require("./db"); // Import database
+const cloudinary = require('./config/cloudinary');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' }); // Temporary storage before uploading to Cloudinary
 
 const router = express.Router();
 
@@ -28,6 +31,67 @@ router.get("/profile", authenticateUser, async (req, res) => {
         console.error("Error fetching user profile:", error);
         res.status(500).json({ message: "Server error" });
     }
+});
+
+// Helper function: Extract Cloudinary public_id from image URL
+function getPublicIdFromUrl(url) {
+  try {
+    // Example URL:
+    // https://res.cloudinary.com/your_cloud_name/image/upload/v1742961701/user_profiles/19/profile_19_1234567890.png
+    const parts = url.split('/upload/');
+    if (parts.length < 2) return null;
+    let remainder = parts[1]; // e.g., "v1742961701/user_profiles/19/profile_19_1234567890.png"
+    const segments = remainder.split('/');
+    // Remove version segment if present (starts with "v")
+    if (segments[0].startsWith('v')) {
+      segments.shift();
+    }
+    const publicIdWithExt = segments.join('/'); // "user_profiles/19/profile_19_1234567890.png"
+    const dotIndex = publicIdWithExt.lastIndexOf('.');
+    if (dotIndex !== -1) {
+      return publicIdWithExt.substring(0, dotIndex);
+    }
+    return publicIdWithExt;
+  } catch (error) {
+    console.error("Error extracting public_id from URL:", error);
+    return null;
+  }
+}
+
+// POST /auth/profile/upload - Upload and replace user profile picture
+router.post("/profile/upload", authenticateUser, upload.single('image'), async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { path } = req.file;
+
+    // Retrieve the current profile picture URL from the database
+    const [users] = await pool.query("SELECT profile_pic FROM users WHERE id = ?", [userId]);
+    
+    // If an old profile picture exists, delete it from Cloudinary.
+    if (users.length > 0 && users[0].profile_pic) {
+      const oldUrl = users[0].profile_pic;
+      const oldPublicId = getPublicIdFromUrl(oldUrl);
+      if (oldPublicId) {
+        await cloudinary.uploader.destroy(oldPublicId);
+      }
+    }
+
+    // Upload the new image to Cloudinary in a user-specific folder.
+    const result = await cloudinary.uploader.upload(path, {
+      folder: `user_profiles/${userId}`,
+      // You can generate a new public_id or let Cloudinary generate one automatically.
+      public_id: `profile_${userId}_${Date.now()}`,
+      overwrite: true
+    });
+
+    // Update the user's profile_pic column in the database with the new secure URL.
+    await pool.query("UPDATE users SET profile_pic = ? WHERE id = ?", [result.secure_url, userId]);
+
+    res.status(200).json({ message: "Profile picture updated successfully.", profile_pic: result.secure_url });
+  } catch (error) {
+    console.error("Error uploading profile picture:", error);
+    res.status(500).json({ message: "Failed to update profile picture." });
+  }
 });
 
 // Admin Update User Profile (Only Admins Can Change Role & Phone)

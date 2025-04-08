@@ -180,32 +180,6 @@ const handleUpload = async () => {
   }, [backendUrl, user]);
 
   
-
-
-  //handles walker check in
-  const handleCheckIn = async (scheduleId) => {
-    const code = prompt("Enter the check-in code:");
-  
-    if (!code) return;
-  
-    try {
-      const response = await axios.put(
-        `${backendUrl}/reports/walker/check-in/${scheduleId}`,
-        { code },
-      );
-
-      alert(response.data.message);
-  
-      // Refresh the myWalks list
-      const res = await axios.get(`${backendUrl}/reports/walker/my-walks`, {
-        withCredentials: true,
-      });
-      setMyWalks(res.data);
-    } catch (err) {
-      console.error("Check-in failed:", err);
-      alert(err.response?.data?.message || "Failed to check in.");
-    }
-  };
   
 
   const handleCompleteWalk = async (sessionId) => {
@@ -276,6 +250,7 @@ const handleUpload = async () => {
       // Refresh relevant data
       if (user.role === "Admin") {
         const res = await axios.get(`${backendUrl}/reports/admin/upcoming-walks`, {
+          withCredentials: true,
   });
         setUpcomingWalks(res.data);
       } else if (user.role === "Marshal") {
@@ -316,7 +291,6 @@ const handleUpload = async () => {
                 <tr key={i} className="text-gray-700">
                   <td className="py-1 pr-2">{i + 1}</td>
                   <td className="py-1 pr-2">{w.walker_name}</td>
-                  <td className="py-1">{w.dog_name}</td>
                 </tr>
               ))}
             </tbody>
@@ -392,20 +366,13 @@ const handleUpload = async () => {
                     <div key={idx} className="bg-white border border-gray-200 rounded-lg shadow-md p-4">
                       <p className="text-gray-700"><strong>Date:</strong> {new Date(walk.date).toLocaleDateString()}</p>
                       <p className="text-gray-700"><strong>Time:</strong> {walk.time}</p>
-                      <p className="text-gray-700"><strong>Dog:</strong> {walk.dog_name}</p>
                       <p className="text-gray-700"><strong>Walker:</strong> {walk.walker_name}</p>
                       <p className="text-gray-700"><strong>Marshal:</strong> {walk.marshal_name}</p>
 
-                      {walk.checked_in ? (
-                        <p className="mt-2 text-green-600 font-medium">✅ Checked In</p>
-                      ) : (
-                        <button
-                          onClick={() => handleCheckIn(walk.session_id)}
-                          className="mt-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded text-sm"
-                        >
-                          Check In
-                        </button>
-                      )}
+                      <p className={`mt-2 font-medium ${walk.checked_in ? "text-green-600" : "text-red-500"}`}>
+                        {walk.checked_in ? "✅ Checked In" : "Not Checked In"}
+                      </p>
+
                     </div>
                   ))}
 

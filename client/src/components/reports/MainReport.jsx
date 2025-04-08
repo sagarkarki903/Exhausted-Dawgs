@@ -5,23 +5,17 @@ import { NavUser } from "../NavAndFoot/NavUser";
 import { Footer } from "../NavAndFoot/Footer";
 
 const MainReport = () => {
-  const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
+  const backendUrl = import.meta.env.VITE_BACKEND;
   const [user, setUser] = useState(null);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user info
   useEffect(() => {
     axios.get(`${backendUrl}/auth/profile`, { withCredentials: true })
-      .then((res) => {
-        setUser(res.data);
-      })
-      .catch((err) => {
-        console.error("Error fetching user:", err);
-      });
+      .then((res) => setUser(res.data))
+      .catch((err) => console.error("Error fetching user:", err));
   }, []);
 
-  // Fetch reports
   useEffect(() => {
     axios.get(`${backendUrl}/reports/all`, { withCredentials: true })
       .then((res) => setReports(res.data))
@@ -31,26 +25,21 @@ const MainReport = () => {
 
   if (loading) return <p className="text-center mt-6 text-gray-500">Loading reports...</p>;
 
-  // Convert JSON to CSV
   const convertToCSV = (data) => {
-    const header = ["#", "Date", "Time", "Dog", "Walker", "Marshal", "Status", "Check-In"];
+    const header = ["#", "Date", "Time", "Walker", "Marshal", "Status", "Check-In"];
     const rows = data.map((report, index) => [
       index + 1,
       new Date(report.date).toLocaleDateString(),
       report.time,
-      report.dog,
       report.walker,
       report.marshal,
       report.status,
       report.check_in_status ? "Checked In" : "Not Checked In"
     ]);
-    const csvContent = [header, ...rows]
-      .map((row) => row.join(","))
-      .join("\n");
+    const csvContent = [header, ...rows].map((row) => row.join(",")).join("\n");
     return csvContent;
   };
 
-  // Download the CSV file
   const downloadCSV = () => {
     const csvContent = convertToCSV(reports);
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -90,7 +79,6 @@ const MainReport = () => {
                     <th className="border px-3 py-2">#</th>
                     <th className="border px-3 py-2">Date</th>
                     <th className="border px-3 py-2">Time</th>
-                    <th className="border px-3 py-2">Dog</th>
                     <th className="border px-3 py-2">Walker</th>
                     <th className="border px-3 py-2">Marshal</th>
                     <th className="border px-3 py-2">Status</th>
@@ -103,7 +91,6 @@ const MainReport = () => {
                       <td className="border px-3 py-2">{idx + 1}</td>
                       <td className="border px-3 py-2">{new Date(report.date).toLocaleDateString()}</td>
                       <td className="border px-3 py-2">{report.time}</td>
-                      <td className="border px-3 py-2">{report.dog}</td>
                       <td className="border px-3 py-2">{report.walker}</td>
                       <td className="border px-3 py-2">{report.marshal}</td>
                       <td className="border px-3 py-2 text-green-600 font-medium">{report.status}</td>

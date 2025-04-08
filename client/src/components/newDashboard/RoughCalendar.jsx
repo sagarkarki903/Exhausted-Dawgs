@@ -74,7 +74,6 @@ export default function RoughCalendar() {
 
 //for booking the slot
   const [bookingScheduleId, setBookingScheduleId] = useState(null);
-  const [walkerDogId, setWalkerDogId] = useState("");
 
 
 
@@ -438,12 +437,10 @@ export default function RoughCalendar() {
                     `${backendUrl}/calendar/book-slot`,
                     {
                       schedule_id: session.id,
-                      dog_id: walkerDogId,
                     },
                     { withCredentials: true }
                   );
                   alert("Slot booked successfully!");
-                  setWalkerDogId("");
                   setBookingScheduleId(null);
                   handleDateClick({ dateStr: selectedDate });
 
@@ -474,14 +471,7 @@ export default function RoughCalendar() {
               }}
               className="mt-3 space-y-2"
             >
-              <input
-                type="number"
-                placeholder="Enter Dog ID"
-                value={walkerDogId}
-                onChange={(e) => setWalkerDogId(e.target.value)}
-                className="w-full border px-2 py-1 rounded"
-                required
-              />
+              
               <div className="flex gap-2">
                 <button
                   type="submit"
@@ -494,7 +484,6 @@ export default function RoughCalendar() {
                   className="bg-gray-400 text-white px-3 py-1 rounded hover:bg-gray-500 text-sm"
                   onClick={() => {
                     setBookingScheduleId(null);
-                    setWalkerDogId("");
                   }}
                 >
                   Cancel

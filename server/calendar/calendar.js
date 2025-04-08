@@ -157,7 +157,7 @@ router.delete("/closures/:date", authenticateUser, async (req, res) => {
 
 
 router.post("/book-slot", authenticateUser, async (req, res) => {
-  const { schedule_id, dog_id } = req.body;
+  const { schedule_id } = req.body;
   const userId = req.user?.id;
   const userRole = req.user?.role;
 
@@ -166,10 +166,10 @@ router.post("/book-slot", authenticateUser, async (req, res) => {
     return res.status(403).json({ message: "Only walkers can book sessions" });
   }
 
-  if (!schedule_id || !dog_id || !userId) {
-    return res.status(400).json({ message: "Missing schedule ID or dog selection" });
+  if (!schedule_id || !userId) {
+    return res.status(400).json({ message: "Missing schedule ID" });
   }
-
+  
   try {
     // Get schedule details
     const [[session]] = await pool.query(
@@ -191,18 +191,7 @@ router.post("/book-slot", authenticateUser, async (req, res) => {
       return res.status(409).json({ message: "You have already booked this session" });
     }
 
-    // Check if the selected dog is already booked for the same date & time
-    const [dogConflict] = await pool.query(
-      `SELECT ws.* 
-       FROM walker_schedule ws
-       JOIN marshal_schedule ms ON ws.schedule_id = ms.id
-       WHERE ms.date = ? AND ms.time = ? AND ws.dog_id = ?`,
-      [session.date, session.time, dog_id]
-    );
 
-    if (dogConflict.length > 0) {
-      return res.status(409).json({ message: "This dog is already booked for this time" });
-    }
 
     // Check current walker count
     const [[{ count }]] = await pool.query(
@@ -230,9 +219,10 @@ router.post("/book-slot", authenticateUser, async (req, res) => {
 
     // Insert the booking
     await pool.query(
-      "INSERT INTO walker_schedule (schedule_id, user_id, dog_id) VALUES (?, ?, ?)",
-      [schedule_id, userId, dog_id]
+      "INSERT INTO walker_schedule (schedule_id, user_id) VALUES (?, ?)",
+      [schedule_id, userId]
     );
+    
 
     res.status(201).json({ message: "Slot booked successfully" });
   } catch (error) {

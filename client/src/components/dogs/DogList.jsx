@@ -5,12 +5,12 @@ import { motion } from "framer-motion";
 import { Heart, PawPrint, MoveLeft } from "lucide-react";
 
 export const DogList = () => {
+  const backendUrl = import.meta.env.VITE_BACKEND;
   const navigate = useNavigate();
   const [dogs, setDogs] = useState([]);
   
 
   useEffect(() => {
-    const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
     
     axios
       .get(`${backendUrl}/dogs`) // Fetch dog data including profile_picture
@@ -19,6 +19,21 @@ export const DogList = () => {
 
   }, []);
   console.log(dogs)
+
+  const handleFavorite = async (dogId) => {
+  try {
+    const res = await axios.put(
+      `${backendUrl}/auth/favorite`,
+      { dogId },
+      { withCredentials: true }
+    );
+    console.log("Favorites updated:", res.data.favorites);
+    // Optionally update local state to reflect changes (such as updating a 'favorites' state)
+  } catch (error) {
+    console.error("Error updating favorites:", error);
+  }
+};
+
   return (
     <>
       <motion.div
@@ -100,11 +115,12 @@ export const DogList = () => {
               Meet Me
             </button>
             <button
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 text-gray-500 transition hover:bg-yellow-500"
-              aria-label="Add to favorites"
-            >
-              <Heart className="h-5 w-5" />
-            </button>
+            onClick={() => handleFavorite(dog.id)}
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 text-gray-500 transition hover:bg-yellow-500"
+            aria-label="Add to favorites"
+          >
+            <Heart className="h-5 w-5" />
+          </button>
           </div>
         </div>
       </motion.div>

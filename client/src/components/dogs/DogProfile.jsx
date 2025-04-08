@@ -168,6 +168,7 @@ const handleDeleteImage = async (imageUrl) => {
 };
 
 
+
   
   if (!dog) return <div className="text-center py-10">Loading...</div>;
 

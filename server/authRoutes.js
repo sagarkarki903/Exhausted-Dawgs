@@ -18,7 +18,7 @@ router.get("/profile", authenticateUser, async (req, res) => {
     try {
         console.log("/auth/profile route hit!")
         const [users] = await pool.query(
-            "SELECT id, firstname, lastname, username, email, created_at, role, phone, profile_pic FROM users WHERE id = ?",
+            "SELECT id, firstname, lastname, username, email, created_at, role, phone, profile_pic, favorite FROM users WHERE id = ?",
             [req.user.id]
         );
 
@@ -118,6 +118,47 @@ router.put("/update-user/:id", authenticateUser, async (req, res) => {
         console.error("Error updating user:", error);
         res.status(500).json({ message: "Server error" });
     }
+});
+
+// Toggle favorite dog endpoint
+router.put("/favorite", authenticateUser, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { dogId } = req.body;  // Expect the dog's id to be sent in the request body
+
+    if (!dogId) {
+      return res.status(400).json({ error: "dogId is required in the request body." });
+    }
+
+    // Fetch current favorites from the user record
+    const [rows] = await pool.query("SELECT favorite FROM users WHERE id = ?", [userId]);
+    let favorites = [];
+    if (rows.length > 0 && rows[0].favorite) {
+      try {
+        favorites = JSON.parse(rows[0].favorite);
+        if (!Array.isArray(favorites)) {
+          favorites = [];
+        }
+      } catch (err) {
+        favorites = [];
+      }
+    }
+
+    // Toggle: add the dogId if it's not in favorites, otherwise remove it
+    if (favorites.includes(dogId)) {
+      favorites = favorites.filter((id) => id !== dogId);
+    } else {
+      favorites.push(dogId);
+    }
+
+    // Update the user's favorite column (stored as a JSON string)
+    await pool.query("UPDATE users SET favorite = ? WHERE id = ?", [JSON.stringify(favorites), userId]);
+
+    res.status(200).json({ message: "Favorite updated successfully.", favorites });
+  } catch (error) {
+    console.error("Error updating favorites:", error);
+    res.status(500).json({ error: "Failed to update favorites." });
+  }
 });
 
 

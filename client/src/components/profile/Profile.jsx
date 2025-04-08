@@ -14,6 +14,7 @@ import axios from "axios";
 const Profile = () => {
   const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
   const [user, setUser] = useState(null);
+  const [favoriteDogs, setFavoriteDogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -82,7 +83,7 @@ const handleUpload = async () => {
     if (!loading && !user) {
       navigate("/login");
     }
-  }, [loading, user]);
+  }, [loading, user, navigate]);
 
 
   useEffect(() => {
@@ -93,7 +94,7 @@ const handleUpload = async () => {
       .then((res) => setUpcomingWalks(res.data))
       .catch((err) => console.error("Error fetching upcoming walks:", err));
     }
-  }, [user]);
+  }, [backendUrl, user]);
 
   useEffect(() => {
     if (user?.role === "Walker") {
@@ -103,7 +104,7 @@ const handleUpload = async () => {
       .then((res) => setMyWalks(res.data))
       .catch((err) => console.error("Error fetching walker's walks:", err));
     }
-  }, [user]);
+  }, [backendUrl, user]);
   
   useEffect(() => {
     if (user?.role === "Marshal") {
@@ -113,18 +114,16 @@ const handleUpload = async () => {
       .then((res) => setMarshalSessions(res.data))
       .catch((err) => console.error("Error fetching marshal walks:", err));
     }
-  }, [user]);
+  }, [backendUrl, user]);
   
   
-
-
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await axios.get(`${backendUrl}/auth/profile`, {
           withCredentials: true,
         });
-
+        console.log("User profile:", response.data); // Debug log
         setUser(response.data);
         setEditedPhone(response.data.phone || "");
         setEditedRole(response.data.role || "");
@@ -146,8 +145,39 @@ const handleUpload = async () => {
     };
 
     fetchUser();
-  }, []);
+  }, [backendUrl]);
 
+ useEffect(() => {
+    const fetchFavoriteDogs = async () => {
+      if (user && user.favorite) {
+        try {
+          // Parse the favorites which is stored as a text string (JSON string)
+          let favArray = [];
+          try {
+            favArray = JSON.parse(user.favorite);
+          } catch (parseError) {
+            console.error("Failed to parse favorites:", parseError);
+          }
+          if (Array.isArray(favArray) && favArray.length > 0) {
+            // Fetch details for each favorite dog id
+            const favDogs = await Promise.all(
+              favArray.map(async (dogId) => {
+                const res = await axios.get(`${backendUrl}/dogs/${dogId}`);
+                return res.data;
+              })
+            );
+            setFavoriteDogs(favDogs);
+          } else {
+            setFavoriteDogs([]);
+          }
+        } catch (err) {
+          console.error("Error fetching favorite dogs:", err);
+          setFavoriteDogs([]);
+        }
+      }
+    };
+    fetchFavoriteDogs();
+  }, [backendUrl, user]);
 
   
 
@@ -387,7 +417,41 @@ const handleUpload = async () => {
             </div>
           );
         case 1:
-          return <p>Saved dogs / Favorites</p>;
+          return (
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold mb-4">Saved Dogs / Favorites</h2>
+              {favoriteDogs.length === 0 ? (
+                <p>You have not favorited any dogs yet.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {favoriteDogs.map((dog, index) => {
+                    const profilePic = dog.profile_picture_url || "/dog2.jpeg";
+                    return (
+                      <div key={index} className="rounded-lg border border-gray-300 shadow-md">
+                        <img
+                          src={profilePic}
+                          alt={dog.name}
+                          className="h-60 w-full object-cover rounded-t-lg"
+                          onError={(e) => (e.target.src = "/dog2.jpeg")}
+                        />
+                        <div className="p-3">
+                          <h2 className="text-lg font-semibold">{dog.name}</h2>
+                          <p className="text-gray-600">{dog.breed}</p>
+                          <p className="text-gray-500 text-sm">Age: {dog.age} years</p>
+                          <button
+                            onClick={() => navigate(`/dogs/${dog.id}`)}
+                            className="mt-2 w-full bg-red-900 text-white py-1 rounded hover:bg-red-800 transition"
+                          >
+                            Meet Me
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
         case 2:
           return <p>Your adoption applications</p>;
         default:

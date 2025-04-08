@@ -17,14 +17,18 @@ router.get("/admin/upcoming-walks", authenticateUser, async (req, res) => {
         ms.date,
         ms.time,
         ws.user_id AS walker_id,
-      ws.checked_in,
+        ws.checked_in,
         CONCAT(mu.firstname, ' ', mu.lastname) AS marshal_name,
-        CONCAT(wu.firstname, ' ', wu.lastname) AS walker_name
+        CONCAT(wu.firstname, ' ', wu.lastname) AS walker_name,
+        GROUP_CONCAT(d.name SEPARATOR ', ') AS dog_names
       FROM marshal_schedule ms
       JOIN users mu ON ms.created_by = mu.id
       LEFT JOIN walker_schedule ws ON ms.id = ws.schedule_id
       LEFT JOIN users wu ON ws.user_id = wu.id
+      LEFT JOIN walker_dogs wd ON ws.schedule_id = wd.schedule_id AND ws.user_id = wd.walker_id
+      LEFT JOIN dogs d ON wd.dog_id = d.id
       WHERE ms.date >= CURDATE()
+      GROUP BY ms.id, ws.user_id
       ORDER BY ms.date ASC, ms.time ASC;
     `);
 
@@ -44,8 +48,8 @@ router.get("/admin/upcoming-walks", authenticateUser, async (req, res) => {
         sessions[row.session_id].walkers.push({
           walker_name: row.walker_name,
           walker_id: row.walker_id,
-          checked_in: row.checked_in
-
+          checked_in: row.checked_in,
+          dog_names: row.dog_names || null // null if no dogs assigned
         });
       }
     });
@@ -56,6 +60,7 @@ router.get("/admin/upcoming-walks", authenticateUser, async (req, res) => {
     res.status(500).json({ message: "Failed to fetch upcoming walks" });
   }
 });
+
 
 router.get("/walker/my-walks", authenticateUser, async (req, res) => {
   const userId = req.user?.id;
@@ -73,12 +78,16 @@ router.get("/walker/my-walks", authenticateUser, async (req, res) => {
         ms.time,
         CONCAT(wu.firstname, ' ', wu.lastname) AS walker_name,
         CONCAT(mu.firstname, ' ', mu.lastname) AS marshal_name,
-        ws.checked_in
+        ws.checked_in,
+        GROUP_CONCAT(d.name SEPARATOR ', ') AS dog_names
       FROM marshal_schedule ms
       JOIN walker_schedule ws ON ms.id = ws.schedule_id
       JOIN users wu ON ws.user_id = wu.id
       JOIN users mu ON ms.created_by = mu.id
+      LEFT JOIN walker_dogs wd ON ws.schedule_id = wd.schedule_id AND ws.user_id = wd.walker_id
+      LEFT JOIN dogs d ON wd.dog_id = d.id
       WHERE ws.user_id = ?
+      GROUP BY ms.id
       ORDER BY ms.date ASC, ms.time ASC
     `, [userId]);
 
@@ -281,6 +290,39 @@ router.put("/check-in", authenticateUser, async (req, res) => {
     res.status(500).json({ message: "Failed to check in walker." });
   }
 });
+
+
+
+//for walker_dogs, to assign each dogs to each walkers
+router.post("/assign-dogs", authenticateUser, async (req, res) => {
+  const { schedule_id, walker_id, dog_ids } = req.body;
+  const userRole = req.user?.role;
+
+  // Only Admins or Marshals can assign dogs
+  if (!["Admin", "Marshal"].includes(userRole)) {
+    return res.status(403).json({ message: "Access denied" });
+  }
+
+  if (!schedule_id || !walker_id || !Array.isArray(dog_ids) || dog_ids.length === 0) {
+    return res.status(400).json({ message: "Missing or invalid data" });
+  }
+
+  try {
+    // Insert new dog assignments, skip if already assigned
+    const values = dog_ids.map((dog_id) => [schedule_id, walker_id, dog_id]);
+
+    await pool.query(
+      `INSERT IGNORE INTO walker_dogs (schedule_id, walker_id, dog_id) VALUES ?`,
+      [values]
+    );
+
+    res.json({ message: "Dogs assigned successfully" });
+  } catch (err) {
+    console.error("Error assigning dogs:", err);
+    res.status(500).json({ message: "Failed to assign dogs" });
+  }
+});
+
 
   
   

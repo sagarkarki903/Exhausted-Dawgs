@@ -12,6 +12,7 @@ import axios from "axios";
 
 
 const Profile = () => {
+
   const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
   const [user, setUser] = useState(null);
   const [favoriteDogs, setFavoriteDogs] = useState([]);
@@ -180,7 +181,20 @@ const handleUpload = async () => {
     fetchFavoriteDogs();
   }, [backendUrl, user]);
 
-  
+
+//for assigning dogs
+const [dogAssignments, setDogAssignments] = useState({});
+
+  const [allDogs, setAllDogs] = useState([]);
+useEffect(() => {
+  if (user?.role === "Admin" || user?.role === "Marshal") {
+    axios.get(`${backendUrl}/dogs`, { withCredentials: true })
+      .then((res) => setAllDogs(res.data))
+      .catch((err) => console.error("Error fetching dogs:", err));
+  }
+}, [backendUrl, user]);
+
+
   
 
   const handleCompleteWalk = async (sessionId) => {
@@ -295,41 +309,122 @@ const handleUpload = async () => {
       alert("Failed to check in walker.");
     }
   };
+
+
   
 
 
 // helper function
 const SessionCard = ({ session, isAdminOrMarshal }) => {
   const [showDetails, setShowDetails] = useState(false);
+  const [assignments, setAssignments] = useState({});
+
+  useEffect(() => {
+    const initial = {};
+    session.walkers.forEach((w) => {
+      // Initialize with first dog if any assigned
+      initial[w.walker_id] = w.dogs?.[0] || "";
+    });
+    setAssignments(initial);
+  }, [session.walkers]);
+  
+
 
   // "Dog Details" card view
   if (showDetails) {
-    return (
-      <div className="bg-gray-50 border border-gray-300 rounded-lg shadow-md p-4">
-        <p className="text-gray-800 font-semibold mb-2">Dog Assignments</p>
-        {session.walkers.length === 0 ? (
-          <p className="text-gray-500 italic">No walkers booked yet.</p>
-        ) : (
-          <ul className="space-y-2">
+      return (
+        <div className="bg-gray-50 border border-gray-300 rounded-lg shadow-md p-4">
+          <p className="text-gray-800 font-semibold mb-2">Dog Assignments</p>
+          {session.walkers.length === 0 ? (
+            <p className="text-gray-500 italic">No walkers booked yet.</p>
+          ) : (
+            <ul className="space-y-4">
             {session.walkers.map((w, idx) => (
-              <li key={idx} className="text-gray-700">
-                <strong>{w.walker_name}:</strong>{" "}
-                {Array.isArray(w.dogs) && w.dogs.length > 0
-                  ? w.dogs.join(", ")
-                  : "No dogs assigned"}
-              </li>
-            ))}
-          </ul>
-        )}
-        <button
-          className="mt-4 text-sm text-blue-600 underline"
-          onClick={() => setShowDetails(false)}
-        >
-          Back to Session
-        </button>
-      </div>
-    );
+              <li key={idx} className="text-gray-700 space-y-2">
+             <div className="mb-2">
+            <strong className="block text-base text-gray-800">{w.walker_name}</strong>
+            {w.dog_names && (
+              <div className="mt-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded text-sm text-gray-700">
+                <span className="font-semibold text-gray-600">Currently Assigned:</span> {w.dog_names}
+              </div>
+            )}
+          </div>
+
+
+                <div className="mt-1">
+                <div className="mt-1">
+                <div className="space-y-1">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Assign Dogs:
+                      </label>
+                      <div className="relative">
+                      <select
+  value={assignments[w.walker_id] || ""}
+  onChange={(e) =>
+    setAssignments((prev) => ({
+      ...prev,
+      [w.walker_id]: e.target.value,
+    }))
   }
+  className="block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm p-2 bg-white"
+>
+  <option value="">Select a dog</option>
+  {allDogs.map((dog) => (
+    <option key={dog.id} value={dog.id}>
+      {dog.name}
+    </option>
+  ))}
+</select>
+
+                      </div>
+                    </div>
+
+
+                <button
+                  onClick={async () => {
+                    try {
+                      await axios.post(
+                        `${backendUrl}/reports/assign-dogs`,
+                        {
+                          schedule_id: session.session_id,
+                          walker_id: w.walker_id,
+                          dog_ids: assignments[w.walker_id] ? [assignments[w.walker_id]] : [],
+                        },
+                        { withCredentials: true }
+                      );
+                      alert("Dogs assigned successfully!");
+                    } catch (err) {
+                      console.error("Error assigning dogs:", err);
+                      alert("Failed to assign dogs.");
+                    }
+                  }}
+                  disabled={(assignments[w.walker_id] || []).length === 0}
+                  className={`mt-2 text-xs px-3 py-1 rounded ${
+                    (assignments[w.walker_id] || []).length > 0
+                      ? "bg-blue-600 text-white hover:bg-blue-700"
+                      : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  }`}
+                >
+                  Save Assignment
+                </button>
+              </div>
+
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                    
+
+                    )}
+                    <button
+                      className="mt-4 text-sm text-blue-600 underline"
+                      onClick={() => setShowDetails(false)}
+                    >
+                      Back to Session
+                    </button>
+                  </div>
+                );
+              }
 
   // Default card view
   return (

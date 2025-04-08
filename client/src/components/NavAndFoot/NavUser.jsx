@@ -195,6 +195,11 @@ export const NavUser = () => {
                   Gallery
                 </button>
               </Link>
+              <Link to="/rough-calendar">
+                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                  Schedule
+                </button>
+              </Link>
               <Link to="/profile">
                 <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
                   Profile

@@ -342,13 +342,13 @@ const SessionCard = ({ session, isAdminOrMarshal }) => {
             {session.walkers.map((w, idx) => (
               <li key={idx} className="text-gray-700 space-y-2">
              <div className="mb-2">
-            <strong className="block text-base text-gray-800">{w.walker_name}</strong>
-            {w.dog_names && (
-              <div className="mt-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded text-sm text-gray-700">
-                <span className="font-semibold text-gray-600">Currently Assigned:</span> {w.dog_names}
-              </div>
-            )}
-          </div>
+              <strong className="block text-base text-gray-800">{w.walker_name}</strong>
+              {w.dog_names && (
+                <div className="mt-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded text-sm text-gray-700">
+                  <span className="font-semibold text-gray-600">Currently Assigned:</span> {w.dog_names}
+                </div>
+              )}
+            </div>
 
 
                 <div className="mt-1">

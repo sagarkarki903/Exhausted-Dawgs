@@ -26,15 +26,15 @@ const MainReport = () => {
   if (loading) return <p className="text-center mt-6 text-gray-500">Loading reports...</p>;
 
   const convertToCSV = (data) => {
-    const header = ["#", "Date", "Time", "Walker", "Marshal", "Status", "Check-In"];
+    const header = ["#", "Date", "Time", "Walker", "Marshal", "Check-In"];
     const rows = data.map((report, index) => [
       index + 1,
       new Date(report.date).toLocaleDateString(),
       report.time,
       report.walker,
       report.marshal,
-      report.status,
-      report.check_in_status ? "Checked In" : "Not Checked In"
+      report.check_in_status === "Checked In" ? "Checked In" : "Not Checked In"
+
     ]);
     const csvContent = [header, ...rows].map((row) => row.join(",")).join("\n");
     return csvContent;
@@ -81,7 +81,6 @@ const MainReport = () => {
                     <th className="border px-3 py-2">Time</th>
                     <th className="border px-3 py-2">Walker</th>
                     <th className="border px-3 py-2">Marshal</th>
-                    <th className="border px-3 py-2">Status</th>
                     <th className="border px-3 py-2">Check-In</th>
                   </tr>
                 </thead>
@@ -93,14 +92,14 @@ const MainReport = () => {
                       <td className="border px-3 py-2">{report.time}</td>
                       <td className="border px-3 py-2">{report.walker}</td>
                       <td className="border px-3 py-2">{report.marshal}</td>
-                      <td className="border px-3 py-2 text-green-600 font-medium">{report.status}</td>
                       <td className="border px-3 py-2">
-                        {report.check_in_status ? (
-                          <span className="text-green-700 font-semibold">Checked In</span>
-                        ) : (
-                          <span className="text-red-500">Not Checked In</span>
-                        )}
-                      </td>
+                  {report.check_in_status === "Checked In" ? (
+                    <span className="text-green-700 font-semibold">Checked In</span>
+                  ) : (
+                    <span className="text-red-500">Not Checked In</span>
+                  )}
+                </td>
+
                     </tr>
                   ))}
                 </tbody>

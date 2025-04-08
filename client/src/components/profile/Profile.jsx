@@ -33,6 +33,7 @@ const Profile = () => {
   const [uploadMessage, setUploadMessage] = useState("");
 
   
+  
   const handleFileChange = (e) => {
   const file = e.target.files[0];
   if (file) {
@@ -266,15 +267,86 @@ const handleUpload = async () => {
   };
   
 
-  //helper function
-  const SessionCard = ({ session, isAdminOrMarshal }) => (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-md p-4">
-      <p className="text-gray-700"><strong>Date:</strong> {new Date(session.date).toLocaleDateString()}</p>
-      <p className="text-gray-700"><strong>Time:</strong> {session.time}</p>
-      <p className="text-gray-700"><strong>Marshal:</strong> {session.marshal_name}</p>
+  const handleCheckIn = async (walkerId, sessionId) => {
+    try {
+      const response = await axios.put(
+        `${backendUrl}/reports/check-in`,
+        { walkerId, sessionId },
+        { withCredentials: true }
+      );
   
+      if (response.data.message) {
+        alert("Walker checked in successfully.");
+        // Refresh the session data
+        if (user.role === "Admin") {
+          const res = await axios.get(`${backendUrl}/reports/admin/upcoming-walks`, {
+            withCredentials: true,
+          });
+          setUpcomingWalks(res.data);
+        } else if (user.role === "Marshal") {
+          const res = await axios.get(`${backendUrl}/reports/marshal/my-walks`, {
+            withCredentials: true,
+          });
+          setMarshalSessions(res.data);
+        }
+      }
+    } catch (err) {
+      console.error("Error checking in walker:", err);
+      alert("Failed to check in walker.");
+    }
+  };
+  
+
+
+// helper function
+const SessionCard = ({ session, isAdminOrMarshal }) => {
+  const [showDetails, setShowDetails] = useState(false);
+
+  // "Dog Details" card view
+  if (showDetails) {
+    return (
+      <div className="bg-gray-50 border border-gray-300 rounded-lg shadow-md p-4">
+        <p className="text-gray-800 font-semibold mb-2">Dog Assignments</p>
+        {session.walkers.length === 0 ? (
+          <p className="text-gray-500 italic">No walkers booked yet.</p>
+        ) : (
+          <ul className="space-y-2">
+            {session.walkers.map((w, idx) => (
+              <li key={idx} className="text-gray-700">
+                <strong>{w.walker_name}:</strong>{" "}
+                {Array.isArray(w.dogs) && w.dogs.length > 0
+                  ? w.dogs.join(", ")
+                  : "No dogs assigned"}
+              </li>
+            ))}
+          </ul>
+        )}
+        <button
+          className="mt-4 text-sm text-blue-600 underline"
+          onClick={() => setShowDetails(false)}
+        >
+          Back to Session
+        </button>
+      </div>
+    );
+  }
+
+  // Default card view
+  return (
+    <div className="bg-white border border-gray-200 rounded-lg shadow-md p-4">
+      <p className="text-gray-700">
+        <strong>Date:</strong>{" "}
+        {new Date(session.date).toLocaleDateString()}
+      </p>
+      <p className="text-gray-700">
+        <strong>Time:</strong> {session.time}
+      </p>
+      <p className="text-gray-700">
+        <strong>Marshal:</strong> {session.marshal_name}
+      </p>
+
       <div className="mt-2">
-        <p className="font-semibold text-gray-800 mb-2">Walkers & Dogs</p>
+        <p className="font-semibold text-gray-800 mb-2">Walkers</p>
         {session.walkers.length === 0 ? (
           <p className="text-gray-500 italic">No walkers booked yet.</p>
         ) : (
@@ -283,7 +355,7 @@ const handleUpload = async () => {
               <tr className="text-gray-600 font-semibold border-b">
                 <th className="py-1 pr-2">#</th>
                 <th className="py-1 pr-2">Walker</th>
-                <th className="py-1">Dog</th>
+                <th className="py-1">Check-In Status</th>
               </tr>
             </thead>
             <tbody>
@@ -291,37 +363,58 @@ const handleUpload = async () => {
                 <tr key={i} className="text-gray-700">
                   <td className="py-1 pr-2">{i + 1}</td>
                   <td className="py-1 pr-2">{w.walker_name}</td>
+                  <td className="py-1">
+                    {w.checked_in ? (
+                      <span className="text-green-600">✅ Checked In</span>
+                    ) : (
+                      isAdminOrMarshal && (
+                        <button
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs"
+                          onClick={() =>
+                            handleCheckIn(w.walker_id, session.session_id)
+                          }
+                        >
+                          Check In
+                        </button>
+                      )
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
-  
-      {isAdminOrMarshal && (
-        <div className="mt-4 flex gap-2">
-          <button
-            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-1 px-3 rounded text-sm"
-            onClick={() => handleCompleteWalk(session.session_id)}
-            >
-            Complete Walk
-          </button>
-          <button
-            className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-3 rounded text-sm"
-            onClick={() => handleDeleteSession(session.session_id)}
-          >
-            Cancel
-          </button>
-        </div>
-      )}
+
+      <div className="mt-4 flex gap-2">
+        <button
+          className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-1 px-3 rounded text-sm"
+          onClick={() => handleCompleteWalk(session.session_id)}
+        >
+          Complete Walk
+        </button>
+        <button
+          className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-3 rounded text-sm"
+          onClick={() => handleDeleteSession(session.session_id)}
+        >
+          Cancel
+        </button>
+        <button
+          className="flex-1 border border-gray-300 hover:bg-gray-100 text-gray-700 font-medium py-1 px-3 rounded text-sm"
+          onClick={() => setShowDetails(true)}
+        >
+        Dog Details
+        </button>
+      </div>
     </div>
   );
+};
 
-  SessionCard.propTypes = {
-    session: PropTypes.object.isRequired,
-    isAdminOrMarshal: PropTypes.bool.isRequired,
-  };
-  
+SessionCard.propTypes = {
+  session: PropTypes.object.isRequired,
+  isAdminOrMarshal: PropTypes.bool.isRequired,
+};
+
   
 
   const renderTabContent = () => {
@@ -362,7 +455,9 @@ const handleUpload = async () => {
               ) : (
                 <div className="max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {myWalks.map((walk, idx) => (
+                  {myWalks
+                  .map((walk, idx) => (
+
                     <div key={idx} className="bg-white border border-gray-200 rounded-lg shadow-md p-4">
                       <p className="text-gray-700"><strong>Date:</strong> {new Date(walk.date).toLocaleDateString()}</p>
                       <p className="text-gray-700"><strong>Time:</strong> {walk.time}</p>
@@ -427,6 +522,8 @@ const handleUpload = async () => {
     } else if (user?.role === "Marshal") {
       switch (activeTab) {
         case 0:
+          
+          
           return (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold mb-4">My Sessions</h2>
@@ -435,9 +532,10 @@ const handleUpload = async () => {
               ) : (
                 <div className="max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {marshalSessions.map((session, idx) => (
-                      <SessionCard key={idx} session={session} isAdminOrMarshal={true} />
-                    ))}
+                  {marshalSessions.map((session, idx) => (
+  <SessionCard key={idx} session={session} isAdminOrMarshal={true} />
+))}
+
                   </div>
                 </div>
               )}

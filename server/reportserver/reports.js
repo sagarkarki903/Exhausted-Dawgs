@@ -16,6 +16,8 @@ router.get("/admin/upcoming-walks", authenticateUser, async (req, res) => {
         ms.id AS session_id,
         ms.date,
         ms.time,
+        ws.user_id AS walker_id,
+      ws.checked_in,
         CONCAT(mu.firstname, ' ', mu.lastname) AS marshal_name,
         CONCAT(wu.firstname, ' ', wu.lastname) AS walker_name
       FROM marshal_schedule ms
@@ -40,8 +42,10 @@ router.get("/admin/upcoming-walks", authenticateUser, async (req, res) => {
 
       if (row.walker_name) {
         sessions[row.session_id].walkers.push({
-          walker_name: row.walker_name
-          // dog_name is removed
+          walker_name: row.walker_name,
+          walker_id: row.walker_id,
+          checked_in: row.checked_in
+
         });
       }
     });
@@ -100,6 +104,8 @@ router.get("/marshal/my-walks", authenticateUser, async (req, res) => {
         ms.id AS session_id,
         ms.date,
         ms.time,
+        ws.user_id AS walker_id,
+        ws.checked_in,
         CONCAT(mu.firstname, ' ', mu.lastname) AS marshal_name,
         CONCAT(wu.firstname, ' ', wu.lastname) AS walker_name
       FROM marshal_schedule ms
@@ -122,10 +128,11 @@ router.get("/marshal/my-walks", authenticateUser, async (req, res) => {
         };
       }
 
-      if (row.walker_name) {
+      if (row.walker_id) {
         sessions[row.session_id].walkers.push({
-          walker_name: row.walker_name
-          // dog_name removed
+          walker_name: row.walker_name,
+          walker_id: row.walker_id,
+          checked_in: row.checked_in
         });
       }
     });
@@ -136,6 +143,7 @@ router.get("/marshal/my-walks", authenticateUser, async (req, res) => {
     res.status(500).json({ message: "Failed to fetch marshal walks" });
   }
 });
+
 
 
 
@@ -197,12 +205,13 @@ router.get("/marshal/my-walks", authenticateUser, async (req, res) => {
     
         // 2. Insert into report_table (without dog column)
         const insertPromises = rows.map(row => {
-          const status = row.checked_in ? "Checked In" : "Not Checked In";
+          const checkInStatus = row.checked_in ? "Checked In" : "Not Checked In";
           return pool.query(`
-            INSERT INTO report_table (date, time, walker, marshal, status, check_in_status)
-            VALUES (?, ?, ?, ?, 'Completed', ?)
-          `, [row.date, row.time, row.walker, row.marshal, status]);
+            INSERT INTO report_table (date, time, walker, marshal, check_in_status)
+            VALUES (?, ?, ?, ?, ?)
+          `, [row.date, row.time, row.walker, row.marshal, checkInStatus]);
         });
+        
     
         await Promise.all(insertPromises);
     
@@ -227,11 +236,11 @@ router.get("/all", authenticateUser, async (req, res) => {
 
   try {
     const [reports] = await pool.query(`
-      SELECT date, time, walker, marshal, status, check_in_status
+      SELECT date, time, walker, marshal, check_in_status
       FROM report_table
       ORDER BY date DESC, time DESC
     `);
-
+    
     res.json(reports);
   } catch (err) {
     console.error("Error fetching reports:", err);
@@ -240,6 +249,39 @@ router.get("/all", authenticateUser, async (req, res) => {
 });
 
       
+
+// In reports.js or your route file
+router.put("/check-in", authenticateUser, async (req, res) => {
+  const { walkerId, sessionId } = req.body;
+  const userRole = req.user?.role;
+
+  if (!["Admin", "Marshal"].includes(userRole)) {
+    return res.status(403).json({ message: "Access denied" });
+  }
+
+  if (!walkerId || !sessionId) {
+    return res.status(400).json({ message: "Missing walkerId or sessionId" });
+  }
+
+  try {
+    const [result] = await pool.query(
+      `UPDATE walker_schedule 
+       SET checked_in = 1 
+       WHERE user_id = ? AND schedule_id = ?`,
+      [walkerId, sessionId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "No matching walker session found." });
+    }
+
+    res.json({ message: "Walker checked in successfully." });
+  } catch (err) {
+    console.error("Error checking in walker:", err);
+    res.status(500).json({ message: "Failed to check in walker." });
+  }
+});
+
   
   
 

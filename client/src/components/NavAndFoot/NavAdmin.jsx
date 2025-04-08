@@ -158,7 +158,15 @@ export const NavAdmin = () => {
             onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
             className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300"
           >
-            <img src="/profile-placeholder.jpg" alt="User Profile" className="w-full h-full object-cover" />
+           {user?.profile_pic ? (
+                    <img
+                      src={user.profile_pic}
+                      alt="User Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="text-gray-500 w-6 h-6" />
+                  )}
           </button>
 
           {/* Dropdown Menu (Mobile) */}
@@ -167,21 +175,38 @@ export const NavAdmin = () => {
               className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 border border-gray-300"
               onClick={(e) => e.stopPropagation()} // Prevent premature closing
             >
+              <Link to="/">
+                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                  Home
+                </button>
+              </Link>
+              <Link to="/#">
+                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                  Users
+                </button>
+              </Link>
+              <Link to="/dogs">
+                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                  Dogs
+                </button>
+              </Link>
+              <Link to="/#">
+                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                  Gallery
+                </button>
+              </Link>
               <Link to="/rough-calendar">
                 <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
                   Schedule
                 </button>
               </Link>
-              <Link to="/my-walks">
+
+              <Link to="/main-report">
                 <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
-                  My Walks
+                  Reports
                 </button>
               </Link>
-              <Link to="/adopt">
-                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
-                  Adopt
-                </button>
-              </Link>
+              
               <Link to="/profile">
                 <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
                   Profile

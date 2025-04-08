@@ -34,12 +34,12 @@ export const Navbar = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6 text-base">
-          <a className="font-semibold hover:text-red-900 transition-colors" href="/">Home</a>
-          <a className="font-semibold hover:text-red-900 transition-colors" href="about">About</a>
-          <a className="font-semibold hover:text-red-900 transition-colors" href="/dogs">Dogs</a>
-          <a className="font-semibold hover:text-red-900 transition-colors" href="#">Gallery</a>
-          <a className="font-semibold hover:text-red-900 transition-colors" href="/rough-calendar">Schedule</a>
-          <a className="font-semibold hover:text-red-900 transition-colors" href="/contact-page">Contact</a>
+        <Link className="font-semibold hover:text-red-900 transition-colors" to="/">Home</Link>
+        <Link className="font-semibold hover:text-red-900 transition-colors" to="/about">About</Link>
+        <Link className="font-semibold hover:text-red-900 transition-colors" to="/dogs">Dogs</Link>
+        <Link className="font-semibold hover:text-red-900 transition-colors" to="/">Gallery</Link>
+        <Link className="font-semibold hover:text-red-900 transition-colors" to="/rough-calendar">Schedule</Link>
+        <Link className="font-semibold hover:text-red-900 transition-colors" to="/contact-page">Contact Us</Link>
           <Link to="/login">
             <button className="font-semibold hover:bg-yellow-400 transition-colors bg-yellow-500 px-4 py-2 rounded-md">
               Sign In
@@ -64,10 +64,12 @@ export const Navbar = () => {
           transition={{ duration: 0.3 }}
           className="md:hidden bg-white shadow-lg p-4 space-y-4"
         >
-          <a className="block font-semibold text-gray-700 hover:text-red-900" href="#available">Available Dogs</a>
-          <a className="block font-semibold text-gray-700 hover:text-red-900" href="/dogs">Gallery</a>
-          <a className="block font-semibold text-gray-700 hover:text-red-900" href="#process">Adoption Process</a>
-          <a className="block font-semibold text-gray-700 hover:text-red-900" href="#contact">Contact</a>
+          <a className="block font-semibold text-gray-700 hover:text-red-900" href="/">Home</a>
+          <a className="block font-semibold text-gray-700 hover:text-red-900" href="/about">About</a>
+          <a className="block font-semibold text-gray-700 hover:text-red-900" href="/dogs">Dogs</a>
+          <a className="block font-semibold text-gray-700 hover:text-red-900" href="#">Gallery</a>
+          <a className="block font-semibold text-gray-700 hover:text-red-900" href="/rough-calendar">Schedule</a>
+          <a className="block font-semibold text-gray-700 hover:text-red-900" href="/contact-page">Contact Us</a>
           <Link to="/login">
             <button className="w-full font-semibold hover:bg-yellow-400 transition-colors bg-yellow-500 px-4 py-2 rounded-md">
               Sign In

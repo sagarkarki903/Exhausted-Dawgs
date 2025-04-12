@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { Edit, Save, X, User, Home, Phone } from "lucide-react";
+import { Edit, Save, X, User, Home, Phone, Heart } from "lucide-react";
 import { NavAdmin } from "../NavAndFoot/NavAdmin";
 import { NavUser } from "../NavAndFoot/NavUser";
 import { Footer } from "../NavAndFoot/Footer";
@@ -80,6 +80,22 @@ const handleUpload = async () => {
 };
 
 
+const handleToggleFavorite = async (dogId) => {
+  try {
+    const res = await axios.put(
+      `${backendUrl}/auth/favorite`,
+      { dogId },
+      { withCredentials: true }
+    );
+    console.log("Favorites updated:", res.data.favorites);
+    // Option A: Update the user state if the endpoint returns the updated favorites array.
+    setUser((prev) => ({ ...prev, favorite: JSON.stringify(res.data.favorites) }));
+    // Option B: Remove the dog from favoriteDogs state if it was removed.
+    setFavoriteDogs((prev) => prev.filter((dog) => String(dog.id) !== String(dogId)));
+  } catch (error) {
+    console.error("Error toggling favorite:", error);
+  }
+};
 
   useEffect(() => {
     if (!loading && !user) {
@@ -183,7 +199,6 @@ const handleUpload = async () => {
 
 
 //for assigning dogs
-const [dogAssignments, setDogAssignments] = useState({});
 
   const [allDogs, setAllDogs] = useState([]);
 useEffect(() => {
@@ -595,12 +610,21 @@ SessionCard.propTypes = {
                           <h2 className="text-lg font-semibold">{dog.name}</h2>
                           <p className="text-gray-600">{dog.breed}</p>
                           <p className="text-gray-500 text-sm">Age: {dog.age} years</p>
+                          <div className="flex  items-end gap-4">
                           <button
                             onClick={() => navigate(`/dogs/${dog.id}`)}
                             className="mt-2 w-full bg-red-900 text-white py-1 rounded hover:bg-red-800 transition"
                           >
                             Meet Me
                           </button>
+                          <button 
+                                onClick={() => handleToggleFavorite(dog.id)}
+                                className="flex h-8 w-10 items-center justify-center rounded-lg border border-gray-300 text-gray-500 transition bg-yellow-500 hover:bg-white"
+                                aria-label="Remove from favorites"
+                              >
+                                <Heart className="h-5 w-5 " />
+                           </button>
+                           </div>
                         </div>
                       </div>
                     );

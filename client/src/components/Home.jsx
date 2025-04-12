@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
 import { motion} from "framer-motion"
-import { Heart, PawPrint, Bone } from "lucide-react"
+import { PawPrint, Bone } from "lucide-react"
 import { Navbar } from "./NavAndFoot/Navbar";
 import { NavUser } from "./NavAndFoot/NavUser";
 import { NavAdmin } from "./NavAndFoot/NavAdmin";
@@ -141,6 +141,7 @@ export const Home = () => {
                         </a>
                         <button
                           className="rounded-lg shadow-md px-6 py-3 text-lg font-medium transition-colors hover:bg-red-800 hover:cursor-pointer hover:text-white"
+                          onClick={() => navigate(`/about`)}
                         >
                           Learn More
                         </button>
@@ -193,12 +194,6 @@ export const Home = () => {
                             <button  className="flex-1 rounded-md w-full bg-red-900 px-4 py-2 text-white transition hover:bg-red-800" onClick={() => navigate(`/dogs/${dog.id}`)}>
                               Meet Me                      
                             </button>
-                          <button
-                              className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 text-gray-500 transition hover:bg-yellow-500"
-                              aria-label="Add to favorites"
-                              >
-                            <Heart className="h-5 w-5" />
-                          </button>
                </div>
             </div>
           </div>

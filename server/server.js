@@ -12,6 +12,7 @@ const reportRouter = require("./reportserver/report-list");
 const calendarRouter = require('./calendar/calendar'); // adjust the path if needed
 const reportsRoutes = require("./reportserver/reports");
 const FRONTEND_URL = process.env.FRONTEND || 'http://localhost:5173';
+const galleryRoutes = require("./galleryRoutes");
 
 const pool = require('./db');
 
@@ -61,7 +62,7 @@ app.use("/calendar", calendarRouter);
 
 app.use("/reports", reportsRoutes);
 
-
+app.use("/gallery", galleryRoutes);
 
 
 const PORT = process.env.PORT || 8080;

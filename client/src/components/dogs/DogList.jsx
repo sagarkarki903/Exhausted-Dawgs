@@ -113,7 +113,7 @@ export const DogList = () => {
       </motion.div>
 
       <div className="relative p-6 z-10">
-        <h1 className="text-3xl font-bold text-center my-6">Dog Gallery</h1>
+        <h1 className="text-3xl font-bold text-center my-6">Meet Our Pups</h1>
         {(role === "Admin" || role === "Marshal") && (
           <div className="addDog flex justify-center sm:justify-end mb-6">
             <Link to="/new-dog">

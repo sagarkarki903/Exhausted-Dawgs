@@ -79,8 +79,6 @@ export const NavUser = () => {
     }
   };
 
-  const profileImage = user?.profile_pic || "/profile-placeholder.jpg";
-
 
   return (
     <header className="sticky top-0 z-50 bg-white shadow-md">
@@ -104,7 +102,7 @@ export const NavUser = () => {
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/">Home</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/about">About</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/dogs">Dogs</Link>
-          <Link className="font-semibold hover:text-red-900 transition-colors" to="#">Gallery</Link>
+          <Link className="font-semibold hover:text-red-900 transition-colors" to="/gallery">Gallery</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/rough-calendar">Schedule</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/contact-page">Contact</Link>
           {/* <Link className="font-semibold hover:text-red-900 transition-colors" to="/my-walks">My Walks</Link>

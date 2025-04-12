@@ -23,6 +23,7 @@ import AboutP40 from './components/AboutUs/aboutP40';
 import { ContactPage } from './components/Contact/ContactPage';
 import RoughCalendar from './components/newDashboard/RoughCalendar';
 import MainReport  from './components/reports/MainReport';  // Ensure you import the component
+import Gallery from './components/gallery/Gallery';
 
 
 
@@ -56,6 +57,7 @@ function App() {
         <Route path="/contact-page" element={<ContactPage/>} />
  
         <Route path='/rough-calendar' element={<RoughCalendar />} />
+        <Route path='/gallery' element={<Gallery />} />
 
 
           

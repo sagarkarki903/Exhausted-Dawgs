@@ -80,8 +80,6 @@ export const NavAdmin = () => {
       }
     };
 
-    const profileImage = user?.profile_pic || "/profile-placeholder.jpg";
-
   return (
   <header className="sticky top-0 z-50 bg-white shadow-md">
       <div className="flex h-20 items-center justify-between px-4 md:px-8">
@@ -104,7 +102,7 @@ export const NavAdmin = () => {
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/">Home</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/all-users">Users</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/dogs">Dogs</Link>
-          <Link className="font-semibold hover:text-red-900 transition-colors" to="#">Gallery</Link>
+          <Link className="font-semibold hover:text-red-900 transition-colors" to="/gallery">Gallery</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/rough-calendar">Schedule</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/main-report">Reports</Link>
           {/* <Link className="font-semibold hover:text-red-900 transition-colors" to="/my-walks">My Walks</Link>

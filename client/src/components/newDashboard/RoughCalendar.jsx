@@ -12,9 +12,10 @@ const generateTimeSlots = () => {
   const slots = [];
   for (let hour = 10; hour <= 15; hour++) {
     slots.push(`${hour % 12 || 12}:00 ${hour < 12 ? "AM" : "PM"}`);
-    slots.push(`${hour % 12 || 12}:30 ${hour < 12 ? "AM" : "PM"}`);
+    // slots.push(`${hour % 12 || 12}:30 ${hour < 12 ? "AM" : "PM"}`);
   }
-  return slots.slice(0, -1);
+  // return slots.slice(0, -1);
+  return slots;
 };
 
 const generateWeekendsInRange = (startDateStr, endDateStr) => {
@@ -420,7 +421,7 @@ export default function RoughCalendar() {
       <p><strong>Date:</strong> {new Date(session.date).toLocaleDateString("en-US")}</p>
       <p><strong>Time:</strong> {session.time}</p>
       <p><strong>Marshal:</strong> {session.marshal_name}</p>
-      <p><strong>Walkers Booked:</strong> {session.walkers_booked}</p>
+      <p><strong>Walkers Booked:</strong> {session.walkers_booked} out of 4</p>
 
       {role === "Walker" && (
         <>

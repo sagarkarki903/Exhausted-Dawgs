@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import { Edit, Save, X, User, Home, Phone, Heart } from "lucide-react";
+import { Edit, Save, X, User, Home, Phone, Heart, Mail } from "lucide-react";
 import { NavAdmin } from "../NavAndFoot/NavAdmin";
 import { NavUser } from "../NavAndFoot/NavUser";
 import { Footer } from "../NavAndFoot/Footer";
 import { useNavigate } from "react-router-dom";
+import { Link } from 'react-router-dom'
+
+
 
 
 import axios from "axios";
@@ -534,6 +537,7 @@ SessionCard.propTypes = {
           return (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold mb-4">All Upcoming Walks</h2>
+              <Link to="/checkinpath"><p>View All Walks</p></Link>
               {upcomingWalks.length === 0 ? (
                 <p>No upcoming walks scheduled.</p>
               ) : (
@@ -752,7 +756,7 @@ SessionCard.propTypes = {
 
               <div className="flex flex-col space-y-2">
                 <div className="flex items-center text-gray-600">
-                  <User className="h-5 w-5 mr-2" />
+                  <Mail className="h-5 w-5 mr-2" />
                   {user?.email}
                 </div>
 
@@ -770,8 +774,9 @@ SessionCard.propTypes = {
                   )}
                 </div>
 
+              {/* Commented this out because why would an admin want to be marshal or walker/downgrade their account? */}
                 <div className="flex items-center text-gray-600">
-                  <User className="h-5 w-5 mr-2" />
+                  {/* <User className="h-5 w-5 mr-2" />
                   {isEditing ? (
                     <select
                       value={editedRole}
@@ -783,7 +788,9 @@ SessionCard.propTypes = {
                     </select>
                   ) : (
                     user?.role || "N/A"
-                  )}
+                  )} */}
+                  <User className="h-5 w-5 mr-2" />
+                  {user.role}
                 </div>
 
                 <div className="flex items-center text-gray-600">

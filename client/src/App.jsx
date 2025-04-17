@@ -24,6 +24,8 @@ import { ContactPage } from './components/Contact/ContactPage';
 import RoughCalendar from './components/newDashboard/RoughCalendar';
 import MainReport  from './components/reports/MainReport';  // Ensure you import the component
 import Gallery from './components/gallery/Gallery';
+import CheckinPage from './components/Checkin/CheckinPage';
+
 
 
 
@@ -78,6 +80,15 @@ function App() {
           element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+<Route
+          path="/checkinpath"
+          element={
+            <ProtectedRoute>
+              <CheckinPage />
             </ProtectedRoute>
           }
         />

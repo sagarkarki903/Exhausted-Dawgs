@@ -16,7 +16,7 @@ router.get("/test", (req, res) => {
 // Protected Route to Get Authenticated User Data
 router.get("/profile", authenticateUser, async (req, res) => {
     try {
-        console.log("/auth/profile route hit!")
+        // console.log("/auth/profile route hit!")
         const [users] = await pool.query(
             "SELECT id, firstname, lastname, username, email, created_at, role, phone, profile_pic, favorite FROM users WHERE id = ?",
             [req.user.id]

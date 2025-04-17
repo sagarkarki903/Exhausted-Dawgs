@@ -10,6 +10,8 @@ const CheckinPage = () => {
   const [sessions, setSessions] = useState([]);
   const [user, setUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [selectedWalkerId, setSelectedWalkerId] = useState(null);
+const [selectedScheduleId, setSelectedScheduleId] = useState(null);
 
 
   useEffect(() => {
@@ -149,12 +151,22 @@ const CheckinPage = () => {
                             Check In
                           </button>
                         )}
-                    <button
-                        onClick={() => setShowModal(true)}
-                        className="bg-yellow-500 text-white px-2 py-1 rounded text-xs hover:bg-yellow-600"
-                         >
-                         Assign Dogs
-                    </button>
+                   <button
+                        onClick={() => {
+                            if (!walker.checked_in) return;
+                            setSelectedWalkerId(walker.walker_id);
+                            setSelectedScheduleId(session.session_id);
+                            setShowModal(true);
+                        }}
+                        disabled={!walker.checked_in}
+                        className={`px-2 py-1 rounded text-xs ${
+                            walker.checked_in
+                            ? "bg-yellow-500 text-white hover:bg-yellow-600"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        }`}
+                        >
+                        Assign Dogs
+                        </button>
 
                       </td>
                       {wIdx === 0 ? (
@@ -184,7 +196,12 @@ const CheckinPage = () => {
           </table>
         </div>
       </main>
-      <DogAssignModal isOpen={showModal} onClose={() => setShowModal(false)} />
+      <DogAssignModal
+  isOpen={showModal}
+  onClose={() => setShowModal(false)}
+  walkerId={selectedWalkerId}
+  scheduleId={selectedScheduleId}
+/>
 
       <Footer />
     </div>

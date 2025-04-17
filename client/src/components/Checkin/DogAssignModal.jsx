@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { X, Filter } from "lucide-react";
+import { X } from "lucide-react";
 import Select from "react-select";
 
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-const DogAssignModal = ({ isOpen, onClose }) => {
+const DogAssignModal = ({ isOpen, onClose, walkerId, scheduleId }) => {
   const backendUrl = import.meta.env.VITE_BACKEND;
   const [dogs, setDogs] = useState([]);
   const [filters, setFilters] = useState({ name: "", breed: "", demeanor: "" });
@@ -151,7 +151,32 @@ const DogAssignModal = ({ isOpen, onClose }) => {
                   <h2 className="text-lg font-semibold">{dog.name}</h2>
                   <p className="text-gray-600">{dog.breed}</p>
                   <p className="text-gray-500 text-sm">Age: {dog.age} years</p>
-                  <button className="mt-2 w-full bg-red-900 text-white py-1 rounded hover:bg-red-800">
+                  <p className="text-gray-500 text-sm">Demeanor: {dog.demeanor || "N/A"}</p>
+
+                  <button
+                    className="mt-2 w-full bg-red-900 hover:bg-red-800 text-white py-1 rounded"
+                    onClick={async () => {
+                      const confirmAssign = window.confirm(`Assign ${dog.name}?`);
+                      if (!confirmAssign) return;
+                      try {
+                        await axios.post(
+                          `${backendUrl}/reports/assign-dogs`,
+                          {
+                            schedule_id: scheduleId,
+                            walker_id: walkerId,
+                            dog_ids: [dog.id],
+                          },
+                          { withCredentials: true }
+                        );
+                        alert("Dog assigned successfully!");
+                        onClose();
+                        window.location.reload();
+                      } catch (err) {
+                        console.error("Error assigning dog:", err);
+                        alert("Failed to assign dog.");
+                      }
+                    }}
+                  >
                     Assign Me
                   </button>
                 </div>

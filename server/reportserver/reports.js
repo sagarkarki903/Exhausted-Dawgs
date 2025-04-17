@@ -193,41 +193,52 @@ router.get("/marshal/my-walks", authenticateUser, async (req, res) => {
       const { scheduleId } = req.params;
     
       try {
-        // 1. Get all session details along with check-in status
+        // 1. Fetch all walkers in the session, with optional dog assignments
         const [rows] = await pool.query(`
           SELECT 
             ms.date,
             ms.time,
             CONCAT(wu.firstname, ' ', wu.lastname) AS walker,
             CONCAT(mu.firstname, ' ', mu.lastname) AS marshal,
-            ws.checked_in
-          FROM marshal_schedule ms
-          JOIN walker_schedule ws ON ms.id = ws.schedule_id
+            ws.checked_in,
+            d.id AS dog_id,
+            d.name AS dog_name
+          FROM walker_schedule ws
+          JOIN marshal_schedule ms ON ws.schedule_id = ms.id
           JOIN users wu ON ws.user_id = wu.id
           JOIN users mu ON ms.created_by = mu.id
-          WHERE ms.id = ?
+          LEFT JOIN walker_dogs wd ON ws.schedule_id = wd.schedule_id AND ws.user_id = wd.walker_id
+          LEFT JOIN dogs d ON wd.dog_id = d.id
+          WHERE ws.schedule_id = ?
         `, [scheduleId]);
     
         if (rows.length === 0) {
-          return res.status(404).json({ message: "Session not found or no walkers assigned." });
+          return res.status(404).json({ message: "No walkers or dog assignments found for this session." });
         }
     
-        // 2. Insert into report_table (without dog column)
+        // 2. Insert report entry for each dog-walker pair (even if dog is null)
         const insertPromises = rows.map(row => {
           const checkInStatus = row.checked_in ? "Checked In" : "Not Checked In";
           return pool.query(`
-            INSERT INTO report_table (date, time, walker, marshal, check_in_status)
-            VALUES (?, ?, ?, ?, ?)
-          `, [row.date, row.time, row.walker, row.marshal, checkInStatus]);
+            INSERT INTO report_table (date, time, walker, marshal, dog_id, dog_name, check_in_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+          `, [
+            row.date,
+            row.time,
+            row.walker,
+            row.marshal,
+            row.dog_id || null,
+            row.dog_name || null,
+            checkInStatus
+          ]);
         });
-        
     
         await Promise.all(insertPromises);
     
-        // 3. Delete session (and related walker_schedule entries)
+        // 3. Delete the session
         await pool.query(`DELETE FROM marshal_schedule WHERE id = ?`, [scheduleId]);
     
-        res.json({ message: "Walk marked as completed and session deleted." });
+        res.json({ message: "Walk completed and report created, including walkers without dogs." });
       } catch (err) {
         console.error("Error completing walk:", err);
         res.status(500).json({ message: "Failed to complete walk." });
@@ -245,17 +256,25 @@ router.get("/all", authenticateUser, async (req, res) => {
 
   try {
     const [reports] = await pool.query(`
-      SELECT date, time, walker, marshal, check_in_status
+      SELECT 
+        date,
+        time,
+        walker,
+        marshal,
+        dog_name, -- ✅ each row is dog-specific now
+        check_in_status
       FROM report_table
       ORDER BY date DESC, time DESC
+
     `);
-    
+
     res.json(reports);
   } catch (err) {
     console.error("Error fetching reports:", err);
     res.status(500).json({ message: "Failed to fetch reports" });
   }
 });
+
 
       
 

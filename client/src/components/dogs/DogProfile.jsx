@@ -8,6 +8,31 @@ import { NavAdmin } from "../NavAndFoot/NavAdmin";
 import { Footer } from "../NavAndFoot/Footer";
 import { Edit, Save, X, Trash2, Upload, ImageIcon } from 'lucide-react';
 import PropTypes from 'prop-types';
+import Select from 'react-select';
+
+const sizeOptions = [
+  { value: 'Small',  label: 'Small'   },
+  { value: 'Medium', label: 'Medium'  },
+  { value: 'Large',  label: 'Large'   },
+  { value: 'XLarge', label: 'X‑Large' },
+];
+
+const demeanorOptions = [
+  { value: 'Red',    label: 'Red (Not Friendly but walkable)' },
+  { value: 'Gray',   label: 'Gray (Aggressive & Unwalkable)' },
+  { value: 'Yellow', label: 'Yellow (Friendly & Walkable)'  },
+];
+
+const statusOptions = [
+  { value: 'Available', label: 'Available' },
+  { value: 'Pending',   label: 'Pending'   },
+  { value: 'Adopted',   label: 'Adopted'   },
+  { value: 'Fostered',  label: 'Fostered'  },
+];
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
 // A simple Modal component using Tailwind CSS
 const Modal = ({ isOpen, onClose, children }) => {
@@ -42,6 +67,37 @@ const DogProfile = () => {
   // Authentication state
   const [loggedIn, setLoggedIn] = useState(false);
   const [role, setRole] = useState("");
+
+  const [breedOptions, setBreedOptions] = useState([]);
+  const [loadingBreeds, setLoadingBreeds] = useState(true);
+
+  // load dog.ceo breed list on mount
+  useEffect(() => {
+    axios.get('https://dog.ceo/api/breeds/list/all')
+      .then(res => {
+        const msg = res.data.message;
+        const opts = [];
+        Object.entries(msg).forEach(([breed, subs]) => {
+          if (subs.length === 0) {
+            opts.push({ value: breed, label: capitalize(breed) });
+          } else {
+            subs.forEach(sub =>
+              opts.push({
+                value: `${breed}/${sub}`,
+                label: `${capitalize(sub)} ${capitalize(breed)}`,
+              })
+            );
+          }
+        });
+        setBreedOptions(opts);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingBreeds(false));
+  }, []);
+
+    const handleSelect = field => option => {
+    setFormData(fd => ({ ...fd, [field]: option?.value || '' }));
+  };
 
   useEffect(() => {
     axios.get(`${backendUrl}/dogs/${id}`)
@@ -237,35 +293,71 @@ const handleDeleteImage = async (imageUrl) => {
             )}
           </div>
           {[
-            { label: "Breed", key: "breed" },
-            { label: "Size", key: "size" },
-            { label: "Age", key: "age", suffix: " years" },
-            { label: "Status", key: "status" },
-            { label: "Demeanor", key: "demeanor" },
+            { label: "Breed",     key: "breed" },
+            { label: "Size",      key: "size" },
+            { label: "Age",       key: "age", suffix: " years" },
+            { label: "Status",    key: "status" },
+            { label: "Demeanor",  key: "demeanor" },
             { label: "Health Issues", key: "health_issues" },
-            { label: "Notes", key: "notes", type: "textarea" },
+            { label: "Notes",     key: "notes", type: "textarea" },
           ].map((field, index) => (
             <div key={index} className="p-4">
               <p className="text-sm font-semibold text-gray-600">{field.label}</p>
               {editing ? (
-                field.type === "textarea" ? (
+              field.key === 'breed' ? (
+                  <Select
+                    options={breedOptions}
+                    isLoading={loadingBreeds}
+                    isSearchable
+                    onChange={handleSelect('breed')}
+                    value={breedOptions.find(o => o.value === formData.breed) || null}
+                    placeholder="Select breed…"
+                    classNamePrefix="react-select"
+                  />
+                ) : field.key === 'size' ? (
+                  <Select
+                    options={sizeOptions}
+                    onChange={handleSelect('size')}
+                    value={sizeOptions.find(o => o.value === formData.size) || null}
+                    placeholder="Select size…"
+                    classNamePrefix="react-select"
+                  />
+                ) : field.key === 'status' ? (
+                  <Select
+                    options={statusOptions}
+                    onChange={handleSelect('status')}
+                    value={statusOptions.find(o => o.value === formData.status) || null}
+                    placeholder="Select status…"
+                    classNamePrefix="react-select"
+                  />
+                ) : field.key === 'demeanor' ? (
+                  <Select
+                    options={demeanorOptions}
+                    onChange={handleSelect('demeanor')}
+                    value={demeanorOptions.find(o => o.value === formData.demeanor) || null}
+                    placeholder="Select demeanor…"
+                    classNamePrefix="react-select"
+                  />
+                ) : field.type === 'textarea' ? (
                   <textarea
-                    className=" p-2 border border-gray-400 rounded-sm mt-2 w-full"
+                    className="p-2 border rounded mt-2 w-full"
                     name={field.key}
-                    value={formData[field.key] || ""}
+                    value={formData[field.key] || ''}
                     onChange={handleInputChange}
                     rows={4}
                   />
                 ) : (
                   <input
-                    className="w-full p-2 border border-gray-400 rounded-sm mt-2"
+                    className="w-full p-2 border rounded mt-2"
                     name={field.key}
-                    value={formData[field.key] || ""}
+                    value={formData[field.key] || ''}
                     onChange={handleInputChange}
                   />
                 )
               ) : (
-                <p className="text-gray-700">{dog[field.key]} {field.suffix || ""}</p>
+                <p className="text-gray-700">
+                  {dog[field.key]} {field.suffix || ''}
+                </p>
               )}
             </div>
           ))}

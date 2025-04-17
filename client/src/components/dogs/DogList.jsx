@@ -1,22 +1,65 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { motion } from "framer-motion";
-import { Heart, PawPrint } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Search, Filter, Heart, PawPrint } from "lucide-react";
+import Select from "react-select";
 import { Navbar } from "../NavAndFoot/Navbar";
 import { NavUser } from "../NavAndFoot/NavUser";
 import { NavAdmin } from "../NavAndFoot/NavAdmin";
 
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export const DogList = () => {
   const backendUrl = import.meta.env.VITE_BACKEND;
   const navigate = useNavigate();
+
+  // --- data & auth state ---
   const [dogs, setDogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  // New state to capture favorite dog ids from the user's profile
   const [favoriteDogIds, setFavoriteDogIds] = useState([]);
   const [loggedIn, setLoggedIn] = useState(false);
   const [role, setRole] = useState(""); // Track user role
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
 
+  const toggleFilters = () => setShowMoreFilters(f => !f);
+
+    // --- filtering & pagination state ---
+  const [filters, setFilters] = useState({
+    name: "",
+    breed: "",
+    age: "",
+    status: "",
+    size: "",
+    demeanor: "",
+
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const dogsPerPage = 8;
+
+// select‑options
+  const sizeOptions = [
+    { value: "Small",  label: "Small"   },
+    { value: "Medium", label: "Medium"  },
+    { value: "Large",  label: "Large"   },
+    { value: "XLarge", label: "X‑Large" },
+  ];
+  const statusOptions = [
+    { value: "Available", label: "Available" },
+    { value: "Pending",   label: "Pending"   },
+    { value: "Adopted",   label: "Adopted"   },
+    { value: "Fostered",  label: "Fostered"  },
+  ];
+  const demeanorOptions = [
+    { value: "Red",    label: "Red (Not Friendly but walkable)" },
+    { value: "Gray",   label: "Gray (Aggressive & Unwalkable)" },
+    { value: "Yellow", label: "Yellow (Friendly & Walkable)"  },
+  ];
+
+  const [breedOptions, setBreedOptions] = useState([]);
+  const [loadingBreeds, setLoadingBreeds] = useState(true);
   // Fetch all dogs
   useEffect(() => {
     axios
@@ -24,6 +67,30 @@ export const DogList = () => {
       .then((response) => setDogs(response.data))
       .catch((error) => console.error("Error fetching dogs:", error));
   }, [backendUrl]);
+
+  // fetch dog.ceo breed list once
+  useEffect(() => {
+    axios.get("https://dog.ceo/api/breeds/list/all")
+      .then(res => {
+        const msg = res.data.message;
+        const opts = [];
+        Object.entries(msg).forEach(([breed, subs]) => {
+          if (subs.length === 0) {
+            opts.push({ value: breed, label: capitalize(breed) });
+          } else {
+            subs.forEach(sub => {
+              opts.push({
+                value: `${breed}/${sub}`,
+                label: `${capitalize(sub)} ${capitalize(breed)}`,
+              });
+            });
+          }
+        });
+        setBreedOptions(opts);
+      })
+      .catch(err => console.error(err))
+      .finally(() => setLoadingBreeds(false));
+  }, []);
 
   // Check if a user is logged in and fetch profile (including favorites)
   useEffect(() => {
@@ -76,6 +143,39 @@ export const DogList = () => {
     }
   };
 
+  // filter change
+  const handleFilterInput = (e) => {
+    const { name, value } = e.target;
+    setFilters((f) => ({ ...f, [name]: value }));
+    setCurrentPage(1);
+  };
+
+  // react‑select filter handler
+  const handleFilterSelect = (field) => (option) => {
+    setFilters(f => ({ ...f, [field]: option?.value || "" }));
+    setCurrentPage(1);
+  };
+
+
+  /// apply all filters
+  const filteredDogs = dogs.filter(dog => {
+    if (filters.name && !dog.name.toLowerCase().includes(filters.name.toLowerCase()))
+      return false;
+    if (filters.breed && dog.breed !== filters.breed) return false;
+    if (filters.age && dog.age.toString() !== filters.age) return false;
+    if (filters.status && dog.status !== filters.status) return false;
+    if (filters.size && dog.size !== filters.size) return false;
+    if (filters.demeanor && dog.demeanor !== filters.demeanor) return false;
+    return true;
+  });
+
+  // pagination logic
+  const indexOfLast = currentPage * dogsPerPage;
+  const indexOfFirst = indexOfLast - dogsPerPage;
+  const currentDogs = filteredDogs.slice(indexOfFirst, indexOfLast);
+  const totalPages = Math.ceil(filteredDogs.length / dogsPerPage);
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+
   return (
     <>
       {loading ? null : (
@@ -123,16 +223,122 @@ export const DogList = () => {
             </Link>
           </div>
         )}
+        <div className="relative p-6 z-10 ">
+        {/* FILTERS */}
+        <div className="mb-6">
+          
+        {/* first row: search | toggle | breed */}
+        <div className="flex items-center gap-2">
+          {/* Search input grows to fill */}
+          <div className="relative flex-1 ">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              name="name"
+              value={filters.name}
+              onChange={handleFilterInput}
+              placeholder="Search by name..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-400 rounded-lg focus:ring-2 focus:ring-rose-500"
+            />
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {Array.isArray(dogs) ? (
-            dogs.map((dog, index) => {
+          {/* Filter toggle */}
+          <button
+            onClick={toggleFilters}
+            className="p-2 bg-red-800 text-white rounded-lg shadow-md hover:bg-yellow-500 transition duration-300 cursor-pointer"
+            aria-label="Show more filters"
+          >
+            <Filter className="h-5 w-5 text-white" />
+          </button>
+
+          {/* Always‑visible breed select */}
+          <div className="w-48">
+            <Select
+              options={breedOptions}
+              isLoading={loadingBreeds}
+              isClearable
+              isSearchable
+              onChange={handleFilterSelect("breed")}
+              value={breedOptions.find(o => o.value === filters.breed) || null}
+              placeholder="All breeds"
+              classNamePrefix="react-select"
+            />
+          </div>
+        </div>
+
+        {/* second row: only when toggled */}
+        {showMoreFilters && (
+          <div className="mt-4 flex flex-wrap gap-4 justify-center">
+            {/* Age */}
+            <input
+              type="number"
+              name="age"
+              value={filters.age}
+              onChange={handleFilterInput}
+              placeholder="Age"
+              className="p-2 border border-gray-400 rounded w-24"
+              min="0"
+            />
+
+            {/* Status */}
+            <div className="w-40">
+              <Select
+                options={statusOptions}
+                isClearable
+                onChange={handleFilterSelect("status")}
+                value={statusOptions.find(o => o.value === filters.status) || null}
+                placeholder="All Status"
+                classNamePrefix="react-select"
+              />
+            </div>
+
+            {/* Size */}
+            <div className="w-36">
+              <Select
+                options={sizeOptions}
+                isClearable
+                onChange={handleFilterSelect("size")}
+                value={sizeOptions.find(o => o.value === filters.size) || null}
+                placeholder="All Sizes"
+                classNamePrefix="react-select"
+              />
+            </div>
+
+            {/* Demeanor */}
+            <div className="w-48">
+              <Select
+                options={demeanorOptions}
+                isClearable
+                onChange={handleFilterSelect("demeanor")}
+                value={demeanorOptions.find(o => o.value === filters.demeanor) || null}
+                placeholder="All Demeanors"
+                classNamePrefix="react-select"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      
+        
+        <div className="relative" style={{ minHeight: '600px' }}>
+        <AnimatePresence mode="wait">
+        <motion.div
+                  key={currentPage + JSON.stringify(filters)}
+                  initial={{ opacity: 0}}
+                  animate={{ opacity: 1}}
+                  exit={{ opacity: 0}}
+                  transition={{ duration: 0.3 }} 
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {Array.isArray(currentDogs) ? (
+            currentDogs.map((dog, index) => {
               const profilePic = dog.profile_picture_url || "/dog2.jpeg";
               // Check if this dog is favorited by the user (favoriteDogIds should be an array of IDs)
               const isFavorited = favoriteDogIds.includes(dog.id);
               return (
                 <motion.div
                   key={index}
+                  layout                                
                   className="rounded-lg border border-gray-300 shadow-md transition-shadow hover:shadow-2xl"
                   whileHover={{ scale: 1.03 }}
                 >
@@ -150,7 +356,7 @@ export const DogList = () => {
                     </div>
                     <div className="flex p-4 gap-6">
                       <button
-                        className="flex-1 rounded-md w-full bg-red-900 px-4 py-2 text-white transition hover:bg-red-800"
+                        className="flex-1 rounded-md w-full bg-red-900 px-4 py-2 text-white transition hover:bg-red-800 hover:cursor-pointer"
                         onClick={() => navigate(`/dogs/${dog.id}`)}
                       >
                         Meet Me
@@ -170,10 +376,56 @@ export const DogList = () => {
               );
             })
           ) : (
-            <p className="text-center text-gray-500">No dogs available or error fetching dogs.</p>
+            <p className="text-center text-gray-500">No dogs found.</p>
           )}
+        </motion.div>
+        </AnimatePresence>
         </div>
+        {/* Pagination */}
+        <AnimatePresence exitBeforeEnter>
+        {totalPages > 1 && (
+          <motion.div 
+                key={currentPage}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="flex justify-center items-center cursor-pointer gap-2 mt-6">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border rounded disabled:opacity-50 cursor-pointer "
+            >
+              Prev
+            </button>
+            {pageNumbers.map((num) => (
+              <button
+                key={num}
+                onClick={() => setCurrentPage(num)}
+                className={`px-3 py-1 border cursor-pointer rounded ${
+                  num === currentPage
+                    ? "bg-gray-800 text-white"
+                    : "hover:bg-gray-200"
+                }`}
+              >
+                {num}
+              </button>
+            ))}
+            <button
+              onClick={() =>
+                setCurrentPage((p) => Math.min(p + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border rounded disabled:opacity-50 cursor-pointer "
+            >
+              Next
+            </button>
+          </motion.div>
+        )}
+        </AnimatePresence>
       </div>
+      </div>
+    
     </>
   );
 };

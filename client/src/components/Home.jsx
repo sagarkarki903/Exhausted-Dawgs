@@ -164,7 +164,7 @@ export const Home = () => {
             </div>
           </div>
         </section>
-        <section id="available" className="flex justify-center py-20">
+        <section id="available" className="flex justify-center pt-20">
           <motion.div
             className="container px-4 md:px-6"
             initial="hidden"
@@ -179,27 +179,38 @@ export const Home = () => {
               Available Dogs
             </motion.h2>
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {dogs.slice(0, displayCount).map((dog, index) => (
-        <motion.div key={index} variants={fadeInUp} initial="hidden" animate="visible" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.9 }}>
-          <div className="rounded-lg bg-white border border-gray-300 shadow-md transition-shadow hover:shadow-2xl">
-            <img
-              src={dog.profile_picture_url || "/dog2.jpeg"}
-              alt={dog.name}
-              className="h-70 w-full rounded-t-lg object-cover"
-            />
-            <div className="p-4">
-              <h3 className="text-lg font-semibold">{dog.name}</h3>
-              <p className="text-sm text-gray-500">{dog.age} years old • {dog.breed}</p>
-              <div className='flex p-4 gap-6'>         
-                            <button  className="flex-1 rounded-md w-full bg-red-900 px-4 py-2 text-white transition hover:bg-red-800" onClick={() => navigate(`/dogs/${dog.id}`)}>
-                              Meet Me                      
-                            </button>
-               </div>
-            </div>
-          </div>
-        </motion.div>
-      ))}
-    </div>
+                  {dogs.slice(0, displayCount).map((dog, index) => (
+                    <motion.div key={index} variants={fadeInUp} initial="hidden" animate="visible" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.9 }}>
+                      <div className="rounded-lg bg-white border border-gray-300 shadow-md transition-shadow hover:shadow-2xl">
+                        <img
+                          src={dog.profile_picture_url || "/dog2.jpeg"}
+                          alt={dog.name}
+                          className="h-70 w-full rounded-t-lg object-cover"
+                        />
+                        <div className="p-4">
+                          <h3 className="text-lg font-semibold">{dog.name}</h3>
+                          <p className="text-sm text-gray-500">{dog.age} years old • {dog.breed}</p>
+                          <div className='flex p-4 gap-6'>         
+                                        <button  className="flex-1 rounded-md w-full bg-red-900 px-4 py-2 text-white transition hover:bg-red-800 hover:cursor-pointer" onClick={() => navigate(`/dogs/${dog.id}`)}>
+                                          Meet Me                      
+                                        </button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                    </motion.div>
+                    
+                  ))}
+                </div>
+                <div className="flex justify-end mt-8">
+                  <button
+                    className="rounded-lg shadow-md px-5 py-2 mb-6 text-md font-medium transition-colors hover:bg-red-800 hover:cursor-pointer bg-whitetext-black hover:text-white"
+                    onClick={() => navigate(`/dogs`)}
+                  >
+                   More
+                  </button>
+                </div>
+
           </motion.div>
         </section>
         <section id="process" className="py-20 bg-neutral-100 relative overflow-hidden">

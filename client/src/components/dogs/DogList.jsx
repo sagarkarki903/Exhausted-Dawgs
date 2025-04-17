@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
-import { Heart, PawPrint } from "lucide-react";
+import { Search, Filter, Heart, PawPrint } from "lucide-react";
 import Select from "react-select";
 import { Navbar } from "../NavAndFoot/Navbar";
 import { NavUser } from "../NavAndFoot/NavUser";
@@ -22,6 +22,9 @@ export const DogList = () => {
   const [favoriteDogIds, setFavoriteDogIds] = useState([]);
   const [loggedIn, setLoggedIn] = useState(false);
   const [role, setRole] = useState(""); // Track user role
+  const [showMoreFilters, setShowMoreFilters] = useState(false);
+
+  const toggleFilters = () => setShowMoreFilters(f => !f);
 
     // --- filtering & pagination state ---
   const [filters, setFilters] = useState({
@@ -31,6 +34,7 @@ export const DogList = () => {
     status: "",
     size: "",
     demeanor: "",
+
   });
   const [currentPage, setCurrentPage] = useState(1);
   const dogsPerPage = 8;
@@ -219,72 +223,103 @@ export const DogList = () => {
             </Link>
           </div>
         )}
-        <div className="relative p-6 z-10">
+        <div className="relative p-6 z-10 ">
         {/* FILTERS */}
-        <div className="flex flex-wrap gap-4 mb-6 justify-center">
-          {/* Name & Age */}
-          <input
-            name="name"
-            value={filters.name}
-            onChange={handleFilterInput}
-            placeholder="Name"
-            className="p-2 border rounded"
-          />
-          <input
-            name="age"
-            type="number"
-            value={filters.age}
-            onChange={handleFilterInput}
-            placeholder="Age"
-            className="p-2 border rounded w-24"
-            min="0"
-          />
+        <div className="mb-6">
+          
+        {/* first row: search | toggle | breed */}
+        <div className="flex items-center gap-2">
+          {/* Search input grows to fill */}
+          <div className="relative flex-1 ">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              name="name"
+              value={filters.name}
+              onChange={handleFilterInput}
+              placeholder="Search by name..."
+              className="w-full pl-10 pr-4 py-2 border border-gray-400 rounded-lg focus:ring-2 focus:ring-rose-500"
+            />
+          </div>
 
-          {/* Breed */}
-          <Select
-            options={breedOptions}
-            isLoading={loadingBreeds}
-            isClearable
-            onChange={handleFilterSelect("breed")}
-            value={breedOptions.find(o=>o.value===filters.breed)||null}
-            placeholder="All Breeds"
-            className="w-48"
-            classNamePrefix="react-select"
-          />
+          {/* Filter toggle */}
+          <button
+            onClick={toggleFilters}
+            className="p-2 bg-red-800 text-white rounded-lg shadow-md hover:bg-yellow-500 transition duration-300 cursor-pointer"
+            aria-label="Show more filters"
+          >
+            <Filter className="h-5 w-5 text-white" />
+          </button>
 
-          {/* Status */}
-          <Select
-            options={statusOptions}
-            isClearable
-            onChange={handleFilterSelect("status")}
-            value={statusOptions.find(o=>o.value===filters.status)||null}
-            placeholder="All Status"
-            className="w-40"
-            classNamePrefix="react-select"
-          />
-
-          {/* Size */}
-          <Select
-            options={sizeOptions}
-            isClearable
-            onChange={handleFilterSelect("size")}
-            value={sizeOptions.find(o=>o.value===filters.size)||null}
-            placeholder="All Sizes"
-            className="w-36"
-            classNamePrefix="react-select"
-          />
-
-          {/* Demeanor */}
-          <Select
-            options={demeanorOptions}
-            isClearable
-            onChange={handleFilterSelect("demeanor")}
-            value={demeanorOptions.find(o=>o.value===filters.demeanor)||null}
-            placeholder="All Demeanors"
-            className="w-48"
-            classNamePrefix="react-select"
-          />
+          {/* Always‑visible breed select */}
+          <div className="w-48">
+            <Select
+              options={breedOptions}
+              isLoading={loadingBreeds}
+              isClearable
+              isSearchable
+              onChange={handleFilterSelect("breed")}
+              value={breedOptions.find(o => o.value === filters.breed) || null}
+              placeholder="All breeds"
+              classNamePrefix="react-select"
+            />
+          </div>
         </div>
+
+        {/* second row: only when toggled */}
+        {showMoreFilters && (
+          <div className="mt-4 flex flex-wrap gap-4 justify-center">
+            {/* Age */}
+            <input
+              type="number"
+              name="age"
+              value={filters.age}
+              onChange={handleFilterInput}
+              placeholder="Age"
+              className="p-2 border border-gray-400 rounded w-24"
+              min="0"
+            />
+
+            {/* Status */}
+            <div className="w-40">
+              <Select
+                options={statusOptions}
+                isClearable
+                onChange={handleFilterSelect("status")}
+                value={statusOptions.find(o => o.value === filters.status) || null}
+                placeholder="All Status"
+                classNamePrefix="react-select"
+              />
+            </div>
+
+            {/* Size */}
+            <div className="w-36">
+              <Select
+                options={sizeOptions}
+                isClearable
+                onChange={handleFilterSelect("size")}
+                value={sizeOptions.find(o => o.value === filters.size) || null}
+                placeholder="All Sizes"
+                classNamePrefix="react-select"
+              />
+            </div>
+
+            {/* Demeanor */}
+            <div className="w-48">
+              <Select
+                options={demeanorOptions}
+                isClearable
+                onChange={handleFilterSelect("demeanor")}
+                value={demeanorOptions.find(o => o.value === filters.demeanor) || null}
+                placeholder="All Demeanors"
+                classNamePrefix="react-select"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      
         
         <div className="relative" style={{ minHeight: '600px' }}>
         <AnimatePresence mode="wait">
@@ -355,11 +390,11 @@ export const DogList = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="flex justify-center items-center gap-2 mt-6">
+                className="flex justify-center items-center cursor-pointer gap-2 mt-6">
             <button
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 border rounded disabled:opacity-50"
+              className="px-3 py-1 border rounded disabled:opacity-50 cursor-pointer "
             >
               Prev
             </button>
@@ -367,7 +402,7 @@ export const DogList = () => {
               <button
                 key={num}
                 onClick={() => setCurrentPage(num)}
-                className={`px-3 py-1 border rounded ${
+                className={`px-3 py-1 border cursor-pointer rounded ${
                   num === currentPage
                     ? "bg-gray-800 text-white"
                     : "hover:bg-gray-200"
@@ -381,7 +416,7 @@ export const DogList = () => {
                 setCurrentPage((p) => Math.min(p + 1, totalPages))
               }
               disabled={currentPage === totalPages}
-              className="px-3 py-1 border rounded disabled:opacity-50"
+              className="px-3 py-1 border rounded disabled:opacity-50 cursor-pointer "
             >
               Next
             </button>

@@ -3,6 +3,8 @@ import axios from "axios";
 import { NavAdmin } from "../NavAndFoot/NavAdmin";
 import { Footer } from "../NavAndFoot/Footer";
 import DogAssignModal from "./DogAssignModal";
+import { CheckCircle, XCircle } from "lucide-react"; 
+
 
 
 const CheckinPage = () => {
@@ -170,23 +172,26 @@ const [selectedScheduleId, setSelectedScheduleId] = useState(null);
 
                       </td>
                       {wIdx === 0 ? (
-                        <td rowSpan={session.walkers.length} className="align-top p-2">
-                          <div className="flex flex-col gap-3">
-                            <button
-                              onClick={() => handleComplete(session.session_id)}
-                              className="w-full bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700"
-                            >
-                              Complete Session
-                            </button>
-                            <button
-                              onClick={() => handleCancel(session.session_id)}
-                              className="w-full bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700"
-                            >
-                              Cancel Session
-                            </button>
-                          </div>
-                        </td>
-                      ) : null}
+  <td rowSpan={session.walkers.length} className="align-middle">
+    <div className="flex justify-center items-center gap-6 py-6">
+      <button
+        onClick={() => handleComplete(session.session_id)}
+        className="text-green-600 hover:text-green-800"
+        title="Complete Session"
+      >
+        <CheckCircle size={32} />
+      </button>
+      <button
+        onClick={() => handleCancel(session.session_id)}
+        className="text-red-600 hover:text-red-800"
+        title="Cancel Session"
+      >
+        <XCircle size={32} />
+      </button>
+    </div>
+  </td>
+) : null}
+
                     </tr>
                   ))}
                   <tr><td colSpan="8" className="py-2"></td></tr>

@@ -324,6 +324,37 @@ router.post("/assign-dogs", authenticateUser, async (req, res) => {
 });
 
 
+router.put("/undo-check-in", authenticateUser, async (req, res) => {
+  const { walkerId, sessionId } = req.body;
+  const userRole = req.user?.role;
+
+  if (!["Admin", "Marshal"].includes(userRole)) {
+    return res.status(403).json({ message: "Access denied" });
+  }
+
+  if (!walkerId || !sessionId) {
+    return res.status(400).json({ message: "Missing walkerId or sessionId" });
+  }
+
+  try {
+    const [result] = await pool.query(
+      `UPDATE walker_schedule 
+       SET checked_in = 0 
+       WHERE user_id = ? AND schedule_id = ?`,
+      [walkerId, sessionId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "No matching walker session found." });
+    }
+
+    res.json({ message: "Check-in undone." });
+  } catch (err) {
+    console.error("Error undoing check-in:", err);
+    res.status(500).json({ message: "Failed to undo check-in." });
+  }
+});
+
   
   
 

@@ -104,6 +104,7 @@ export const NavAdmin = () => {
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/dogs">Dogs</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/gallery">Gallery</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/rough-calendar">Schedule</Link>
+          <Link className="font-semibold hover:text-red-900 transition-colors" to="/checkinpath">All Walks</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/main-report">Reports</Link>
           {/* <Link className="font-semibold hover:text-red-900 transition-colors" to="/my-walks">My Walks</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/adopt">Adopt</Link> */}

@@ -1,25 +1,25 @@
-"use client"
-import { motion } from "framer-motion"
-import { PawPrint, Bone, Dog, MoveLeft } from "lucide-react"
-import { Link, useNavigate } from 'react-router-dom';
+"use client";
+import { motion } from "framer-motion";
+import { PawPrint, Bone, Dog, MoveLeft } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Footer } from "./NavAndFoot/Footer";
 import { useState, useEffect } from "react";
+import { GoogleLogin } from "@react-oauth/google";
 
 const fadeIn = {
   hidden: { opacity: 0, y: -20 },
-  visible: { opacity: 1, y: 0 }
-}
+  visible: { opacity: 1, y: 0 },
+};
 
 const pawPrints = [
   { top: "10%", left: "5%" },
   { top: "20%", right: "10%" },
   { bottom: "15%", left: "8%" },
-  { bottom: "25%", right: "5%" }
-]
+  { bottom: "25%", right: "5%" },
+];
 
 export default function LoginPage() {
-
   const navigate = useNavigate();
 
   //Login Form State
@@ -28,72 +28,90 @@ export default function LoginPage() {
     password: "",
   });
 
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-   // Scroll to top when error appears
-   useEffect(() => {
+  // Scroll to top when error appears
+  useEffect(() => {
     if (error || loading) {
       window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-   }, [error, loading]);
+    }
+  }, [error, loading]);
 
-
-
-   // Handle Input Change
-   const handleChange = (e) => {
+  // Handle Input Change
+  const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(""); //clear error when user types
+    setError(""); // clear error when user types
   };
 
-// Handle Form Submission
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
+  // Handle Form Submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
-  try {
-    const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
-    const response = await axios.post(`${backendUrl}/log-sign/login-server`, formData, {
-      headers: { "Content-Type": "application/json" },
-      withCredentials: true, //needed to send cookies
-    });
-    const { token, user } = response.data;
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
+      const response = await axios.post(
+        `${backendUrl}/log-sign/login-server`,
+        formData,
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true, // needed to send cookies
+        }
+      );
+      const { token, user } = response.data;
 
-    // localStorage.setItem("token", token);
-    // localStorage.setItem("userRole", user.role); // Store role
-    
-    console.log("User Role After Login:", user.role); // Debugging
-     // Navigate to Home Page after successful login
-    //  if (user.role === "Admin") {
-    //     navigate("/admin-dash"); // Redirect Admins
-    //   } else if (user.role === "Marshal") {
-    //     navigate("/marshal-dash"); // Redirect Marshal
-    //   }
-    //   else {
-    //     navigate("/walker-dash"); // Redirect Walkers to home page
-    //   }
-    navigate("/profile");
+      console.log("User Role After Login:", user.role); // Debugging
+      navigate("/profile"); // Redirect after successful login
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Login failed. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  } catch (err) {
-    setError(err.response?.data?.message || "Login failed. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  // Google Login Success Handler
+  const handleGoogleSuccess = async (credentialResponse) => {
+    const { credential } = credentialResponse;
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND;
+      const response = await axios.post(
+        `${backendUrl}/auth/google-login`,
+        { token: credential },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true, // needed to send cookies
+        }
+      );
+
+      console.log("Google Login Success:", response.data);
+      navigate("/profile");
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Google login failed. Please try again."
+      );
+    }
+  };
+
+  const handleGoogleFailure = (error) => {
+    console.error("Google login failed", error);
+    setError("Google login failed. Please try again.");
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#f9fafb] to-[#f3f4f6] relative overflow-hidden">
- <motion.div
-          className="flex gap-4 my-4 text-black px-4 py-2 w-56 items-center"
-          whileHover={{ scale: 1.03 }}
-        >
-          <MoveLeft />
-          <Link to="/" className="font-semibold text-xl hover:text-red-900">
-            Back to Home
-          </Link>
-        </motion.div>
+      <motion.div
+        className="flex gap-4 my-4 text-black px-4 py-2 w-56 items-center"
+        whileHover={{ scale: 1.03 }}
+      >
+        <MoveLeft />
+        <Link to="/" className="font-semibold text-xl hover:text-red-900">
+          Back to Home
+        </Link>
+      </motion.div>
       {pawPrints.map((style, index) => (
         <motion.div
           key={index}
@@ -136,18 +154,26 @@ const handleSubmit = async (e) => {
                 height={60}
                 className="w-16 h-16 mx-auto"
               />
-              <h2 className="text-2xl font-bold mt-4 text-gray-800">Welcome Back</h2>
-              <p className="text-gray-500">Sign in to continue your adoption journey</p>
+              <h2 className="text-2xl font-bold mt-4 text-gray-800">
+                Welcome Back
+              </h2>
+              <p className="text-gray-500">
+                Sign in to continue your adoption journey
+              </p>
             </div>
 
             {/* Error Message */}
             {error && <p className="text-red-500 text-center">{error}</p>}
 
-
-           {/* Login Form */}
+            {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <motion.div className="space-y-2" variants={fadeIn}>
-                <label htmlFor="emailOrUsername" className="block font-medium text-gray-700">Email or Username</label>
+                <label
+                  htmlFor="emailOrUsername"
+                  className="block font-medium text-gray-700"
+                >
+                  Email or Username
+                </label>
                 <input
                   id="emailOrUsername"
                   type="text"
@@ -162,8 +188,18 @@ const handleSubmit = async (e) => {
 
               <motion.div className="space-y-2" variants={fadeIn}>
                 <div className="flex justify-between">
-                  <label htmlFor="password" className="block font-medium text-gray-700">Password</label>
-                  <Link to="/forgot-password" className="text-sm text-[#8B2232] hover:underline">Forgot password?</Link>
+                  <label
+                    htmlFor="password"
+                    className="block font-medium text-gray-700"
+                  >
+                    Password
+                  </label>
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-[#8B2232] hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
                 </div>
                 <input
                   id="password"
@@ -181,7 +217,9 @@ const handleSubmit = async (e) => {
                 type="submit"
                 disabled={loading}
                 className={`w-full text-white font-semibold py-3 px-4 rounded-lg shadow-md transition duration-300 ${
-                  loading ? "bg-gray-500 cursor-not-allowed" : "bg-[#8B2232] hover:bg-[#a32a3e]"
+                  loading
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-[#8B2232] hover:bg-[#a32a3e]"
                 }`}
               >
                 {loading ? "Signing In..." : "Sign In"}
@@ -194,21 +232,31 @@ const handleSubmit = async (e) => {
               <div className="flex-grow border-t border-gray-300"></div>
             </div>
 
+            {/* Google Login Button */}
             <div className="grid grid-cols-2 gap-4">
-              <button className="w-full bg-red-500 text-white py-3 rounded-lg shadow-md hover:bg-red-600 transition">Google</button>
-              <button className="w-full bg-blue-600 text-white py-3 rounded-lg shadow-md hover:bg-blue-700 transition">Facebook</button>
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleFailure}
+                useOneTap
+                theme="filled_blue"
+              />
             </div>
 
             <div className="text-center text-sm text-gray-500 mt-4">
-              Don&apos;t have an account? <Link to="/signup" className="text-[#8B2232] hover:underline">Sign up</Link>
+              Don&apos;t have an account?{" "}
+              <Link to="/signup" className="text-[#8B2232] hover:underline">
+                Sign up
+              </Link>
             </div>
             <div className="text-center text-sm text-gray-500">
-              <Link to="/" className="hover:text-[#8B2232]">Return to home</Link>
+              <Link to="/" className="hover:text-[#8B2232]">
+                Return to home
+              </Link>
             </div>
           </div>
         </motion.div>
       </div>
       <Footer />
     </div>
-  )
+  );
 }

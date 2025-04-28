@@ -3,34 +3,43 @@ const authenticateUser = require("./middleware/authMiddleware"); // Import middl
 const pool = require("./db"); // Import database
 const cloudinary = require('./config/cloudinary');
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' }); // Temporary storage before uploading to Cloudinary
-
+const upload = multer({
+  dest: 'uploads/'
+}); // Temporary storage before uploading to Cloudinary
+const {
+  OAuth2Client
+} = require('google-auth-library');
+const jwt = require('jsonwebtoken')
 const router = express.Router();
 
 //testing...will b removed later
 router.get("/test", (req, res) => {
-    res.send("✅ Auth route is reachable!");
-  });
-  
+  res.send("✅ Auth route is reachable!");
+});
+
 
 // Protected Route to Get Authenticated User Data
 router.get("/profile", authenticateUser, async (req, res) => {
-    try {
-        // console.log("/auth/profile route hit!")
-        const [users] = await pool.query(
-            "SELECT id, firstname, lastname, username, email, created_at, role, phone, profile_pic, favorite FROM users WHERE id = ?",
-            [req.user.id]
-        );
+  try {
+    // console.log("/auth/profile route hit!")
+    const [users] = await pool.query(
+      "SELECT id, firstname, lastname, username, email, created_at, role, phone, profile_pic, favorite FROM users WHERE id = ?",
+      [req.user.id]
+    );
 
-        if (!users || users.length === 0) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        res.status(200).json(users[0]); // Return user data
-    } catch (error) {
-        console.error("Error fetching user profile:", error);
-        res.status(500).json({ message: "Server error" });
+    if (!users || users.length === 0) {
+      return res.status(404).json({
+        message: "User not found"
+      });
     }
+
+    res.status(200).json(users[0]); // Return user data
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
 });
 
 // Helper function: Extract Cloudinary public_id from image URL
@@ -62,11 +71,13 @@ function getPublicIdFromUrl(url) {
 router.post("/profile/upload", authenticateUser, upload.single('image'), async (req, res) => {
   try {
     const userId = req.user.id;
-    const { path } = req.file;
+    const {
+      path
+    } = req.file;
 
     // Retrieve the current profile picture URL from the database
     const [users] = await pool.query("SELECT profile_pic FROM users WHERE id = ?", [userId]);
-    
+
     // If an old profile picture exists, delete it from Cloudinary.
     if (users.length > 0 && users[0].profile_pic) {
       const oldUrl = users[0].profile_pic;
@@ -87,47 +98,69 @@ router.post("/profile/upload", authenticateUser, upload.single('image'), async (
     // Update the user's profile_pic column in the database with the new secure URL.
     await pool.query("UPDATE users SET profile_pic = ? WHERE id = ?", [result.secure_url, userId]);
 
-    res.status(200).json({ message: "Profile picture updated successfully.", profile_pic: result.secure_url });
+    res.status(200).json({
+      message: "Profile picture updated successfully.",
+      profile_pic: result.secure_url
+    });
   } catch (error) {
     console.error("Error uploading profile picture:", error);
-    res.status(500).json({ message: "Failed to update profile picture." });
+    res.status(500).json({
+      message: "Failed to update profile picture."
+    });
   }
 });
 
 // Admin Update User Profile (Only Admins Can Change Role & Phone)
 router.put("/update-user/:id", authenticateUser, async (req, res) => {
-    if (req.user.role !== "Admin") {
-        return res.status(403).json({ message: "Access denied. Only admins can update user details." });
+  if (req.user.role !== "Admin") {
+    return res.status(403).json({
+      message: "Access denied. Only admins can update user details."
+    });
+  }
+
+  const {
+    id
+  } = req.params;
+  const {
+    phone,
+    role
+  } = req.body;
+
+  try {
+    const [result] = await pool.query(
+      "UPDATE users SET phone = ?, role = ? WHERE id = ?",
+      [phone, role, id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        message: "User not found or no changes made."
+      });
     }
 
-    const { id } = req.params;
-    const { phone, role } = req.body;
-
-    try {
-        const [result] = await pool.query(
-            "UPDATE users SET phone = ?, role = ? WHERE id = ?",
-            [phone, role, id]
-        );
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: "User not found or no changes made." });
-        }
-
-        res.status(200).json({ message: "User updated successfully!" });
-    } catch (error) {
-        console.error("Error updating user:", error);
-        res.status(500).json({ message: "Server error" });
-    }
+    res.status(200).json({
+      message: "User updated successfully!"
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({
+      message: "Server error"
+    });
+  }
 });
 
 // Toggle favorite dog endpoint
 router.put("/favorite", authenticateUser, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { dogId } = req.body;  // Expect the dog's id to be sent in the request body
+    const {
+      dogId
+    } = req.body; // Expect the dog's id to be sent in the request body
 
     if (!dogId) {
-      return res.status(400).json({ error: "dogId is required in the request body." });
+      return res.status(400).json({
+        error: "dogId is required in the request body."
+      });
     }
 
     // Fetch current favorites from the user record
@@ -154,12 +187,84 @@ router.put("/favorite", authenticateUser, async (req, res) => {
     // Update the user's favorite column (stored as a JSON string)
     await pool.query("UPDATE users SET favorite = ? WHERE id = ?", [JSON.stringify(favorites), userId]);
 
-    res.status(200).json({ message: "Favorite updated successfully.", favorites });
+    res.status(200).json({
+      message: "Favorite updated successfully.",
+      favorites
+    });
   } catch (error) {
     console.error("Error updating favorites:", error);
-    res.status(500).json({ error: "Failed to update favorites." });
+    res.status(500).json({
+      error: "Failed to update favorites."
+    });
   }
 });
 
+
+// google-authentication routes 
+router.post("/google-login", async (req, res) => {
+  const {
+    credential
+  } = req.body;
+
+  try {
+    // Verify the Google token
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const {
+      email,
+      name
+    } = payload;
+
+    // Check if the user already exists
+    const [users] = await pool.query("SELECT * FROM users WHERE email = ?", [email]);
+    let user;
+
+    if (users.length > 0) {
+      // User exists
+      user = users[0];
+    } else {
+      // New user -> insert into database
+      const [result] = await pool.query(
+        "INSERT INTO users (firstname, email, role) VALUES (?, ?, ?)",
+        [name, email, "User"]
+      );
+
+      const [newUser] = await pool.query("SELECT * FROM users WHERE id = ?", [result.insertId]);
+      user = newUser[0];
+    }
+
+    // Create JWT token
+    const token = jwt.sign({
+        id: user.id,
+        email: user.email,
+        role: user.role
+      },
+      process.env.JWT_SECRET, {
+        expiresIn: '7d'
+      }
+    );
+
+    // Send token in a cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
+    res.status(200).json({
+      message: "Google login successful!"
+    });
+  } catch (error) {
+    console.error("Google login error:", error);
+    res.status(400).json({
+      message: "Google login failed."
+    });
+  }
+});
 
 module.exports = router;

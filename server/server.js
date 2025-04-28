@@ -14,6 +14,7 @@ const reportsRoutes = require("./reportserver/reports");
 const FRONTEND_URL = process.env.FRONTEND || 'http://localhost:5173';
 const galleryRoutes = require("./galleryRoutes");
 
+
 const pool = require('./db');
 
 //for login authorization added by Sagar on 3/20/2025 3: 46am
@@ -38,7 +39,7 @@ app.use(express.json()); // Parse JSON request bodies
 app.use("/auth", authRouter);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
- 
+
 app.get('/', (req, res) => {
     res.send('Hello, Dawgs!');
 });
@@ -53,7 +54,7 @@ app.use('/users', userRouter);
 
 app.use('/schedule', scheduleRouter);
 
-app.use('/newschedule', newscheduleRouter); 
+app.use('/newschedule', newscheduleRouter);
 
 app.use("/report", reportRouter);
 

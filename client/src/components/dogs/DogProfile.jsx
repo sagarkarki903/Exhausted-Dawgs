@@ -298,6 +298,7 @@ const handleDeleteImage = async (imageUrl) => {
             { label: "Age",       key: "age", suffix: " years" },
             { label: "Status",    key: "status" },
             { label: "Demeanor",  key: "demeanor" },
+            { label: "Zone",      key: "zone" }, 
             { label: "Health Issues", key: "health_issues" },
             { label: "Notes",     key: "notes", type: "textarea" },
           ].map((field, index) => (

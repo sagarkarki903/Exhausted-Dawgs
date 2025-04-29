@@ -23,6 +23,7 @@ export const DogList = () => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [role, setRole] = useState(""); // Track user role
   const [showMoreFilters, setShowMoreFilters] = useState(false);
+  
 
   const toggleFilters = () => setShowMoreFilters(f => !f);
 
@@ -33,11 +34,26 @@ export const DogList = () => {
     age: "",
     status: "",
     size: "",
-    demeanor: "",
+    demeanors: [],
 
   });
   const [currentPage, setCurrentPage] = useState(1);
   const dogsPerPage = 8;
+
+  // returns the right Tailwind classes for each demeanor
+const getDemeanorColor = (demeanor) => {
+  switch (demeanor) {
+    case "Red":
+      return "bg-red-100 text-red-800 border-red-200";
+    case "Gray":
+      return "bg-gray-100 text-gray-800 border-gray-200";
+    case "Yellow":
+      return "bg-yellow-100 text-yellow-800 border-yellow-200";
+    default:
+      return "bg-gray-50 text-gray-700 border-gray-200";
+  }
+};
+
 
 // select‑options
   const sizeOptions = [
@@ -52,11 +68,7 @@ export const DogList = () => {
     { value: "Adopted",   label: "Adopted"   },
     { value: "Fostered",  label: "Fostered"  },
   ];
-  const demeanorOptions = [
-    { value: "Red",    label: "Red (Not Friendly but walkable)" },
-    { value: "Gray",   label: "Gray (Aggressive & Unwalkable)" },
-    { value: "Yellow", label: "Yellow (Friendly & Walkable)"  },
-  ];
+
 
   const [breedOptions, setBreedOptions] = useState([]);
   const [loadingBreeds, setLoadingBreeds] = useState(true);
@@ -156,6 +168,18 @@ export const DogList = () => {
     setCurrentPage(1);
   };
 
+    const handleDemeanorCheckbox = (e) => {
+    const { value, checked } = e.target;
+    setFilters(f => {
+      const next = checked
+        ? [...f.demeanors, value]
+        : f.demeanors.filter(d => d !== value);
+      return { ...f, demeanors: next };
+    });
+    setCurrentPage(1);
+  };
+
+
 
   /// apply all filters
   const filteredDogs = dogs.filter(dog => {
@@ -165,7 +189,8 @@ export const DogList = () => {
     if (filters.age && dog.age.toString() !== filters.age) return false;
     if (filters.status && dog.status !== filters.status) return false;
     if (filters.size && dog.size !== filters.size) return false;
-    if (filters.demeanor && dog.demeanor !== filters.demeanor) return false;
+    if (filters.demeanors.length > 0 && !filters.demeanors.includes(dog.demeanor))
+    return false;
     return true;
   });
 
@@ -223,6 +248,40 @@ export const DogList = () => {
             </Link>
           </div>
         )}
+
+      {/* Demeanor checkboxes */}
+      <div className="mb-2 p-4 border rounded-lg border-gray-400 bg-gray-50">
+        <h2 className="text-lg font-semibold mb-4">Filter by Demeanor</h2>
+          <div className="flex flex-wrap gap-4">
+            {/* Checkboxes for each demeanor option */}
+            {[
+              { value: "Red",    label: "Not Friendly but walkable",    bg: "bg-red-100 text-red-800 border-red-200"  },
+              { value: "Gray",   label: "Aggressive & Unwalkable",   bg: "bg-gray-100 text-gray-800 border-gray-200"  },
+              { value: "Yellow", label: "Friendly & Walkable", bg: "bg-yellow-100 text-yellow-800 border-yellow-200" },
+            ].map(opt => (
+              <div key={opt.value} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  value={opt.value}
+                  checked={filters.demeanors.includes(opt.value)}
+                  onChange={handleDemeanorCheckbox}
+                  className="h-4 w-4"
+                />
+                {/* colored circle */}
+                <label htmlFor={opt.value} className="flex items-center">
+                    <span className={`${opt.bg} px-4 py-0.5 rounded-full text-xs font-medium mr-2`}>
+                      {opt.value}
+                    </span>
+                    <span className=" text-sm font-medium">
+                      {opt.label}
+                    </span>
+                </label>
+              </div>
+            ))}
+          </div>
+      </div>
+
+
         <div className="relative p-6 z-10 ">
         {/* FILTERS */}
         <div className="mb-6">
@@ -304,17 +363,6 @@ export const DogList = () => {
               />
             </div>
 
-            {/* Demeanor */}
-            <div className="w-48">
-              <Select
-                options={demeanorOptions}
-                isClearable
-                onChange={handleFilterSelect("demeanor")}
-                value={demeanorOptions.find(o => o.value === filters.demeanor) || null}
-                placeholder="All Demeanors"
-                classNamePrefix="react-select"
-              />
-            </div>
           </div>
         )}
       </div>
@@ -350,7 +398,15 @@ export const DogList = () => {
                   />
                   <div className="flex flex-col gap-4 p-4">
                     <div>
-                      <h2 className="text-lg font-semibold mt-4">{dog.name}</h2>
+                       {/* name + colored demeanor badge */}
+                      <div className="flex justify-between items-center mb-2">
+                        <h3 className="text-lg font-semibold">{dog.name}</h3>
+                        <span
+                          className={`${getDemeanorColor(dog.demeanor)} px-2 py-0.5 rounded-full text-xs font-medium border`}
+                        >
+                          {dog.demeanor}
+                        </span>
+                      </div>
                       <p className="text-gray-600">{dog.breed}</p>
                       <p className="text-gray-500 text-sm">Age: {dog.age} years</p>
                     </div>

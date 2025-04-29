@@ -37,6 +37,7 @@ export const NewDog = () => {
     status: '',
     demeanor: '',
     notes: '',
+    zone: '',
   });
   const [breedOptions, setBreedOptions] = useState([]);
   const [loadingBreeds, setLoadingBreeds] = useState(true);
@@ -165,6 +166,19 @@ export const NewDog = () => {
             value={demeanorOptions.find(o => o.value === formData.demeanor) || null}
             placeholder="Select demeanor…"
             classNamePrefix="react-select"
+          />
+        </div>
+        {/* Zone / Section */}
+        <div>
+          <label className="block font-semibold mb-1">Zone / Section</label>
+          <input
+            type="number"
+            name="zone"
+            value={formData.zone}
+            onChange={handleChange}
+            min="1"
+            className="w-full p-2 border rounded focus:ring focus:ring-[#8B2232]"
+            placeholder="Enter zone number"
           />
         </div>
 

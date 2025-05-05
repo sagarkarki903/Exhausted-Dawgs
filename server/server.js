@@ -33,6 +33,12 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions))
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Access-Control-Allow-Origin", FRONTEND_URL); // 👈 VERY IMPORTANT for Safari/iPad
+    next();
+  });
+  
 app.use(cookieParser()); // ✅ Middleware to handle cookies
 app.use(express.json()); // Parse JSON request bodies
 app.use("/auth", authRouter);

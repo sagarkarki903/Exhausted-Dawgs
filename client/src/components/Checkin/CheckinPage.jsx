@@ -9,7 +9,7 @@ import { CheckCircle, XCircle } from "lucide-react";
 const CheckinPage = () => {
   const backendUrl = import.meta.env.VITE_BACKEND;
   const [sessions, setSessions] = useState([]);
-  const [user, setUser] = useState(null);
+  // Removed unused 'user' state variable
   const [role, setRole] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -24,7 +24,7 @@ const CheckinPage = () => {
         const res = await axios.get(`${backendUrl}/auth/profile`, {
           withCredentials: true,
         });
-        setUser(res.data);
+        // Removed unused 'setUser' call
         setRole(res.data.role);
         setLoggedIn(true);
 
@@ -101,7 +101,7 @@ const CheckinPage = () => {
         { withCredentials: true }
       );
       refreshSessions();
-    } catch (err) {
+    } catch {
       alert("Failed to complete walk");
     }
   };
@@ -114,7 +114,7 @@ const CheckinPage = () => {
         { withCredentials: true }
       );
       refreshSessions();
-    } catch (err) {
+    } catch {
       alert("Failed to cancel session");
     }
   };

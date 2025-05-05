@@ -8,6 +8,7 @@ import { NavAdmin } from "./NavAndFoot/NavAdmin";
 import { Footer } from "./NavAndFoot/Footer";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
+import emailjs from "@emailjs/browser";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -25,8 +26,11 @@ export const Home = () => {
   const [dogs, setDogs] = useState([]);
   const [displayCount, setDisplayCount] = useState(6);
   const [loading, setLoading] = useState(true); // NEW
+  const [contact, setContact]   = useState({ firstName: "", lastName: "", email: "", message: "" });
+  const [sending, setSending]   = useState(false);
 
 
+  
   useEffect(() => {
     axios
       .get(`${backendUrl}/dogs`)
@@ -50,8 +54,39 @@ export const Home = () => {
     return () => window.removeEventListener("resize", updateDisplayCount);
   }, []);
 
+ // use the `name` attribute to know which field changed
+  const handleContactChange = (e) => {
+    const { name, value } = e.target;
+    setContact((c) => ({ ...c, [name]: value }));
+  };
 
-
+  const handleContactSubmit = (e) => {
+    e.preventDefault();
+    setSending(true);
+    emailjs
+      .send(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        {
+          first_name: contact.firstName,
+          last_name: contact.lastName,
+          from_email: contact.email,
+          message: contact.message,
+        },
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+      )
+      .then(
+        () => {
+          alert("Your message was sent—thank you!");
+          setContact({ firstName: "", lastName: "", email: "", message: "" });
+        },
+        (err) => {
+          console.error("EmailJS error:", err);
+          alert("Oops! Something went wrong.");
+        }
+      )
+      .finally(() => setSending(false));
+  };
   //****************check if a user is logged in and is an admin or other*****************/
   const [loggedIn, setLoggedIn] = useState(false);
   const [role, setRole] = useState(""); // Track user role
@@ -291,53 +326,68 @@ export const Home = () => {
               <motion.div variants={fadeInUp}>
                 <div className="bg-white rounded-lg border border-gray-300 shadow-md">
                   <div className="p-6">
-                    <form className="space-y-4">
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-2">
-                          <label className="text-md font-semibold" htmlFor="first-name">
-                            First name
-                          </label>
-                          <input
-                            className="w-full rounded-md border border-gray-200 px-3 py-2"
-                            id="first-name"
-                            placeholder="Enter your first name"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-md font-semibold" htmlFor="last-name">
-                            Last name
-                          </label>
-                          <input
-                            className="w-full rounded-md border border-gray-200 px-3 py-2"
-                            id="last-name"
-                            placeholder="Enter your last name"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-md font-semibold" htmlFor="email">
-                          Email
-                        </label>
-                        <input
-                          className="w-full rounded-md border border-gray-200 px-3 py-2"
-                          id="email"
-                          placeholder="Enter your email"
-                          type="email"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-md font-semibold" htmlFor="message">
-                          Message
-                        </label>
-                        <textarea
-                          className="w-full rounded-md border border-gray-200 px-3 py-2"
-                          id="message"
-                          placeholder="Enter your message"
-                          rows={4}
-                        />
-                      </div>
-                      <button className="w-full h-12 rounded-lg text-white font-semibold hover:cursor-pointer bg-red-900 hover:bg-amber-800">Send Message</button>
-                    </form>
+                    <form onSubmit={handleContactSubmit} className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="firstName">First name</label>
+          <input
+            type="text"
+            name="firstName"
+            id="firstName"
+            value={contact.firstName}
+            onChange={handleContactChange}
+            className="w-full rounded-md border px-3 py-2"
+            placeholder="Enter your first name"
+          />
+        </div>
+        <div>
+          <label htmlFor="lastName">Last name</label>
+          <input
+            type="text"
+            name="lastName"
+            id="lastName"
+            value={contact.lastName}
+            onChange={handleContactChange}
+            className="w-full rounded-md border px-3 py-2"
+            placeholder="Enter your last name"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="email">Email</label>
+        <input
+          type="email"
+          name="email"
+          id="email"
+          value={contact.email}
+          onChange={handleContactChange}
+          className="w-full rounded-md border px-3 py-2"
+          placeholder="Enter your email"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="message">Message</label>
+        <textarea
+          name="message"
+          id="message"
+          value={contact.message}
+          onChange={handleContactChange}
+          className="w-full rounded-md border px-3 py-2"
+          rows={4}
+          placeholder="Enter your message"
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={sending}
+        className="w-full h-12 rounded-lg bg-red-900 text-white font-semibold disabled:opacity-50"
+      >
+        {sending ? "Sending…" : "Send Message"}
+      </button>
+    </form>
                   </div>
                 </div>
               </motion.div>

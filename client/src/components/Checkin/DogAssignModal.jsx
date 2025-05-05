@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { X } from "lucide-react";
 import Select from "react-select";
+import PropTypes from "prop-types";
 
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -219,5 +220,12 @@ const DogAssignModal = ({ isOpen, onClose, walkerId, scheduleId }) => {
     </div>
   );
 };
+DogAssignModal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  walkerId: PropTypes.string.isRequired,
+  scheduleId: PropTypes.string.isRequired,
+};
 
 export default DogAssignModal;
+

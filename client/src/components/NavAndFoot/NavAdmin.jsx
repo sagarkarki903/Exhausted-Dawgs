@@ -199,6 +199,12 @@ export const NavAdmin = () => {
                   Schedule
                 </button>
               </Link>
+              
+              <Link to="/checkinpath">
+                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                  All Walks
+                </button>
+              </Link>
 
               <Link to="/main-report">
                 <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">

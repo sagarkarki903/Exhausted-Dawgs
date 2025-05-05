@@ -95,7 +95,14 @@ router.post('/login-server', async (req, res) => {
         );
 
         // Set the token as an HTTP-only cookie
-        res.cookie("auth_token", token, COOKIE_OPTIONS);
+        // res.cookie("auth_token", token, COOKIE_OPTIONS);
+        res.cookie("auth_token", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
+            path: "/",             // Optional but good for safety
+            maxAge: 60 * 60 * 1000 // 1 hour
+          });
 
         res.status(200).json({
             message: "Login successful",
@@ -123,7 +130,12 @@ router.post('/login-server', async (req, res) => {
 //Logout...................................................
 // Logout Route (Clear the Cookie)
 router.post('/logout-server', (req, res) => {
-    res.clearCookie("auth_token", { path: "/" }); // Ensure cookie is removed from all paths
+    res.clearCookie("auth_token", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+        path: "/"
+      });
     res.status(200).json({ message: "Logout successful." });
 });
 //logout end.......................................................

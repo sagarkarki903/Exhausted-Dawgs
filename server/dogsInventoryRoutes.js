@@ -34,7 +34,7 @@ router.get('/:id', async (req, res) => {
 // POST /dogs - Create a new dog record
 router.post('/', async (req, res) => {
   try {
-    const { name, breed, size, age, healthIssues, status, demeanor, notes } = req.body;
+    const { name, breed, size, age, healthIssues, status, demeanor, notes, zone } = req.body;
     
     // Validate required fields
     if (!name || age === undefined) {
@@ -48,9 +48,9 @@ router.post('/', async (req, res) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO dogs (name, breed, size, age, health_issues, status, demeanor, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [name, breed, size, parsedAge, healthIssues, status, demeanor, notes]
+      `INSERT INTO dogs (name, breed, size, age, health_issues, status, demeanor, notes, zone)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`, // Added zone to the query
+      [name, breed, size, parsedAge, healthIssues, status, demeanor, notes, zone]
     );
     res.status(201).json({ id: result.insertId, message: 'Dog created successfully' });
   } catch (err) {
@@ -62,7 +62,7 @@ router.post('/', async (req, res) => {
 // PUT /dogs/:id - Update an existing dog record
 router.put('/:id', async (req, res) => {
   try {
-    const { name, breed, size, age, healthIssues, status, demeanor, notes} = req.body;
+    const { name, breed, size, age, healthIssues, status, demeanor, notes, zone} = req.body;
    
     // Get the existing age if not provided in the request
     let parsedAge = age;
@@ -81,9 +81,9 @@ router.put('/:id', async (req, res) => {
     }
         
     const [result] = await pool.query(
-      `UPDATE dogs SET name = ?, breed = ?, size = ?, age = ?, health_issues = ?, status = ?, demeanor = ?, notes = ?
+      `UPDATE dogs SET name = ?, breed = ?, size = ?, age = ?, health_issues = ?, status = ?, demeanor = ?, notes = ?, zone = ?
        WHERE id = ?`,
-      [name, breed, size, parsedAge, healthIssues, status, demeanor, notes, req.params.id]
+      [name, breed, size, parsedAge, healthIssues, status, demeanor, notes, zone, req.params.id]
     );
     
     if (result.affectedRows === 0) {

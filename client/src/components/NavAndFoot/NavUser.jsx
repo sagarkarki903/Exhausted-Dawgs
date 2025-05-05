@@ -104,7 +104,14 @@ export const NavUser = () => {
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/dogs">Dogs</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/gallery">Gallery</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/rough-calendar">Schedule</Link>
-          <Link className="font-semibold hover:text-red-900 transition-colors" to="/checkinpath">All Walks</Link>
+          {(user?.role === "Admin" || user?.role === "Marshal") && (
+  <Link
+    className="font-semibold hover:text-red-900 transition-colors"
+    to="/checkinpath"
+  >
+    All Walks
+  </Link>
+)}
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/contact-page">Contact</Link>
           {/* <Link className="font-semibold hover:text-red-900 transition-colors" to="/my-walks">My Walks</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/adopt">Adopt</Link> */}
@@ -200,11 +207,13 @@ export const NavUser = () => {
                 </button>
               </Link>
               
-              <Link to="/checkinpath">
-                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
-                  All Walks
-                </button>
-              </Link>
+              {(user?.role === "Admin" || user?.role === "Marshal") && (
+                <Link to="/checkinpath">
+                  <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                    All Walks
+                  </button>
+                </Link>
+              )}
 
               <Link to="/profile">
                 <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">

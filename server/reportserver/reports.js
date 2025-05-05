@@ -116,14 +116,19 @@ router.get("/marshal/my-walks", authenticateUser, async (req, res) => {
         ws.user_id AS walker_id,
         ws.checked_in,
         CONCAT(mu.firstname, ' ', mu.lastname) AS marshal_name,
-        CONCAT(wu.firstname, ' ', wu.lastname) AS walker_name
+        CONCAT(wu.firstname, ' ', wu.lastname) AS walker_name,
+        GROUP_CONCAT(DISTINCT d.name ORDER BY d.name SEPARATOR ', ') AS dog_names
       FROM marshal_schedule ms
       JOIN users mu ON ms.created_by = mu.id
       LEFT JOIN walker_schedule ws ON ms.id = ws.schedule_id
       LEFT JOIN users wu ON ws.user_id = wu.id
+      LEFT JOIN walker_dogs wd ON ws.schedule_id = wd.schedule_id AND ws.user_id = wd.walker_id
+      LEFT JOIN dogs d ON wd.dog_id = d.id
       WHERE ms.created_by = ? AND ms.date >= CURDATE()
+      GROUP BY ms.id, ws.user_id, ws.checked_in, wu.firstname, wu.lastname
       ORDER BY ms.date ASC, ms.time ASC;
     `, [userId]);
+    
 
     const sessions = {};
     rows.forEach(row => {
@@ -141,7 +146,8 @@ router.get("/marshal/my-walks", authenticateUser, async (req, res) => {
         sessions[row.session_id].walkers.push({
           walker_name: row.walker_name,
           walker_id: row.walker_id,
-          checked_in: row.checked_in
+          checked_in: row.checked_in,
+          dog_names: row.dog_names || null
         });
       }
     });

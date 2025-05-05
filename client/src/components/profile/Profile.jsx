@@ -684,11 +684,11 @@ SessionCard.propTypes = {
 
   const tabs =
   user?.role === "Admin"
-    ? ["Upcoming Walks", "Daily Reports", "Notifications"]
+    ? ["All Walks", "Favorite", "Notifications"]
     : user?.role === "Walker"
-    ? ["My Walks", "Favorites", "Applications"]
+    ? ["My Walks", "Favorite", "Notifications"]
     : user?.role === "Marshal"
-    ? ["My Sessions", "Notifications", "Activity"]
+    ? ["My Sessions", "Favorite", "Notifications"]
     : [];
 
 
@@ -776,19 +776,7 @@ SessionCard.propTypes = {
 
               {/* Commented this out because why would an admin want to be marshal or walker/downgrade their account? */}
                 <div className="flex items-center text-gray-600">
-                  {/* <User className="h-5 w-5 mr-2" />
-                  {isEditing ? (
-                    <select
-                      value={editedRole}
-                      onChange={(e) => setEditedRole(e.target.value)}
-                      className="border p-1 rounded"
-                    >
-                      <option value="User">Marshal</option>
-                      <option value="Admin">Admin</option>
-                    </select>
-                  ) : (
-                    user?.role || "N/A"
-                  )} */}
+           
                   <User className="h-5 w-5 mr-2" />
                   {user.role}
                 </div>

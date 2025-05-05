@@ -35,16 +35,20 @@ const corsOptions = {
 app.use(cors(corsOptions))
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Credentials", "true");
-    res.header("Access-Control-Allow-Origin", FRONTEND_URL); // 👈 VERY IMPORTANT for Safari/iPad
+    res.header("Access-Control-Allow-Origin", FRONTEND_URL); // not '*'
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin,X-Requested-With,Content-Type,Accept");
     next();
   });
+  
   app.options("*", (req, res) => {
     res.header("Access-Control-Allow-Origin", FRONTEND_URL);
     res.header("Access-Control-Allow-Credentials", "true");
-    res.header("Access-Control-Allow-Headers", "Content-Type");
-    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE");
+    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     res.sendStatus(200);
   });
+  
   
   
 app.use(cookieParser()); // ✅ Middleware to handle cookies
@@ -57,6 +61,14 @@ app.get('/', (req, res) => {
     res.send('Hello, Dawgs!');
 });
 
+app.get("/cookie-test", (req, res) => {
+    res.json({
+      message: "Cookie Test",
+      cookies: req.cookies,
+      token: req.cookies.auth_token || null,
+    });
+  });
+  
 
 
 app.use('/dogs', dogsRouter);

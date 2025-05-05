@@ -97,21 +97,58 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /dogs/:id - Delete a dog record
+// DELETE /dogs/:id — remove the dog *and* scrub its ID out of every user's TEXT favorites
 router.delete('/:id', async (req, res) => {
+  const dogId = req.params.id;
+  const conn = await pool.getConnection();
+
   try {
-    const [result] = await pool.query('DELETE FROM dogs WHERE id = ?', [req.params.id]);
-    
-    if (result.affectedRows === 0) {
+    await conn.beginTransaction();
+
+    // 1) delete the dog
+    const [delResult] = await conn.query(
+      'DELETE FROM dogs WHERE id = ?',
+      [dogId]
+    );
+    if (delResult.affectedRows === 0) {
+      await conn.rollback();
       return res.status(404).json({ error: 'Dog not found' });
     }
-    
-    res.json({ message: 'Dog deleted successfully' });
+
+    // 2) fetch all users whose favorite TEXT contains this ID
+    const [users] = await conn.query(
+      'SELECT id, favorite FROM users WHERE favorite LIKE ?',
+      [`%${dogId}%`]
+    );
+
+    // 3) for each, parse/filter/update
+    for (let { id: userId, favorite } of users) {
+      let favArr;
+      try {
+        favArr = JSON.parse(favorite);
+      } catch (e) {
+        console.warn(`Skipping malformed favorites for user ${userId}`);
+        continue;
+      }
+      const cleaned = favArr.filter(x => String(x) !== String(dogId));
+      await conn.query(
+        'UPDATE users SET favorite = ? WHERE id = ?',
+        [JSON.stringify(cleaned), userId]
+      );
+    }
+
+    await conn.commit();
+    res.json({ message: 'Dog deleted and removed from favorites' });
+
   } catch (err) {
-    console.error('Error deleting dog:', err);
-    res.status(500).json({ error: 'Error deleting dog' });
+    await conn.rollback();
+    console.error('Error deleting dog + cleaning favorites:', err);
+    res.status(500).json({ error: 'Could not delete dog and clean favorites' });
+  } finally {
+    conn.release();
   }
 });
+
 
 // GET /dogs/:id/images - Retrieve all images for a specific dog
 router.get('/:id/images', async (req, res) => {

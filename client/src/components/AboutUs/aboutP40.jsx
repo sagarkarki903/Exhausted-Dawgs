@@ -62,9 +62,8 @@ const AboutP40 = () => {
       bg: "bg-white",
       border: "border-red-700",
       text: "text-red-900",
-      content:
-        "Welcome to Project P-40! We are a community-driven initiative dedicated to improving the lives of shelter dogs through our innovative walking and adoption programs. Our mission is to provide dogs with exercise, socialization, and the opportunity to connect with potential adopters in a natural setting. By creating meaningful interactions between people and shelter dogs, we increase adoption rates and enrich lives on both ends of the leash.",
-      image: "/dogvolunteer.jpg?height=300&width=500",
+      content: "Project P-40 Underdogs was born from a partnership with the Humane Society Adoption Center to shine a light on the love waiting inside every shelter dog. By matching community volunteers with dogs in need of connection, we help scared pups learn trust, playfulness, and confidence—one walk at a time. Every volunteer creates an account, signs a quick waiver, and picks an available slot under the watchful eye of a trained Marshal. With each step, dogs gain social skills and hearts gain hope.",
+      image: "/volunteer.jpg?height=300&width=500",
       imageAlt: "Dogs and volunteers at Project P-40",
     },
     {
@@ -74,8 +73,8 @@ const AboutP40 = () => {
       border: "border-yellow",
       text: "text-white",
       content:
-        "Our intuitive scheduling system makes it easy to plan your dog walking experience. Simply browse available time slots, select a dog that catches your eye, and confirm your booking. Each walk lasts approximately 30-45 minutes and takes place in safe, designated areas. First-time walkers will be paired with an experienced Marshal who will provide guidance and support. Regular walking not only benefits the dogs but also creates a consistent routine that helps them become more adoptable.",
-      image: "/schedulingwalk.jpg?height=300&width=500",
+        "Scheduling a walk is vital for a dog’s socialization and well-being. Each walk provides exercise, affection, and a chance to build trust—key factors that increase adoption success. Walks run Tuesday–Saturday, 10 AM–3 PM under the supervision of a trained Marshal. Volunteers pick from available time slots and show up ready to make a difference. Dogs are classified into three categories: Gold: Easy to walk—perfect for first-timers. Maroon: A bit more challenging—requires experience. Grey: Non-walkable/aggressive—observe from a safe distance.",
+      image: "/walk.jpg?height=300&width=500",
       imageAlt: "Person scheduling a dog walk on mobile device",
     },
     {
@@ -86,7 +85,7 @@ const AboutP40 = () => {
       text: "text-red-900",
       content:
         "Joining our community is quick and easy. By creating an account, you'll gain access to our full range of features including walk scheduling, personal walking history, and adoption applications. Your profile helps us match you with compatible dogs and keeps track of your volunteer hours. We value your privacy and ensure all personal information is securely stored. Become part of our growing network of dog lovers making a difference in your community.",
-      image: "/account.jpeg?height=300&width=500",
+      image: "/account.jpg?height=300&width=500",
       imageAlt: "Person creating an account on laptop",
     },
     {
@@ -96,8 +95,8 @@ const AboutP40 = () => {
       border: "border-yellow",
       text: "text-white",
       content:
-        "Marshals are the backbone of Project P-40. These dedicated volunteers oversee walking sessions, ensure safety protocols are followed, and provide guidance to new walkers. To become a Marshal, you'll need to complete our comprehensive training program covering dog handling, emergency procedures, and community guidelines. Marshals commit to regular volunteering hours and play a crucial role in the success of our program. The position offers leadership experience and the satisfaction of making a significant impact.",
-      image: "/marshal.jpg?height=300&width=500",
+        "Our Marshals are the champions of Project P-40: experienced volunteers who ensure every walk is safe, fun, and rewarding. They receive specialized training, manage scheduling slots, and mentor fellow walkers—all while making a direct impact on each dog’s journey to a forever home. Ready to lead the pack? Submit a Marshal application in your account dashboard and be the change your community needs.",
+      image: "/marshal.jpeg?height=300&width=500",
       imageAlt: "Marshal helping with dog walking",
     },
     {
@@ -107,8 +106,8 @@ const AboutP40 = () => {
       border: "border-red-700",
       text: "text-red-900",
       content:
-        "Our adoption process is designed to create successful, lasting matches between dogs and their new families. After spending time with a dog through our walking program, interested adopters can apply through our platform. We conduct home visits, reference checks, and provide ongoing support to ensure a smooth transition. Your donations directly fund shelter partnerships, training resources, and essential supplies. Every contribution, no matter the size, helps us continue our mission of finding loving homes for dogs in need.",
-      image: "/adoption.jpg?height=300&width=500",
+        "Whether you have room in your home or in your heart, you can make a difference. Soon, you’ll be able to apply to adopt a dog directly through Project P-40 or donate to provide food, medical care, and enrichment. Every adoption transforms two lives—yours and the dog’s—and every donation fuels our mission of compassion. Stay tuned for our Adoption & Donations portal launch.",
+        image: "/Cherie&Buddy.jpg?height=300&width=500",
       imageAlt: "Family adopting a dog",
     },
     {
@@ -118,8 +117,8 @@ const AboutP40 = () => {
       border: "border-yellow",
       text: "text-white",
       content:
-        "Project P-40 was founded by Dr. Christine Berry. She recognized the need for more interactive adoption programs. What began as a small initiative with just 40 dogs (hence the name P-40) has grown into a nationwide movement with thousands of successful adoptions. Our organization has received numerous awards for innovation in animal welfare and community engagement. We continue to expand our reach while maintaining our core values of compassion, responsibility, and the belief that every dog deserves a loving home.",
-      image: "/cberry.png?height=300&width=500",
+        "Project P-40 was founded by Dr. Christine Berry. She is the Associate Professor of Risk Management & Insurance and Director of the Small Business Risk Management Institute at the University of Louisiana at Monroe since 2001. As the visionary founder of Project P-40 Underdogs, Dr. Berry leveraged her decades of industry and academic expertise to build a volunteer-powered walking program— uniting students, organizations, and the community around shelter dogs. She personally marshals walks, mentoring volunteers and ensuring every dog receives the care and socialization they need. Under her leadership, Project P-40 has become a model of community engagement, seamlessly integrating ULM’s student groups and elevating the mission of humane education across Northeast Louisiana.",
+       image: "/cberry.png?height=300&width=500",
       imageAlt: "Founder of Project P-40 with dogs",
     },
   ]
@@ -227,7 +226,7 @@ const AboutP40 = () => {
                       </div>
                       <h2 className={`text-3xl font-bold ${section.text}`}>{section.title}</h2>
                     </div>
-                    <p className="text-lg leading-relaxed text-gray-800 mb-6">{section.content}</p>
+                    <p className={`text-lg leading-relaxed mb-6 ${isEven ? "text-gray-800" : "text-white"}`}>{section.content}</p>
                   </motion.div>
 
                   <motion.div className="lg:w-1/2" variants={isEven ? fadeInRight : fadeInLeft}>

@@ -7,6 +7,7 @@ import { Navbar } from "../NavAndFoot/Navbar";
 import { NavUser } from "../NavAndFoot/NavUser";
 import { NavAdmin } from "../NavAndFoot/NavAdmin";
 import { Footer } from "../NavAndFoot/Footer";
+ // Import toast for notifications
 
 const generateTimeSlots = () => {
   const slots = [];

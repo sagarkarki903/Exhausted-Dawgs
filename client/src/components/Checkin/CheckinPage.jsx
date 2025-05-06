@@ -252,12 +252,15 @@ const CheckinPage = () => {
           </table>
         </div>
       </main>
-      <DogAssignModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        walkerId={selectedWalkerId}
-        scheduleId={selectedScheduleId}
-      />
+      {showModal && selectedWalkerId && selectedScheduleId && (
+  <DogAssignModal
+    isOpen={showModal}
+    onClose={() => setShowModal(false)}
+    walkerId={selectedWalkerId}
+    scheduleId={selectedScheduleId}
+  />
+)}
+
       <Footer />
     </div>
   );

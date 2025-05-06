@@ -7,6 +7,7 @@ import { Footer } from "../NavAndFoot/Footer";
 import { useNavigate } from "react-router-dom";
 import { Link } from 'react-router-dom'
 import { toast } from "react-hot-toast"; // Import toast for notifications
+import DogAssignModal from "../Checkin/DogAssignModal";
 
 
 
@@ -30,6 +31,11 @@ const Profile = () => {
   const [upcomingWalks, setUpcomingWalks] = useState([]);
   const [myWalks, setMyWalks] = useState([]);
   const [marshalSessions, setMarshalSessions] = useState([]);
+
+  const [showDogModal, setShowDogModal] = useState(false);
+const [selectedWalkerId, setSelectedWalkerId] = useState(null);
+const [selectedScheduleId, setSelectedScheduleId] = useState(null);
+
   
   const navigate = useNavigate();
 
@@ -401,7 +407,7 @@ useEffect(() => {
 
 
 // helper function
-const SessionCard = ({ session, isAdminOrMarshal }) => {
+const SessionCard = ({ session, isAdminOrMarshal, openDogModal }) => {
   const [showDetails, setShowDetails] = useState(false);
   const [assignments, setAssignments] = useState({});
 
@@ -416,101 +422,54 @@ const SessionCard = ({ session, isAdminOrMarshal }) => {
   
 
 
-  // "Dog Details" card view
   if (showDetails) {
-      return (
-        <div className="bg-gray-50 border border-gray-300 rounded-lg shadow-md p-4">
-          <p className="text-gray-800 font-semibold mb-2">Dog Assignments</p>
-          {session.walkers.length === 0 ? (
-            <p className="text-gray-500 italic">No walkers booked yet.</p>
-          ) : (
-            <ul className="space-y-4">
+    return (
+      <div className="bg-gray-50 border border-gray-300 rounded-lg shadow-md p-4">
+        <p className="text-gray-800 font-semibold mb-2">Dog Assignments</p>
+        {session.walkers.length === 0 ? (
+          <p className="text-gray-500 italic">No walkers booked yet.</p>
+        ) : (
+          <ul className="space-y-4">
             {session.walkers.map((w, idx) => (
               <li key={idx} className="text-gray-700 space-y-2">
-             <div className="mb-2">
-              <strong className="block text-base text-gray-800">{w.walker_name}</strong>
-              {w.dog_names && (
-                <div className="mt-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded text-sm text-gray-700">
-                  <span className="font-semibold text-gray-600">Currently Assigned:</span> {w.dog_names}
-                </div>
-              )}
-            </div>
-
-
-                <div className="mt-1">
-                <div className="mt-1">
-                <div className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Assign Dogs:
-                      </label>
-                      <div className="relative">
-                      <select
-  value={assignments[w.walker_id] || ""}
-  onChange={(e) =>
-    setAssignments((prev) => ({
-      ...prev,
-      [w.walker_id]: e.target.value,
-    }))
-  }
-  className="block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm p-2 bg-white"
->
-  <option value="">Select a dog</option>
-  {allDogs.map((dog) => (
-    <option key={dog.id} value={dog.id}>
-      {dog.name}
-    </option>
-  ))}
-</select>
-
-                      </div>
+                <div className="mb-2">
+                  <strong className="block text-base text-gray-800">{w.walker_name}</strong>
+                  {w.dog_names && (
+                    <div className="mt-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded text-sm text-gray-700">
+                      <span className="font-semibold text-gray-600">Currently Assigned:</span> {w.dog_names}
                     </div>
-
-
+                  )}
+                </div>
+  
                 <button
-                  onClick={async () => {
-                    try {
-                      await axios.post(
-                        `${backendUrl}/reports/assign-dogs`,
-                        {
-                          schedule_id: session.session_id,
-                          walker_id: w.walker_id,
-                          dog_ids: assignments[w.walker_id] ? [assignments[w.walker_id]] : [],
-                        },
-                        { withCredentials: true }
-                      );
-                      alert("Dogs assigned successfully!");
-                    } catch (err) {
-                      console.error("Error assigning dogs:", err);
-                      alert("Failed to assign dogs.");
-                    }
-                  }}
-                  disabled={(assignments[w.walker_id] || []).length === 0}
-                  className={`mt-2 text-xs px-3 py-1 rounded ${
-                    (assignments[w.walker_id] || []).length > 0
-                      ? "bg-blue-600 text-white hover:bg-blue-700"
-                      : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                  disabled={!w.checked_in}
+                  className={`mt-2 px-3 py-1 rounded text-sm ${
+                    w.checked_in
+                      ? "bg-yellow-600 text-white hover:bg-yellow-700"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}
+                  onClick={() => {
+                    if (w.checked_in) openDogModal(w.walker_id, session.session_id);
+                  }}
                 >
-                  Save Assignment
+                  Assign Dogs
                 </button>
-              </div>
 
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                    
-
-                    )}
-                    <button
-                      className="mt-4 text-sm text-blue-600 underline"
-                      onClick={() => setShowDetails(false)}
-                    >
-                      Back to Session
-                    </button>
-                  </div>
-                );
-              }
+              </li>
+            ))}
+          </ul>
+        )}
+  
+        <button
+          className="mt-4 text-sm text-blue-600 underline"
+          onClick={() => setShowDetails(false)}
+        >
+          Back to Session
+        </button>
+      </div>
+    );
+  }
+  
 
   // Default card view
   return (
@@ -594,8 +553,9 @@ const SessionCard = ({ session, isAdminOrMarshal }) => {
       SessionCard.propTypes = {
         session: PropTypes.object.isRequired,
         isAdminOrMarshal: PropTypes.bool.isRequired,
+        openDogModal: PropTypes.func.isRequired,
       };
-
+      
   
 
   const renderTabContent = () => {
@@ -612,7 +572,17 @@ const SessionCard = ({ session, isAdminOrMarshal }) => {
                 <div className="max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {upcomingWalks.map((session, idx) => (
-                      <SessionCard key={idx} session={session} isAdminOrMarshal={true} />
+                      <SessionCard
+                      key={idx}
+                      session={session}
+                      isAdminOrMarshal={true}
+                      openDogModal={(walkerId, scheduleId) => {
+                        setSelectedWalkerId(walkerId);
+                        setSelectedScheduleId(scheduleId);
+                        setShowDogModal(true);
+                      }}
+                    />
+                    
                     ))}
                   </div>
                 </div>
@@ -830,8 +800,18 @@ case 2: {
                 <div className="max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {marshalSessions.map((session, idx) => (
-  <SessionCard key={idx} session={session} isAdminOrMarshal={true} />
-))}
+                    <SessionCard
+                        key={idx}
+                        session={session}
+                        isAdminOrMarshal={true}
+                        openDogModal={(walkerId, scheduleId) => {
+                          setSelectedWalkerId(walkerId);
+                          setSelectedScheduleId(scheduleId);
+                          setShowDogModal(true);
+                        }}
+                      />
+
+                      ))}
 
                   </div>
                 </div>
@@ -839,7 +819,50 @@ case 2: {
             </div>
           );
         case 1:
-          return <p>Your PUPS!</p>;
+          return (
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold mb-4">Saved Dogs / Favorites</h2>
+              {favoriteDogs.length === 0 ? (
+                <p>You have not favorited any dogs yet.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {favoriteDogs.map((dog, index) => {
+                    const profilePic = dog.profile_picture_url || "/dog2.jpeg";
+                    return (
+                      <div key={index} className="rounded-lg border border-gray-300 shadow-md">
+                        <img
+                          src={profilePic}
+                          alt={dog.name}
+                          className="h-60 w-full object-cover rounded-t-lg"
+                          onError={(e) => (e.target.src = "/dog2.jpeg")}
+                        />
+                        <div className="p-3">
+                          <h2 className="text-lg font-semibold">{dog.name}</h2>
+                          <p className="text-gray-600">{dog.breed}</p>
+                          <p className="text-gray-500 text-sm">Age: {dog.age} years</p>
+                          <div className="flex  items-end gap-4">
+                          <button
+                            onClick={() => navigate(`/dogs/${dog.id}`)}
+                            className="mt-2 w-full bg-red-900 text-white py-1 rounded hover:bg-red-800 transition"
+                          >
+                            Meet Me
+                          </button>
+                          <button 
+                                onClick={() => handleToggleFavorite(dog.id)}
+                                className="flex h-8 w-10 items-center justify-center rounded-lg border border-gray-300 text-gray-500 transition bg-yellow-500 hover:bg-white"
+                                aria-label="Remove from favorites"
+                              >
+                                <Heart className="h-5 w-5 " />
+                           </button>
+                           </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
         case 2:
               return (
               <div className="space-y-4">
@@ -1028,6 +1051,17 @@ case 2: {
         {/* Tab Content */}
         <div className="border rounded-lg p-6">{renderTabContent()}</div>
      </main>
+     {showDogModal && selectedWalkerId && selectedScheduleId && (
+    <DogAssignModal
+    isOpen={showDogModal}
+    onClose={() => setShowDogModal(false)}
+    walkerId={String(selectedWalkerId)}         // ✅ Converted to string
+    scheduleId={String(selectedScheduleId)}     // ✅ Converted to string
+  />
+  
+
+)}
+
 
       <Footer />
     </div>

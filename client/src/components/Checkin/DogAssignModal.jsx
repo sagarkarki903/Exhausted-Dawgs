@@ -225,9 +225,10 @@ const DogAssignModal = ({ isOpen, onClose, walkerId, scheduleId }) => {
 DogAssignModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  walkerId: PropTypes.string.isRequired,
-  scheduleId: PropTypes.string.isRequired,
+  walkerId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  scheduleId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 };
+
 
 export default DogAssignModal;
 

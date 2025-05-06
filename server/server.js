@@ -53,6 +53,7 @@ app.use((req, res, next) => {
 app.use(cookieParser()); // ✅ Middleware to handle cookies
 app.use(express.json()); // Parse JSON request bodies
 app.use("/auth", authRouter);
+app.use("/auth", require("./passwordRoutes")); // Password reset routes
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
  

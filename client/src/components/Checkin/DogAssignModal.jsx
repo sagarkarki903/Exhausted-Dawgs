@@ -3,6 +3,7 @@ import axios from "axios";
 import { X } from "lucide-react";
 import Select from "react-select";
 import PropTypes from "prop-types";
+import { toast } from "react-hot-toast";
 
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -32,6 +33,7 @@ const DogAssignModal = ({ isOpen, onClose, walkerId, scheduleId }) => {
         setDogs(res.data);
       } catch (err) {
         console.error("Error fetching dogs:", err);
+        toast.error("Failed to fetch dogs.");
       } finally {
         setLoading(false);
       }
@@ -41,7 +43,7 @@ const DogAssignModal = ({ isOpen, onClose, walkerId, scheduleId }) => {
   }, [isOpen, backendUrl]);
 
   useEffect(() => {
-    axios.get("https://dog.ceo/api/breeds/list/all")
+    axios.get(`${backendUrl}/api/breeds`)
       .then(res => {
         const msg = res.data.message;
         const opts = [];
@@ -169,12 +171,12 @@ const DogAssignModal = ({ isOpen, onClose, walkerId, scheduleId }) => {
                           },
                           { withCredentials: true }
                         );
-                        alert("Dog assigned successfully!");
+                        toast.success("🐶 Dog assigned successfully!");
                         onClose();
                         window.location.reload();
                       } catch (err) {
                         console.error("Error assigning dog:", err);
-                        alert("Failed to assign dog.");
+                        toast.error("Failed to assign dog.");
                       }
                     }}
                   >

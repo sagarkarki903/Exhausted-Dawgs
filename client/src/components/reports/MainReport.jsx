@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { NavAdmin } from "../NavAndFoot/NavAdmin";
 import { NavUser } from "../NavAndFoot/NavUser";
@@ -26,8 +26,9 @@ const MainReport = () => {
   useEffect(() => {
     axios.get(`${backendUrl}/auth/profile`, { withCredentials: true })
       .then((res) => setUser(res.data))
-      .catch((err) => console.error("Error fetching user:", err));
-  }, []);
+      .catch((err) => console.error("Failed to fetch user:", err))
+      .finally(() => setLoading(false));
+  }, [backendUrl]);
 
   useEffect(() => {
     axios.get(`${backendUrl}/reports/all`, { withCredentials: true })

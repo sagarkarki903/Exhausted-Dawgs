@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import PropTypes from "prop-types";
+function ProtectedRoute({ children }) {
 
-export default function ProtectedRoute({ children }) {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ export default function ProtectedRoute({ children }) {
         } else {
           navigate("/login"); // Redirect to login if not authorized
         }
-      } catch (error) {
+      } catch {
         navigate("/login"); // Redirect on error (unauthorized)
       } finally {
         setLoading(false);
@@ -30,6 +31,12 @@ export default function ProtectedRoute({ children }) {
   if (loading) {
     return <div>Loading...</div>; // Show a loading indicator while checking auth
   }
-
   return authorized ? children : null;
 }
+
+ProtectedRoute.propTypes = {
+  children: PropTypes.node.isRequired,
+};
+
+export default ProtectedRoute;
+

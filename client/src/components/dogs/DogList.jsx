@@ -7,6 +7,7 @@ import Select from "react-select";
 import { Navbar } from "../NavAndFoot/Navbar";
 import { NavUser } from "../NavAndFoot/NavUser";
 import { NavAdmin } from "../NavAndFoot/NavAdmin";
+import { toast } from "react-hot-toast";
 
 function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -76,31 +77,40 @@ const getDemeanorColor = (demeanor) => {
   useEffect(() => {
     axios
       .get(`${backendUrl}/dogs`)
-      .then((response) => setDogs(response.data))
-      .catch((error) => console.error("Error fetching dogs:", error));
+      .then((res) => {
+        setDogs(res.data);
+      })
+      .catch((err) => {
+        console.error("Error fetching dogs:", err);
+        toast.error("Failed to fetch dogs.");
+      })
+      .finally(() => setLoading(false));
   }, [backendUrl]);
 
-  // fetch dog.ceo breed list once
-  useEffect(() => {
-    axios.get("https://dog.ceo/api/breeds/list/all")
-      .then(res => {
+ useEffect(() => {
+    axios
+      .get(`${backendUrl}/api/breeds`)
+      .then((res) => {
         const msg = res.data.message;
         const opts = [];
         Object.entries(msg).forEach(([breed, subs]) => {
           if (subs.length === 0) {
             opts.push({ value: breed, label: capitalize(breed) });
           } else {
-            subs.forEach(sub => {
+            subs.forEach((sub) =>
               opts.push({
                 value: `${breed}/${sub}`,
                 label: `${capitalize(sub)} ${capitalize(breed)}`,
-              });
-            });
+              })
+            );
           }
         });
         setBreedOptions(opts);
       })
-      .catch(err => console.error(err))
+      .catch((err) => {
+        console.error("Error fetching breeds:", err);
+         toast.error("Failed to load breed list.");
+      })
       .finally(() => setLoadingBreeds(false));
   }, []);
 
@@ -150,8 +160,10 @@ const getDemeanorColor = (demeanor) => {
       console.log("Favorites updated:", res.data.favorites);
       // Update the local favoriteDogIds state with the updated favorites returned by the server
       setFavoriteDogIds(res.data.favorites);
+      toast.success("Favorites updated");
     } catch (error) {
       console.error("Error updating favorites:", error);
+      toast.error("Could not update favorites");
     }
   };
 
@@ -269,11 +281,8 @@ const getDemeanorColor = (demeanor) => {
                 />
                 {/* colored circle */}
                 <label htmlFor={opt.value} className="flex items-center">
-                    <span className={`${opt.bg} px-4 py-0.5 rounded-full text-xs font-medium mr-2`}>
-                      {opt.value}
-                    </span>
-                    <span className=" text-sm font-medium">
-                      {opt.label}
+                    <span className={`px-4 py-0.5 rounded-full text-sm font-medium mr-2 ${opt.bg}`}>
+                     {opt.value}--<span className="text-xs">{opt.label}</span>
                     </span>
                 </label>
               </div>

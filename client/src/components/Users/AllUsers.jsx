@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { Navbar } from "../NavAndFoot/Navbar";
 import { NavAdmin } from "../NavAndFoot/NavAdmin";
 import { NavUser } from "../NavAndFoot/NavUser";
 import { Footer } from "../NavAndFoot/Footer";
+import { toast } from "react-hot-toast";
 
 export const AllUsers = () => {
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [editUserId, setEditUserId] = useState(null);
   const [editData, setEditData] = useState({});
   const [roleFilter, setRoleFilter] = useState("All");
@@ -43,6 +43,7 @@ export const AllUsers = () => {
     } catch {
       setLoggedIn(false);
       setRole("");
+
     } finally {
       setLoadingNavbar(false);
     }
@@ -57,7 +58,7 @@ export const AllUsers = () => {
       setLoading(false);
     } catch (error) {
       console.error("Error fetching users:", error);
-      setError("Failed to fetch users.");
+      toast.error("Failed to fetch users.");
       setLoading(false);
     }
   };
@@ -111,9 +112,10 @@ export const AllUsers = () => {
       });
       setEditUserId(null);
       fetchUsers();
+      toast.success("User changes saved successfully!");
     } catch (err) {
       console.error("Error saving user:", err);
-      alert("Failed to save user changes");
+      toast.error("Failed to save user changes");
     }
   };
 
@@ -124,9 +126,10 @@ export const AllUsers = () => {
         withCredentials: true,
       });
       fetchUsers();
+      toast.success("User deleted successfully!");
     } catch (err) {
       console.error("Error deleting user:", err);
-      alert("Failed to delete user");
+      toast.error("Failed to delete user");
     }
   };
 
@@ -182,8 +185,6 @@ export const AllUsers = () => {
 
         {loading ? (
           <p className="text-gray-600">Loading users...</p>
-        ) : error ? (
-          <p className="text-red-600 font-semibold">{error}</p>
         ) : (
           <div className="overflow-x-auto w-full max-w-6xl">
             <table className="w-full bg-white shadow rounded-lg border">

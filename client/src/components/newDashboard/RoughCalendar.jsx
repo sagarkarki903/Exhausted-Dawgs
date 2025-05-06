@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -7,6 +7,7 @@ import { Navbar } from "../NavAndFoot/Navbar";
 import { NavUser } from "../NavAndFoot/NavUser";
 import { NavAdmin } from "../NavAndFoot/NavAdmin";
 import { Footer } from "../NavAndFoot/Footer";
+import { toast } from "react-hot-toast"; // Import toast for notifications
 
 const generateTimeSlots = () => {
   const slots = [];
@@ -86,11 +87,12 @@ export default function RoughCalendar() {
         setClosedDates(formatted);
       } catch (err) {
         console.error("Error fetching closed dates:", err);
+        toast.error("Failed to load closed dates.");
       }
     };
   
     fetchClosedDates();
-  }, []);
+  }, []); // Fetch closed dates when the component mounts or when showCloseForm changes
   
   const isClosedDate = (dateStr) => closedDates.includes(dateStr);
 
@@ -112,6 +114,7 @@ export default function RoughCalendar() {
         setAvailableDates(uniqueDates);
       } catch (err) {
         console.error("Failed to load sessions", err);
+        toast.error("Failed to load sessions.");
       }
     };
 
@@ -138,7 +141,7 @@ export default function RoughCalendar() {
     }
   };
 
-  const [resUserId, setResUserId] = useState(null);
+  // Removed unused resUserId state variable
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -149,12 +152,13 @@ export default function RoughCalendar() {
         if (res.status === 200) {
           setLoggedIn(true);
           setRole(res.data.role);
-          setResUserId(res.data.id); // 👈 Save current user's ID
+          // Removed setting resUserId as it is unused
         }
       } catch (err) {
+        console.error("Error checking authentication:", err);
+
         setLoggedIn(false);
         setRole("");
-        setResUserId(null);
       }
     };
     checkAuth();

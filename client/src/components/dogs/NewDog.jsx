@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
+import { toast } from 'react-hot-toast';
 
 const sizeOptions = [
   { value: 'Small',  label: 'Small'   },
@@ -28,6 +29,7 @@ function capitalize(str) {
 }
 
 export const NewDog = () => {
+  const backendUrl = import.meta.env.VITE_BACKEND;
   const [formData, setFormData] = useState({
     name: '',
     breed: '',
@@ -45,7 +47,7 @@ export const NewDog = () => {
 
   // 1) Fetch all breeds from dog.ceo
   useEffect(() => {
-    axios.get('https://dog.ceo/api/breeds/list/all')
+    axios.get(`${backendUrl}/api/breeds`)
       .then(res => {
         const msg = res.data.message;
         const opts = [];
@@ -63,9 +65,12 @@ export const NewDog = () => {
         });
         setBreedOptions(opts);
       })
-      .catch(err => console.error('Failed to load breeds:', err))
+      .catch(err => {
+        console.error('Error fetching breeds:', err); 
+        toast.error('Error fetching breeds. Please try again later.');
+      })
       .finally(() => setLoadingBreeds(false));
-  }, []);
+  }, [backendUrl]);
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -82,7 +87,23 @@ export const NewDog = () => {
     const backendUrl = import.meta.env.VITE_BACKEND;
     axios.post(`${backendUrl}/dogs`, formData)
       .then(() => navigate('/dogs'))
-      .catch(err => console.error('Error creating dog:', err));
+      .catch(err => {
+        console.error('Error adding dog:', err);
+        toast.error('Error adding dog. Please try again later.');
+      })
+      .finally(() => {
+        setFormData({
+          name: '',
+          breed: '',
+          size: '',
+          age: '',
+          healthIssues: '',
+          status: '',
+          demeanor: '',
+          notes: '',
+          zone: '',
+        });
+      });
   };
 
   return (

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import  { toast } from "react-hot-toast";
 
 export const MarshalReport = () => {
     const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
@@ -7,16 +8,18 @@ export const MarshalReport = () => {
 
     useEffect(() => {
         fetchMarshalReports();
-    }, []);
+        const fetchMarshalReports = async () => {
+            try {
+                const response = await axios.get(`${backendUrl}/report/marshal-reports`);
+                setSchedules(response.data);
+            } catch (error) {
+                console.error("Error fetching schedules:", error);
+                toast.error("Failed to fetch schedules. Please try again later.");
+            }
+        };
 
-    const fetchMarshalReports = async () => {
-        try {
-            const response = await axios.get(`${backendUrl}/report/marshal-reports`);
-            setSchedules(response.data);
-        } catch (error) {
-            console.error("Error fetching schedules:", error);
-        }
-    };
+        fetchMarshalReports();
+    }, [backendUrl]); // Fetch schedules when the component mounts
 
     return (
         <div className="p-6 bg-gray-100 min-h-screen">

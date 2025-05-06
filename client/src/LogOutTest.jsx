@@ -1,6 +1,7 @@
 "use client";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-hot-toast"; // Import toast for notifications
 
 export default function LogOutTest() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export default function LogOutTest() {
       navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);
+      toast.error("Logout failed. Please try again."); // Show error toast
     }
   };
 

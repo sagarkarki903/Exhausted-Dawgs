@@ -9,6 +9,7 @@ import { Footer } from "./NavAndFoot/Footer";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import emailjs from "@emailjs/browser";
+import { toast } from "react-hot-toast";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -62,6 +63,19 @@ export const Home = () => {
 
   const handleContactSubmit = (e) => {
     e.preventDefault();
+    const { firstName, lastName, email, message } = contact;
+
+    // front-end validation
+    if (
+      !firstName.trim() ||
+      !lastName.trim() ||
+      !email.trim() ||
+      !message.trim()
+    ) {
+      toast.error("Please fill in all fields before sending.");
+      return;
+    }
+
     setSending(true);
     emailjs
       .send(
@@ -77,12 +91,12 @@ export const Home = () => {
       )
       .then(
         () => {
-          alert("Your message was sent—thank you!");
+          toast.success("Your message was sent—thank you!");
           setContact({ firstName: "", lastName: "", email: "", message: "" });
         },
         (err) => {
           console.error("EmailJS error:", err);
-          alert("Oops! Something went wrong.");
+          toast.error("Oops! Something went wrong.");
         }
       )
       .finally(() => setSending(false));
@@ -307,88 +321,94 @@ export const Home = () => {
             </div>
           </motion.div>
         </section>
+         {/* Contact on Home */}
         <section id="contact" className="py-20">
-          <motion.div
-            className="px-4 md:px-6"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={staggerChildren}
-          >
+          <motion.div className="px-4 md:px-6" initial="hidden" whileInView="visible" variants={staggerChildren}>
             <div className="grid gap-6 lg:grid-cols-2">
               <motion.div variants={fadeInUp}>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">Get in Touch</h2>
+                <h2 className="text-3xl font-bold">Get in Touch</h2>
                 <p className="mt-4 text-gray-500">
-                  Have questions about adoption? We are here to help! Reach out to us and we wll get back to you as soon
-                  as possible.
+                  Have questions about adoption? Reach out and we’ll get back to
+                  you ASAP.
                 </p>
               </motion.div>
+
               <motion.div variants={fadeInUp}>
-                <div className="bg-white rounded-lg border border-gray-300 shadow-md">
-                  <div className="p-6">
-                    <form onSubmit={handleContactSubmit} className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label htmlFor="firstName">First name</label>
-          <input
-            type="text"
-            name="firstName"
-            id="firstName"
-            value={contact.firstName}
-            onChange={handleContactChange}
-            className="w-full rounded-md border px-3 py-2"
-            placeholder="Enter your first name"
-          />
-        </div>
-        <div>
-          <label htmlFor="lastName">Last name</label>
-          <input
-            type="text"
-            name="lastName"
-            id="lastName"
-            value={contact.lastName}
-            onChange={handleContactChange}
-            className="w-full rounded-md border px-3 py-2"
-            placeholder="Enter your last name"
-          />
-        </div>
-      </div>
+                <div className="bg-white rounded-lg border border-gray-300 shadow-md p-6">
+                  <form onSubmit={handleContactSubmit} className="space-y-4">
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="firstName" className="block font-semibold mb-1">
+                          First name
+                        </label>
+                        <input
+                          type="text"
+                          name="firstName"
+                          id="firstName"
+                          value={contact.firstName}
+                          onChange={handleContactChange}
+                          required
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter your first name"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="lastName" className="block font-semibold mb-1">
+                          Last name
+                        </label>
+                        <input
+                          type="text"
+                          name="lastName"
+                          id="lastName"
+                          value={contact.lastName}
+                          onChange={handleContactChange}
+                          required
+                          className="w-full border border-gray-300 rounded px-3 py-2"
+                          placeholder="Enter your last name"
+                        />
+                      </div>
+                    </div>
 
-      <div>
-        <label htmlFor="email">Email</label>
-        <input
-          type="email"
-          name="email"
-          id="email"
-          value={contact.email}
-          onChange={handleContactChange}
-          className="w-full rounded-md border px-3 py-2"
-          placeholder="Enter your email"
-        />
-      </div>
+                    <div>
+                      <label htmlFor="email" className="block font-semibold mb-1">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        id="email"
+                        value={contact.email}
+                        onChange={handleContactChange}
+                        required
+                        className="w-full border border-gray-300  rounded px-3 py-2"
+                        placeholder="Enter your email"
+                      />
+                    </div>
 
-      <div>
-        <label htmlFor="message">Message</label>
-        <textarea
-          name="message"
-          id="message"
-          value={contact.message}
-          onChange={handleContactChange}
-          className="w-full rounded-md border px-3 py-2"
-          rows={4}
-          placeholder="Enter your message"
-        />
-      </div>
+                    <div>
+                      <label htmlFor="message" className="block font-semibold mb-1">
+                        Message
+                      </label>
+                      <textarea
+                        name="message"
+                        id="message"
+                        value={contact.message}
+                        onChange={handleContactChange}
+                        required
+                        rows={4}
+                        className="w-full border border-gray-300 rounded px-3 py-2"
+                        placeholder="Enter your message"
+                      />
+                    </div>
 
-      <button
-        type="submit"
-        disabled={sending}
-        className="w-full h-12 rounded-lg bg-red-900 text-white font-semibold disabled:opacity-50"
-      >
-        {sending ? "Sending…" : "Send Message"}
-      </button>
-    </form>
-                  </div>
+                    <button
+                      type="submit"
+                      disabled={sending}
+                      className="w-full bg-red-900 text-white py-3 rounded hover:bg-amber-800 disabled:opacity-50"
+                    >
+                      {sending ? "Sending…" : "Send Message"}
+                    </button>
+                  </form>
                 </div>
               </motion.div>
             </div>

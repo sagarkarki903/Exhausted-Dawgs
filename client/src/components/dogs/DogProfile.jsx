@@ -9,6 +9,7 @@ import { Footer } from "../NavAndFoot/Footer";
 import { Edit, Save, X, Trash2, Upload, ImageIcon } from 'lucide-react';
 import PropTypes from 'prop-types';
 import Select from 'react-select';
+import { toast } from "react-hot-toast";
 
 const sizeOptions = [
   { value: 'Small',  label: 'Small'   },
@@ -55,6 +56,7 @@ Modal.propTypes = {
 };
 
 const DogProfile = () => {
+  
   const { id } = useParams();
   const [dog, setDog] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -72,28 +74,35 @@ const DogProfile = () => {
   const [loadingBreeds, setLoadingBreeds] = useState(true);
 
   // load dog.ceo breed list on mount
-  useEffect(() => {
-    axios.get('https://dog.ceo/api/breeds/list/all')
-      .then(res => {
-        const msg = res.data.message;
-        const opts = [];
-        Object.entries(msg).forEach(([breed, subs]) => {
-          if (subs.length === 0) {
-            opts.push({ value: breed, label: capitalize(breed) });
-          } else {
-            subs.forEach(sub =>
-              opts.push({
-                value: `${breed}/${sub}`,
-                label: `${capitalize(sub)} ${capitalize(breed)}`,
-              })
-            );
-          }
-        });
-        setBreedOptions(opts);
-      })
-      .catch(console.error)
-      .finally(() => setLoadingBreeds(false));
-  }, []);
+// NEW: always hit YOUR backend proxy
+useEffect(() => {
+  console.log("→ backendUrl is:", backendUrl);
+  axios.get(`${backendUrl}/api/breeds`)
+    .then((res) => {
+      // res.data === { message: { ...breeds }, status: "success" }
+      const raw = res.data.message;
+      console.log("Breeds:", raw);
+      const opts = [];
+      Object.entries(raw).forEach(([breed, subs]) => {
+        if (subs.length === 0) {
+          opts.push({ value: breed, label: capitalize(breed) });
+        } else {
+          subs.forEach((sub) =>
+            opts.push({
+              value: `${breed}/${sub}`,
+              label: `${capitalize(sub)} ${capitalize(breed)}`,
+            })
+          );
+        }
+      });
+      setBreedOptions(opts);
+    })
+    .catch((err) => {
+      console.error("Failed to load breed list:", err);
+      toast.error("Failed to load breed list.");
+    })
+    .finally(() => setLoadingBreeds(false));
+}, [backendUrl]);
 
     const handleSelect = field => option => {
     setFormData(fd => ({ ...fd, [field]: option?.value || '' }));
@@ -106,7 +115,7 @@ const DogProfile = () => {
         setFormData(res.data);
       })
       .catch(err => console.error('Error fetching dog details:', err));
-  }, [id]);
+  }, [id, backendUrl]);
 
   const fetchDogData = async () => {
     try {
@@ -114,6 +123,7 @@ const DogProfile = () => {
       setDog(res.data);
     } catch (err) {
       console.error("Error fetching dog details:", err);
+      toast.error("Failed to load dog details.");
     }
   };
 
@@ -123,6 +133,7 @@ const DogProfile = () => {
       setImages(res.data);
     } catch (err) {
       console.error('Error fetching dog images:', err);
+      toast.error("Failed to load gallery.");
     }
   };
 
@@ -161,9 +172,11 @@ const DogProfile = () => {
     try {
       await axios.put(`${backendUrl}/dogs/${id}/profile-picture`, { imageUrl });
       setDog((prevDog) => ({ ...prevDog, profile_picture_url: imageUrl }));
+      toast.success("Profile picture updated");
       setShowImageModal(false);
     } catch (err) {
       console.error('Error setting profile picture:', err);
+      toast.error("Could not update profile picture.");
     }
   };
 
@@ -178,17 +191,25 @@ const DogProfile = () => {
       .then(() => {
         setDog(formData);
         setEditing(false);
+        toast.success('Dog details saved');
       })
-      .catch(err => console.error('Error updating dog details:', err));
+      .catch(err => {
+        console.error('Error saving dog details:', err);
+        toast.error('Failed to save dog details.');
+      });
   };
 
   const handleDelete = () => {
     if (window.confirm('Are you sure you want to delete this dog?')) {
       axios.delete(`${backendUrl}/dogs/${id}`)
         .then(() => {
+           toast.success('Dog profile deleted');
           navigate('/dogs');
         })
-        .catch(err => console.error('Error deleting dog:', err));
+        .catch(err => {
+          console.error('Error deleting dog profile:', err);
+          toast.error('Failed to delete dog profile.');
+        });
     }
   };
 
@@ -207,21 +228,25 @@ const DogProfile = () => {
       setDog(prev => ({ ...prev, imageUrl: res.data.imageUrl }));
       setFormData(prev => ({ ...prev, imageUrl: res.data.imageUrl }));
       fetchDogImages();
-    } catch (err) {
-      console.error('Error uploading image:', err);
+      toast.success('Image uploaded');
+    } catch  {
+      toast.error('Upload failed.');
     }
   };
   
-const handleDeleteImage = async (imageUrl) => {
-  try {
-    await axios.delete(`${backendUrl}/dogs/${id}/images`, {
-      params: { imageUrl }
-    });
-    fetchDogImages();
-  } catch (error) {
-    console.error('Error deleting image:', error);
-  }
-};
+const handleDeleteImage = async imageUrl => {
+    if (!window.confirm('Remove this image?')) return;
+    try {
+      await axios.delete(`${backendUrl}/dogs/${id}/images`, {
+        params: { imageUrl }
+      });
+      setImages(imgs => imgs.filter(i => i.image_url !== imageUrl));
+      toast.success('Image removed');
+    } catch (err) {
+      console.error('Error deleting image:', err);
+      toast.error('Could not delete image.');
+    }
+  };
 
 
 

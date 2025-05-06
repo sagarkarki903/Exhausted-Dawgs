@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { toast } from "react-hot-toast";
 
 export const WalkerReport = () => {
     const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
@@ -7,16 +8,17 @@ export const WalkerReport = () => {
 
     useEffect(() => {
         fetchWalkerReports();
-    }, []);
+    }, [backendUrl, fetchWalkerReports]); // Fetch appointments when the component mounts
 
-    const fetchWalkerReports = async () => {
+    const fetchWalkerReports = useCallback(async () => {
         try {
             const response = await axios.get(`${backendUrl}/report/walker-reports`);
             setAppointments(response.data);
         } catch (error) {
             console.error("Error fetching appointments:", error);
+            toast.error("Failed to fetch appointments. Please try again later.");
         }
-    };
+    }, [backendUrl]);
 
     return (
         <div className="p-6 bg-gray-100 min-h-screen">

@@ -6,6 +6,7 @@ import { NavUser } from "../NavAndFoot/NavUser";
 import { Footer } from "../NavAndFoot/Footer";
 import { useNavigate } from "react-router-dom";
 import { Link } from 'react-router-dom'
+import { toast } from "react-hot-toast"; // Import toast for notifications
 
 
 
@@ -34,9 +35,72 @@ const Profile = () => {
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewURL, setPreviewURL] = useState(null);
-  const [uploadMessage, setUploadMessage] = useState("");
 
-  
+const [roleRequest, setRoleRequest] = useState(null);        // walker’s own
+const [allRoleRequests, setAllRoleRequests] = useState([]);  // admin’s list
+const [reason, setReason] = useState('');
+
+// at the top of your Profile component, alongside reason & roleRequest…
+const [showUpgradeForm, setShowUpgradeForm] = useState(false);
+
+
+
+
+// on mount fetch your own status
+useEffect(() => {
+  if (user) {
+    axios.get(`${backendUrl}/role-requests/mine`, { withCredentials: true })
+         .then(r => setRoleRequest(r.data))
+         .catch(err => console.error(err));
+  }
+}, [backendUrl, user]);
+
+
+
+const submitUpgrade = () => {
+  if (!reason.trim()) {
+    toast.error('Please tell us why you want to become a Marshal.');
+    return;
+  }
+  axios.post(
+    `${backendUrl}/role-requests`,
+    { reason },
+    { withCredentials: true }
+  )
+  .then(r => {
+    setRoleRequest(r.data);
+    toast.success('Request submitted!');
+  })
+  .catch(err => {
+    // if 400 comes back, show the server’s message
+    toast.error(err.response?.data?.error || 'Failed to submit request');
+  });
+};
+
+// on mount fetch all pending
+useEffect(() => {
+  if (user?.role === 'Admin') {
+    axios.get(`${backendUrl}/role-requests`, { withCredentials: true })
+         .then(r => setAllRoleRequests(r.data))
+         .catch(err => console.error(err));
+  }
+}, [backendUrl, user]);
+
+const handleDecision = (id, action, reason = '') => {
+  axios.put(`${backendUrl}/role-requests/${id}`, { action, reason }, { withCredentials: true })
+       .then(() => {
+         toast.success(`User ${action}d`);
+         // refresh
+         return axios.get(`${backendUrl}/role-requests`, { withCredentials: true });
+       })
+       .then(r => setAllRoleRequests(r.data))
+       .catch(err => {
+         console.error(err);
+         toast.error(`Failed to ${action}`);
+       });
+};
+
+
   
   const handleFileChange = (e) => {
   const file = e.target.files[0];
@@ -50,7 +114,7 @@ const Profile = () => {
 
 const handleUpload = async () => {
   if (!selectedFile) {
-    setUploadMessage("Please select a file first.");
+    toast.error("Please select a file first.");
     return;
   }
 
@@ -66,7 +130,7 @@ const handleUpload = async () => {
       headers: { "Content-Type": "multipart/form-data" }
     });
 
-    setUploadMessage("Profile picture updated!");
+    toast.success("Profile picture updated!");
     // update user context/state with new profile picture from backend
     // assuming you have something like setUser
     if (res.data?.profile_pic) {
@@ -78,27 +142,29 @@ const handleUpload = async () => {
 
   } catch (error) {
     console.error("Error uploading profile picture:", error);
-    setUploadMessage("Error uploading profile picture.");
+    toast.error("Error uploading profile picture.");
   }
 };
 
 
-const handleToggleFavorite = async (dogId) => {
-  try {
-    const res = await axios.put(
-      `${backendUrl}/auth/favorite`,
-      { dogId },
-      { withCredentials: true }
-    );
-    console.log("Favorites updated:", res.data.favorites);
-    // Option A: Update the user state if the endpoint returns the updated favorites array.
-    setUser((prev) => ({ ...prev, favorite: JSON.stringify(res.data.favorites) }));
-    // Option B: Remove the dog from favoriteDogs state if it was removed.
-    setFavoriteDogs((prev) => prev.filter((dog) => String(dog.id) !== String(dogId)));
-  } catch (error) {
-    console.error("Error toggling favorite:", error);
-  }
-};
+// Toggle favorite
+  const handleToggleFavorite = async (dogId) => {
+    try {
+      const res = await axios.put(
+        `${backendUrl}/auth/favorite`,
+        { dogId },
+        { withCredentials: true }
+      );
+      toast.success("Favorites updated!");
+      const favArray = res.data.favorites;
+      setFavoriteDogs((prev) =>
+        prev.filter((dog) => !favArray.includes(dog.id))
+      );
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not update favorites.");
+    }
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -160,6 +226,7 @@ const handleToggleFavorite = async (dogId) => {
       } catch (err) {
         setError("Failed to load user data.");
         console.error("Error fetching user data:", err);
+        toast.error("Failed to load user data.");
       } finally {
         setLoading(false);
       }
@@ -193,6 +260,7 @@ const handleToggleFavorite = async (dogId) => {
           }
         } catch (err) {
           console.error("Error fetching favorite dogs:", err);
+          toast.error("Failed to load favorite dogs.");
           setFavoriteDogs([]);
         }
       }
@@ -208,7 +276,7 @@ useEffect(() => {
   if (user?.role === "Admin" || user?.role === "Marshal") {
     axios.get(`${backendUrl}/dogs`, { withCredentials: true })
       .then((res) => setAllDogs(res.data))
-      .catch((err) => console.error("Error fetching dogs:", err));
+      .catch((err) => console.error("Error fetching all dogs:", err));
   }
 }, [backendUrl, user]);
 
@@ -219,12 +287,12 @@ useEffect(() => {
     if (!window.confirm("Are you sure you want to complete this walk?")) return;
   
     try {
-      const response = await axios.post(
+       await axios.post(
         `${backendUrl}/reports/complete-walk/${sessionId}`,
         {},
         { withCredentials: true }
       );
-      alert(response.data.message);
+       toast.success("Walk marked complete!");
   
       // Refresh data
       if (user?.role === "Admin") {
@@ -240,7 +308,7 @@ useEffect(() => {
       }
     } catch (err) {
       console.error("Error completing walk:", err);
-      alert("Failed to complete walk.");
+      toast.error("Failed to complete walk.");
     }
   };
   
@@ -258,13 +326,13 @@ useEffect(() => {
       );
 
       if (response.status === 200) {
-        alert("User updated successfully!");
+        toast.success("User updated successfully!");
         setUser({ ...user, phone: editedPhone, role: editedRole });
         setIsEditing(false);
       }
     } catch (err) {
       console.error("Error updating user:", err);
-      alert("Failed to update user.");
+      toast.error("Failed to update user.");
     }
   };
 
@@ -278,7 +346,7 @@ useEffect(() => {
         withCredentials: true,
       });
   
-      alert("Session deleted successfully.");
+      toast.success("Session deleted successfully.");
   
       // Refresh relevant data
       if (user.role === "Admin") {
@@ -294,7 +362,7 @@ useEffect(() => {
       }
     } catch (err) {
       console.error("Error deleting session:", err);
-      alert(err.response?.data?.message || "Failed to delete session.");
+      toast.error(err.response?.data?.message || "Failed to delete session.");
     }
   };
   
@@ -308,7 +376,7 @@ useEffect(() => {
       );
   
       if (response.data.message) {
-        alert("Walker checked in successfully.");
+        toast.success("Walker checked in successfully.");
         // Refresh the session data
         if (user.role === "Admin") {
           const res = await axios.get(`${backendUrl}/reports/admin/upcoming-walks`, {
@@ -324,7 +392,7 @@ useEffect(() => {
       }
     } catch (err) {
       console.error("Error checking in walker:", err);
-      alert("Failed to check in walker.");
+      toast.error("Failed to check in walker.");
     }
   };
 
@@ -446,87 +514,87 @@ const SessionCard = ({ session, isAdminOrMarshal }) => {
 
   // Default card view
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-md p-4">
-      <p className="text-gray-700">
-        <strong>Date:</strong>{" "}
-        {new Date(session.date).toLocaleDateString()}
-      </p>
-      <p className="text-gray-700">
-        <strong>Time:</strong> {session.time}
-      </p>
-      <p className="text-gray-700">
-        <strong>Marshal:</strong> {session.marshal_name}
-      </p>
+          <div className="bg-white border border-gray-200 rounded-lg shadow-md p-4">
+            <p className="text-gray-700">
+              <strong>Date:</strong>{" "}
+              {new Date(session.date).toLocaleDateString()}
+            </p>
+            <p className="text-gray-700">
+              <strong>Time:</strong> {session.time}
+            </p>
+            <p className="text-gray-700">
+              <strong>Marshal:</strong> {session.marshal_name}
+            </p>
 
-      <div className="mt-2">
-        <p className="font-semibold text-gray-800 mb-2">Walkers</p>
-        {session.walkers.length === 0 ? (
-          <p className="text-gray-500 italic">No walkers booked yet.</p>
-        ) : (
-          <table className="w-full text-sm text-left border-collapse">
-            <thead>
-              <tr className="text-gray-600 font-semibold border-b">
-                <th className="py-1 pr-2">#</th>
-                <th className="py-1 pr-2">Walker</th>
-                <th className="py-1">Check-In Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {session.walkers.map((w, i) => (
-                <tr key={i} className="text-gray-700">
-                  <td className="py-1 pr-2">{i + 1}</td>
-                  <td className="py-1 pr-2">{w.walker_name}</td>
-                  <td className="py-1">
-                    {w.checked_in ? (
-                      <span className="text-green-600">✅ Checked In</span>
-                    ) : (
-                      isAdminOrMarshal && (
-                        <button
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs"
-                          onClick={() =>
-                            handleCheckIn(w.walker_id, session.session_id)
-                          }
-                        >
-                          Check In
-                        </button>
-                      )
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+            <div className="mt-2">
+              <p className="font-semibold text-gray-800 mb-2">Walkers</p>
+              {session.walkers.length === 0 ? (
+                <p className="text-gray-500 italic">No walkers booked yet.</p>
+              ) : (
+                <table className="w-full text-sm text-left border-collapse">
+                  <thead>
+                    <tr className="text-gray-600 font-semibold border-b">
+                      <th className="py-1 pr-2">#</th>
+                      <th className="py-1 pr-2">Walker</th>
+                      <th className="py-1">Check-In Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {session.walkers.map((w, i) => (
+                      <tr key={i} className="text-gray-700">
+                        <td className="py-1 pr-2">{i + 1}</td>
+                        <td className="py-1 pr-2">{w.walker_name}</td>
+                        <td className="py-1">
+                          {w.checked_in ? (
+                            <span className="text-green-600">✅ Checked In</span>
+                          ) : (
+                            isAdminOrMarshal && (
+                              <button
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs"
+                                onClick={() =>
+                                  handleCheckIn(w.walker_id, session.session_id)
+                                }
+                              >
+                                Check In
+                              </button>
+                            )
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
 
-      <div className="mt-4 flex gap-2">
-        <button
-          className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-1 px-3 rounded text-sm"
-          onClick={() => handleCompleteWalk(session.session_id)}
-        >
-          Complete Walk
-        </button>
-        <button
-          className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-3 rounded text-sm"
-          onClick={() => handleDeleteSession(session.session_id)}
-        >
-          Cancel
-        </button>
-        <button
-          className="flex-1 border border-gray-300 hover:bg-gray-100 text-gray-700 font-medium py-1 px-3 rounded text-sm"
-          onClick={() => setShowDetails(true)}
-        >
-        Dog Details
-        </button>
-      </div>
-    </div>
-  );
-};
+            <div className="mt-4 flex gap-2">
+              <button
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-1 px-3 rounded text-sm"
+                onClick={() => handleCompleteWalk(session.session_id)}
+              >
+                Complete Walk
+              </button>
+              <button
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-1 px-3 rounded text-sm"
+                onClick={() => handleDeleteSession(session.session_id)}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex-1 border border-gray-300 hover:bg-gray-100 text-gray-700 font-medium py-1 px-3 rounded text-sm"
+                onClick={() => setShowDetails(true)}
+              >
+              Dog Details
+              </button>
+            </div>
+          </div>
+        );
+      };
 
-SessionCard.propTypes = {
-  session: PropTypes.object.isRequired,
-  isAdminOrMarshal: PropTypes.bool.isRequired,
-};
+      SessionCard.propTypes = {
+        session: PropTypes.object.isRequired,
+        isAdminOrMarshal: PropTypes.bool.isRequired,
+      };
 
   
 
@@ -554,7 +622,44 @@ SessionCard.propTypes = {
         case 1:
           return <p>Daily Reports section</p>;
         case 2:
-          return <p>Notifications center</p>;
+            return (
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Role Requests</h2>
+                {allRoleRequests.map(req => (
+                  <div key={req.id}
+                      className="p-4 border rounded-lg mb-4 shadow-sm bg-white hover:shadow-md transition">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-semibold text-lg">
+                          {req.firstname} {req.lastname} <span className="text-sm text-gray-500">({req.email})</span>
+                        </p>
+                        <p className="text-gray-600 text-sm mb-2">
+                          Requested on {new Date(req.requested_at).toLocaleDateString()}
+                        </p>
+                        <p className="italic text-gray-700 bg-gray-100 p-2 rounded">
+                          “{req.reason}”
+                        </p>
+                      </div>
+                      <div className="flex flex-col space-y-2">
+                        <button
+                          onClick={() => handleDecision(req.id, 'approve')}
+                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleDecision(req.id, 'deny')}
+                          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
+                        >
+                          Deny
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+              </div>
+            );
         default:
           return null;
       }
@@ -637,8 +742,77 @@ SessionCard.propTypes = {
               )}
             </div>
           );
-        case 2:
-          return <p>Your adoption applications</p>;
+case 2: {
+  // compute next retry date if denied
+  let retryDate;
+  if (roleRequest?.status === 'denied' && roleRequest.processed_at) {
+    retryDate = new Date(roleRequest.processed_at);
+    retryDate.setDate(retryDate.getDate() + 7);
+  }
+
+  return (
+    <div className="bg-white shadow rounded-lg p-6 space-y-6">
+      {/* Heading */}
+      <h3 className="text-2xl font-semibold border-b pb-2">Marshal Upgrade</h3>
+
+      {/* Status Messages */}
+      {roleRequest?.status === 'pending' && (
+        <p className="text-yellow-700 font-medium">
+          ⏳ Pending since {new Date(roleRequest.requested_at).toLocaleDateString()}
+        </p>
+      )}
+
+      {roleRequest?.status === 'approved' && (
+        <p className="text-green-700 font-medium">
+          ✅ Approved on {new Date(roleRequest.processed_at).toLocaleDateString()}
+        </p>
+      )}
+
+      {roleRequest?.status === 'denied' && (
+        <p className="text-red-700 font-medium">
+          ❌ Denied on {new Date(roleRequest.processed_at).toLocaleDateString()}.
+          <br />
+          You can reapply on <strong>{retryDate.toLocaleDateString()}</strong>.
+        </p>
+      )}
+
+      {/* Request Form / Button */}
+      {(!roleRequest?.status || (roleRequest.status === 'denied' && Date.now() >= retryDate)) && (
+        <div className="border border-gray-200 rounded-lg p-4 space-y-4 items-center  flex justify-center">
+          {!showUpgradeForm ? (
+            <button
+              onClick={() => setShowUpgradeForm(true)}
+              className="bg-red-900 hover:bg-red-800 text-white font-semibold py-2 px-8 rounded cursor-pointer "
+            >
+              Request Upgrade to Marshal
+            </button>
+          ) : (
+            <div className="space-y-4 w-full flex flex-col items-center">
+              <label className="block font-medium text-gray-700">
+                Why do you want to become a Marshal?
+              </label>
+              <textarea
+                value={reason}
+                onChange={e => setReason(e.target.value)}
+                className="w-full border rounded p-2 focus:ring focus:ring-blue-200"
+                rows={4}
+                placeholder="Your reason..."
+              />
+              <button
+                onClick={submitUpgrade}
+                disabled={!reason.trim() || roleRequest?.status === 'pending'}
+                className="w-full bg-red-900 hover:bg-red-800 text-white font-semibold py-2 rounded disabled:opacity-50"
+              >
+                {roleRequest?.status === 'pending' ? 'Pending…' : 'Submit Request'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
         default:
           return null;
       }
@@ -665,9 +839,28 @@ SessionCard.propTypes = {
             </div>
           );
         case 1:
-          return <p>Your notifications</p>;
+          return <p>Your PUPS!</p>;
         case 2:
-          return <p>Your activity</p>;
+              return (
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold mb-4">Notifications</h2>
+
+                {/* If this was your upgrade request and it got approved: */}
+                {roleRequest?.status === "approved" && (
+                  <div className="p-4 bg-green-100 border border-green-300 rounded">
+                    <p className="font-medium text-green-800">
+                      🎉 You were approved as a Marshal on{" "}
+                      {new Date(roleRequest.processed_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                )}
+
+                {/* You can add more notifications here as you expand features */}
+                {!roleRequest?.status && (
+                  <p className="text-gray-600">No new notifications.</p>
+                )}
+              </div>
+            );
         default:
           return null;
       }
@@ -684,9 +877,9 @@ SessionCard.propTypes = {
 
   const tabs =
   user?.role === "Admin"
-    ? ["All Walks", "Favorite", "Notifications"]
+    ? ["All Walks", "Adoption Request", "Role Upgrade Requests"]
     : user?.role === "Walker"
-    ? ["My Walks", "Favorite", "Notifications"]
+    ? ["My Walks", "Favorite", "Requests"]
     : user?.role === "Marshal"
     ? ["My Sessions", "Favorite", "Notifications"]
     : [];
@@ -738,10 +931,6 @@ SessionCard.propTypes = {
                     </button>
                   )}
 
-                  {/* Upload message, disappears automatically */}
-                  {uploadMessage && (
-                    <p className="text-xs text-green-600 mt-2 text-center">{uploadMessage}</p>
-                  )}
             </div>
 
 

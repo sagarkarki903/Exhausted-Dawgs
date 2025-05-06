@@ -1,4 +1,6 @@
+@import url("leaflet/dist/leaflet.css");
 @import "tailwindcss";
+
 
 /* Apply Tailwind styles to calendar elements */
 .rbc-calendar {

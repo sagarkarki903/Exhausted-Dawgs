@@ -5,6 +5,7 @@ import { Footer } from "./NavAndFoot/Footer";
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { toast } from "react-hot-toast";
 
 const fadeIn = {
   hidden: { opacity: 0, y: -20 },
@@ -18,13 +19,11 @@ const pawPrints = [
   { bottom: "25%", right: "5%" }
 ]
 
-
 export default function SignUp() {
-    
-const navigate = useNavigate() //Initialize useNavigate
-    
-//..................signup logic................................................
-const [formData, setFormData] = useState({
+  const navigate = useNavigate();
+
+  // form state
+  const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
     username: "",
@@ -32,85 +31,76 @@ const [formData, setFormData] = useState({
     password: "",
     confirmPassword: "",
     role: "Walker",
-});
-const [message, setMessage] = useState("");
-const [error, setError] = useState("");
-const [loading, setLoading] = useState(false);
-const [showPassword, setShowPassword] = useState(false);
+  });
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
- // Auto Scroll Up When Error or Success Message Appears
- useEffect(() => {
-    if (error || message) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, [error, message]);
+  // scroll to top on toast
+  useEffect(() => { window.scrollTo({ top: 0, behavior: "smooth" }); }, []);
 
-  // Handle Input Change
-const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setFormData(f => ({ ...f, [e.target.name]: e.target.value }));
   };
+  const togglePassword = () => setShowPassword(p => !p);
+  const toggleConfirmPassword = () => setShowConfirmPassword(p => !p);
 
-  //for password eye on and eye off
-  const togglePassword = () => setShowPassword(!showPassword);
-  const toggleConfirmPassword = () => setShowConfirmPassword(!showConfirmPassword);
-
-  // Handle Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
-    setError("");
-    setLoading(true);
-
-
-    // Password confirmation check
+    // basic validation
     if (formData.password !== formData.confirmPassword) {
-        setError("Passwords do not match!");
-        setLoading(false);
-        return;
-      }
+      toast.error("Passwords do not match!");
+      return;
+    }
 
-   try {
-    const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
-      const response = await axios.post(`${backendUrl}/log-sign/register`, {
-        firstname: formData.firstname,
-        lastname: formData.lastname,
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        role: formData.role
-      }, {
-        headers: {
-          "Content-Type": "application/json",
+    setLoading(true);
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND;
+      const { data } = await axios.post(
+        `${backendUrl}/log-sign/register`,
+        {
+          firstname: formData.firstname,
+          lastname: formData.lastname,
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
         },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      toast.success(data.message);
+      // reset form
+      setFormData({
+        firstname: "",
+        lastname: "",
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        role: "Walker",
       });
-
-      setMessage(response.data.message);
-      setFormData({firstname:"", lastname: "", username: "", email: "", password: "", confirmPassword: "", role: "Walker" });
-
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000)
+      // redirect after brief delay
+      setTimeout(() => navigate("/login"), 2000);
 
     } catch (err) {
-      setError(err.response?.data?.message || "Server error, please try again.");
+      const msg = err.response?.data?.message || "Server error, please try again.";
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   };
-  //...................signup logic end................................
-
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#f9fafb] to-[#f3f4f6] relative overflow-hidden">
-      {pawPrints.map((style, index) => (
+      {pawPrints.map((style, idx) => (
         <motion.div
-          key={index}
+          key={idx}
           className="absolute text-gray-300"
           style={style}
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: index * 0.2 }}
+          transition={{ delay: idx * 0.2 }}
         >
           <PawPrint size={40} />
         </motion.div>
@@ -130,7 +120,6 @@ const handleChange = (e) => {
         <Dog size={80} />
       </motion.div>
 
- {/*............................. SingUP Form ...........................................*/}
       <div className="flex-1 flex items-center justify-center p-4">
         <motion.div
           initial="hidden"
@@ -142,32 +131,22 @@ const handleChange = (e) => {
             <div className="text-center mb-6">
               <motion.img
                 src="/thumbnail_ulm_p40_underdogs_icon_ii_color_2024.png"
-                alt="Underdogs Logo"
-                width={60}
-                height={60}
+                alt="Logo"
                 className="w-16 h-16 mx-auto"
               />
               <h2 className="text-2xl font-bold mt-4 text-gray-800">Create an Account</h2>
               <p className="text-gray-500">Join us and find your perfect companion!</p>
             </div>
 
-            {/* Success/Error Messages */}
-            {message && <p className="text-green-500 text-center">{message}  Redirecting to login...</p>}
-            {error && <p className="text-red-500 text-center">{error}</p>}
-
-
-           {/*.............. Signup Form Logic .............*/}
             <form onSubmit={handleSubmit} className="space-y-4">
-                {/* First Name */}
+              {/* First Name */}
               <motion.div className="space-y-2" variants={fadeIn}>
                 <label htmlFor="firstname" className="block font-medium text-gray-700">
                   First Name
                 </label>
                 <input
                   id="firstname"
-                  type="text"
                   name="firstname"
-                  placeholder="Enter your first name"
                   value={formData.firstname}
                   onChange={handleChange}
                   required
@@ -182,9 +161,7 @@ const handleChange = (e) => {
                 </label>
                 <input
                   id="lastname"
-                  type="text"
                   name="lastname"
-                  placeholder="Enter your last name"
                   value={formData.lastname}
                   onChange={handleChange}
                   required
@@ -194,26 +171,28 @@ const handleChange = (e) => {
 
               {/* Username */}
               <motion.div className="space-y-2" variants={fadeIn}>
-                <label htmlFor="username" className="block font-medium text-gray-700">Username</label>
+                <label htmlFor="username" className="block font-medium text-gray-700">
+                  Username
+                </label>
                 <input
                   id="username"
-                  type="text"
                   name="username"
-                  placeholder="Enter your name"
                   value={formData.username}
                   onChange={handleChange}
                   required
                   className="w-full p-3 border rounded-md focus:ring-2 focus:ring-[#8B2232]"
                 />
               </motion.div>
-                {/* Email */}
+
+              {/* Email */}
               <motion.div className="space-y-2" variants={fadeIn}>
-                <label htmlFor="email" className="block font-medium text-gray-700">Email</label>
+                <label htmlFor="email" className="block font-medium text-gray-700">
+                  Email
+                </label>
                 <input
                   id="email"
                   type="email"
                   name="email"
-                  placeholder="Enter your email"
                   value={formData.email}
                   onChange={handleChange}
                   required
@@ -223,51 +202,84 @@ const handleChange = (e) => {
 
               {/* Password */}
               <motion.div className="space-y-2 relative" variants={fadeIn}>
-                <label htmlFor="password" className="block font-medium text-gray-700">Password</label>
+                <label htmlFor="password" className="block font-medium text-gray-700">
+                  Password
+                </label>
                 <div className="relative">
-                  <input id="password" type={showPassword ? "text" : "password"} name="password" placeholder="Enter your password" value={formData.password} onChange={handleChange} required className="w-full p-3 border rounded-md focus:ring-2 focus:ring-[#8B2232]" />
-                  <button type="button" onClick={togglePassword} className="absolute inset-y-0 right-3 flex items-center text-gray-500">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    className="w-full p-3 border rounded-md focus:ring-2 focus:ring-[#8B2232]"
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePassword}
+                    className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                  >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
               </motion.div>
+
               {/* Confirm Password */}
               <motion.div className="space-y-2 relative" variants={fadeIn}>
-                <label htmlFor="confirmPassword" className="block font-medium text-gray-700">Confirm Password</label>
+                <label htmlFor="confirmPassword" className="block font-medium text-gray-700">
+                  Confirm Password
+                </label>
                 <div className="relative">
-                  <input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} name="confirmPassword" placeholder="Confirm your password" value={formData.confirmPassword} onChange={handleChange} required className="w-full p-3 border rounded-md focus:ring-2 focus:ring-[#8B2232]" />
-                  <button type="button" onClick={toggleConfirmPassword} className="absolute inset-y-0 right-3 flex items-center text-gray-500">
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    required
+                    className="w-full p-3 border rounded-md focus:ring-2 focus:ring-[#8B2232]"
+                  />
+                  <button
+                    type="button"
+                    onClick={toggleConfirmPassword}
+                    className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                  >
                     {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
                 </div>
               </motion.div>
+
+              {/* Role */}
               <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="w-full border p-2 rounded bg-white"
-                >
-                  <option value="Walker">Walker</option>
-                  {/* <option value="Marshal">Marshal</option>
-                  <option value="Admin">Admin</option> */}
-                </select>
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full border p-2 rounded bg-white"
+              >
+                <option value="Walker">Walker</option>
+              </select>
+
+              {/* Submit */}
               <motion.button
-                    type="submit"
-                    disabled={loading}
-                    className={`w-full text-white font-semibold py-3 px-4 rounded-lg shadow-md transition duration-300 ${
-                        loading ? "bg-gray-500 cursor-not-allowed" : "bg-[#8B2232] hover:bg-[#a32a3e]"
-                    }`}
-                    >
-                    {loading ? "Signing Up..." : "Sign Up"}
-                </motion.button>
+                type="submit"
+                disabled={loading}
+                className={`w-full text-white font-semibold py-3 rounded-lg shadow-md transition duration-300 ${
+                  loading ? "bg-gray-500 cursor-not-allowed" : "bg-[#8B2232] hover:bg-[#a32a3e]"
+                }`}
+              >
+                {loading ? "Signing Up..." : "Sign Up"}
+              </motion.button>
             </form>
 
             <div className="text-center text-sm text-gray-500 mt-4">
-              Already have an account? <Link to="/login" className="text-[#8B2232] hover:underline">Sign in</Link>
+              Already have an account?{" "}
+              <Link to="/login" className="text-[#8B2232] hover:underline">Sign in</Link>
             </div>
           </div>
         </motion.div>
       </div>
+
       <Footer />
     </div>
   )

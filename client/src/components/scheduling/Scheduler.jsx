@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import axios from "axios";
+import { toast } from "react-hot-toast";
 
 const Scheduler = () => {
   const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
@@ -29,6 +30,7 @@ const Scheduler = () => {
       setUser(response.data);
     } catch (error) {
       console.error("Error fetching user:", error);
+
     }
   };
 
@@ -39,10 +41,11 @@ const Scheduler = () => {
       setSchedule(response.data);
     } catch (error) {
       console.error("Error fetching schedule:", error);
+      toast.error("Failed to fetch schedule. Please try again later.");
     }
   };
 
-  console.log("📅 Selected Date:", date.toISOString().split("T")[0]);
+console.log("📅 Selected Date:", date.toISOString().split("T")[0]);
 console.log("📅 Schedule Dates in API:", schedule.map(slot => slot.date));
 
 const formatDate = (dateString) => {
@@ -69,17 +72,17 @@ const formatDate = (dateString) => {
       console.log("Create Schedule Response:", response.data);
 
       fetchSchedule();
-      alert("Schedule created successfully.");
+      toast.success("Schedule created successfully.");
     } catch (error) {
       console.error("Failed to create schedule:", error.response?.data || error);
-      alert("Failed to create schedule.");
+      toast.error("Failed to create schedule.");
     }
   };
 
   const bookAppointment = async () => {
-    if (!selectedSlot) return alert("Please select a slot.");
-    if (!dogName) return alert("Please enter a dog name.");
-    if (!user || user.role !== "Walker") return alert("Only Walkers can book an appointment.");
+    if (!selectedSlot) return toast.error("Please select a slot.");
+    if (!dogName) return toast.error("Please enter a dog name.");
+    if (!user || user.role !== "Walker") return toast.error("Only Walkers can book an appointment.");
     
 
     try {
@@ -96,10 +99,10 @@ const formatDate = (dateString) => {
       );
 
       fetchSchedule();
-      alert("Appointment booked successfully.");
+      toast.success("Appointment booked successfully.");
     } catch (error) {
       console.error("Failed to book appointment:", error.response?.data || error);
-      alert("Failed to book appointment.");
+      toast.error("Failed to book appointment.");
     }
   };
 

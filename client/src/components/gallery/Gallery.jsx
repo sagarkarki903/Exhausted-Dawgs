@@ -4,15 +4,15 @@ import { Navbar } from "../NavAndFoot/Navbar";
 import { NavUser } from "../NavAndFoot/NavUser";
 import { NavAdmin } from "../NavAndFoot/NavAdmin";
 import { Trash2, Upload } from 'lucide-react';
+import { toast } from "react-hot-toast";
 
 const Gallery = () => {
   const backendUrl = import.meta.env.VITE_BACKEND;
   const [galleryImages, setGalleryImages] = useState([]);
   const [file, setFile] = useState(null);
-  const [uploadMessage, setUploadMessage] = useState("");
   const [user, setUser] = useState(null);
 
-  // pagination state
+  // pagination
   const [currentPage, setCurrentPage] = useState(1);
   const imagesPerPage = 12;
 
@@ -29,23 +29,29 @@ const Gallery = () => {
       setGalleryImages(res.data);
     } catch (err) {
       console.error(err);
+      toast.error("Failed to load gallery.");
     }
   };
   const fetchUser = async () => {
     try {
       const res = await axios.get(`${backendUrl}/auth/profile`, { withCredentials: true });
       setUser(res.data);
-    } catch { /* ignore */ }
+    } catch {
+      // ignore
+    }
   };
   useEffect(() => {
     fetchGallery();
     fetchUser();
   }, [backendUrl]);
 
-  // upload / delete
+  // upload
   const handleFileChange = e => setFile(e.target.files[0] || null);
   const handleUpload = async () => {
-    if (!file) return;
+    if (!file) {
+      toast.error("Please select a file first.");
+      return;
+    }
     const fd = new FormData();
     fd.append("image", file);
     try {
@@ -53,18 +59,26 @@ const Gallery = () => {
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setUploadMessage("Image uploaded successfully!");
+      toast.success("Image uploaded successfully!");
       fileInputRef.current.value = "";
       setFile(null);
       fetchGallery();
-      setTimeout(() => setUploadMessage(""), 3000);
-    } catch {
-      setUploadMessage("Error uploading image.");
+    } catch (err) {
+      console.error(err);
+      toast.error("Error uploading image.");
     }
   };
+
+  // delete
   const handleDeleteImage = async id => {
-    await axios.delete(`${backendUrl}/gallery/${id}`, { withCredentials: true });
-    fetchGallery();
+    try {
+      await axios.delete(`${backendUrl}/gallery/${id}`, { withCredentials: true });
+      toast.success("Image deleted.");
+      fetchGallery();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete image.");
+    }
   };
 
   // lightbox controls
@@ -78,7 +92,7 @@ const Gallery = () => {
   if (user?.role === "Admin") Navigation = NavAdmin;
   else if (user?.role) Navigation = NavUser;
 
-  // pagination calculations
+  // pagination
   const totalPages = Math.ceil(galleryImages.length / imagesPerPage);
   const start = (currentPage - 1) * imagesPerPage;
   const paginated = galleryImages.slice(start, start + imagesPerPage);
@@ -89,7 +103,7 @@ const Gallery = () => {
       <div className="container mx-auto p-6">
         <h1 className="text-3xl font-bold mb-4 mt-4 text-center">Dog Gallery</h1>
 
-        {user && (user.role === "Admin" || user.role === "Marshal") && (
+        {(user?.role === "Admin" || user?.role === "Marshal") && (
           <div className="mb-8 flex items-center space-x-4">
             <input
               ref={fileInputRef}
@@ -104,22 +118,21 @@ const Gallery = () => {
               <Upload className="h-4 w-4" />
               <span>Upload</span>
             </button>
-            {uploadMessage && <p className="mt-2 text-green-600">{uploadMessage}</p>}
           </div>
         )}
 
-              <div className="mt-4 columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4">
-                {paginated.map((img, idx) => (
-                  <div
-                  key={img.id}
-                  className="break-inside-avoid mb-4 relative group cursor-pointer rounded-lg overflow-hidden"
-                    onClick={() => openLightbox(start + idx)}
-                  >
-                 <img
-                  src={img.image_url}
-                  alt="Gallery"
-                  className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
-                />
+        <div className="mt-4 columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4">
+          {paginated.map((img, idx) => (
+            <div
+              key={img.id}
+              className="break-inside-avoid mb-4 relative group cursor-pointer rounded-lg overflow-hidden"
+              onClick={() => openLightbox(start + idx)}
+            >
+              <img
+                src={img.image_url}
+                alt="Gallery"
+                className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
+              />
               {(user?.role === "Admin" || user?.role === "Marshal") && (
                 <button
                   onClick={e => { e.stopPropagation(); handleDeleteImage(img.id); }}
@@ -147,8 +160,10 @@ const Gallery = () => {
                 key={i+1}
                 onClick={() => setCurrentPage(i+1)}
                 className={`px-3 py-1 border rounded ${
-                  currentPage === i+1 ? "bg-gray-800 text-white cursor-pointer" : "hover:bg-gray-200 cursor-pointer"
-                }`}
+                  currentPage === i+1
+                    ? "bg-gray-800 text-white"
+                    : "hover:bg-gray-200"
+                } cursor-pointer`}
               >
                 {i+1}
               </button>
@@ -167,21 +182,17 @@ const Gallery = () => {
       {/* Lightbox */}
       {lightboxOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center "
+          className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center"
           onClick={closeLightbox}
         >
           <button
             className="absolute top-5 right-5 text-white text-3xl hover:scale-110 transform cursor-pointer"
             onClick={closeLightbox}
-          >
-            &times;
-          </button>
+          >&times;</button>
           <button
             className="absolute left-5 text-white text-3xl hover:scale-110 transform cursor-pointer"
             onClick={goToPrev}
-          >
-            &#10094;
-          </button>
+          >&#10094;</button>
           <div className="max-w-screen-md max-h-screen text-center">
             <img
               src={galleryImages[currentIndex].image_url}
@@ -193,9 +204,7 @@ const Gallery = () => {
           <button
             className="absolute right-5 text-white text-3xl hover:scale-110 transform cursor-pointer"
             onClick={goToNext}
-          >
-            &#10095;
-          </button>
+          >&#10095;</button>
         </div>
       )}
     </div>

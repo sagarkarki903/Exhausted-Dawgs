@@ -37,11 +37,19 @@ export default function ForgotPasswordPage() {
         },
         publicKey
       );
-      toast.success("If that email exists, a reset link has been sent.");
+      toast.success("Reset link sent! Check your inbox.");
       setSent(true);
     } catch (err) {
-      console.error("EmailJS error:", err);
-      toast.error(err.response?.data?.message || "Failed to send reset link.");
+     if (err.response?.status === 404) {
+       // explicitly unregistered
+       toast.error(err.response.data.message);
+     } else {
+        toast.error(
+          err.response?.data?.message ||
+          err.text ||
+          "Something went wrong."
+        );
+     }
     }
   };
 

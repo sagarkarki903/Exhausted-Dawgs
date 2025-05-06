@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { Link } from "react-router-dom";
@@ -14,9 +14,12 @@ export default function ForgotPasswordPage() {
   const backendUrl = import.meta.env.VITE_BACKEND;
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const hasSubmitted     = useRef(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (hasSubmitted.current) return;
+    hasSubmitted.current = true;
     try {
       // 1) Ask your server for a reset URL
       const { data } = await axios.post(

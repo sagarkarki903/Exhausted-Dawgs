@@ -1,11 +1,11 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { User } from "lucide-react"; // Import an icon
+import { User, Moon, Sun } from "lucide-react"; // Import an icon
 import axios from "axios";
 
 
-export const NavAdmin = () => {
+export const NavAdmin = ({ onDarkModeToggle, isDarkMode }) => {
 
     const [desktopDropdownOpen, setDesktopDropdownOpen] = useState(false);
     const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
@@ -81,7 +81,7 @@ export const NavAdmin = () => {
     };
 
   return (
-  <header className="sticky top-0 z-50 bg-white shadow-md">
+  <header className="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md">
       <div className="flex h-20 items-center justify-between px-4 md:px-8">
         {/* Logo Section */}
         <div className="flex items-center gap-2">
@@ -108,6 +108,19 @@ export const NavAdmin = () => {
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/main-report">Reports</Link>
           {/* <Link className="font-semibold hover:text-red-900 transition-colors" to="/my-walks">My Walks</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/adopt">Adopt</Link> */}
+
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={onDarkModeToggle}
+            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            aria-label="Toggle dark mode"
+          >
+            {isDarkMode ? (
+              <Sun className="h-5 w-5 text-yellow-400" />
+            ) : (
+              <Moon className="h-5 w-5 text-gray-700" />
+            )}
+          </button>
 
           {/* Profile Dropdown (Desktop) */}
           <div className="relative" ref={desktopDropdownRef}>
@@ -152,79 +165,95 @@ export const NavAdmin = () => {
         </nav>
 
         {/* Mobile Navigation (Profile image replaces hamburger menu) */}
-        <div className="md:hidden relative" ref={mobileDropdownRef}>
+        <div className="md:hidden flex items-center gap-4">
+          {/* Dark Mode Toggle */}
           <button
-            onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
-            className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300"
+            onClick={onDarkModeToggle}
+            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            aria-label="Toggle dark mode"
           >
-           {user?.profile_pic ? (
-                    <img
-                      src={user.profile_pic}
-                      alt="User Profile"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User className="text-gray-500 w-6 h-6" />
-                  )}
+            {isDarkMode ? (
+              <Sun className="h-5 w-5 text-yellow-400" />
+            ) : (
+              <Moon className="h-5 w-5 text-gray-700" />
+            )}
           </button>
 
-          {/* Dropdown Menu (Mobile) */}
-          {mobileDropdownOpen && (
-            <div
-              className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 border border-gray-300"
-              onClick={(e) => e.stopPropagation()} // Prevent premature closing
+          {/* Profile Button */}
+          <div className="relative" ref={mobileDropdownRef}>
+            <button
+              onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
+              className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300"
             >
-              <Link to="/">
-                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
-                  Home
-                </button>
-              </Link>
-              <Link to="/#">
-                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
-                  Users
-                </button>
-              </Link>
-              <Link to="/dogs">
-                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
-                  Dogs
-                </button>
-              </Link>
-              <Link to="/gallery">
-                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
-                  Gallery
-                </button>
-              </Link>
-              <Link to="/rough-calendar">
-                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
-                  Schedule
-                </button>
-              </Link>
-              
-              <Link to="/checkinpath">
-                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
-                  All Walks
-                </button>
-              </Link>
+             {user?.profile_pic ? (
+                      <img
+                        src={user.profile_pic}
+                        alt="User Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="text-gray-500 w-6 h-6" />
+                    )}
+            </button>
 
-              <Link to="/main-report">
-                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
-                  Reports
-                </button>
-              </Link>
-              
-              <Link to="/profile">
-                <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
-                  Profile
-                </button>
-              </Link>
-              <button
-                className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
-                onClick={handleLogout}
+            {/* Dropdown Menu (Mobile) */}
+            {mobileDropdownOpen && (
+              <div
+                className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 border border-gray-300"
+                onClick={(e) => e.stopPropagation()} // Prevent premature closing
               >
-                Logout
-              </button>
-            </div>
-          )}
+                <Link to="/">
+                  <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                    Home
+                  </button>
+                </Link>
+                <Link to="/#">
+                  <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                    Users
+                  </button>
+                </Link>
+                <Link to="/dogs">
+                  <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                    Dogs
+                  </button>
+                </Link>
+                <Link to="/gallery">
+                  <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                    Gallery
+                  </button>
+                </Link>
+                <Link to="/rough-calendar">
+                  <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                    Schedule
+                  </button>
+                </Link>
+                
+                <Link to="/checkinpath">
+                  <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                    All Walks
+                  </button>
+                </Link>
+
+                <Link to="/main-report">
+                  <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                    Reports
+                  </button>
+                </Link>
+                
+                <Link to="/profile">
+                  <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
+                    Profile
+                  </button>
+                </Link>
+                <button
+                  className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>

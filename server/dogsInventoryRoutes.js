@@ -1,10 +1,10 @@
-
 const express = require('express');
 const pool = require("./db.js") //imports mysql pool
 const router = express.Router();
 const cloudinary = require('./config/cloudinary');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' }); // Temporary storage before uploading to Cloudinary
+const authenticateUser = require('./middleware/authMiddleware');
 
 // GET /dogs - Retrieve all dog records
 router.get('/', async (req, res) => {
@@ -166,10 +166,20 @@ router.get('/:id/images', async (req, res) => {
 });
 
 // POST /dogs/:id/upload - Upload an image for a specific dog
-router.post('/:id/upload', upload.single('image'), async (req, res) => {
+router.post('/:id/upload', authenticateUser, upload.single('image'), async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded.' });
+    }
+
     const { path } = req.file;
     const { id } = req.params;
+
+    // Check if the dog exists
+    const [dogExists] = await pool.query('SELECT id FROM dogs WHERE id = ?', [id]);
+    if (dogExists.length === 0) {
+      return res.status(404).json({ error: 'Dog not found.' });
+    }
 
     // Check the current number of images for the dog
     const [images] = await pool.query('SELECT image_url FROM dog_images WHERE dog_id = ?', [id]);
@@ -181,15 +191,26 @@ router.post('/:id/upload', upload.single('image'), async (req, res) => {
     const result = await cloudinary.uploader.upload(path, {
       folder: `dog_profiles/${id}`,
       public_id: `${Date.now()}`,
+      transformation: [
+        { width: 800, height: 600, crop: "fill" },
+        { quality: "auto" },
+        { fetch_format: "auto" }
+      ]
     });
 
     // Store image URL in the database
     await pool.query('INSERT INTO dog_images (dog_id, image_url) VALUES (?, ?)', [id, result.secure_url]);
 
+    // Set as profile picture if none exists
+    const [dogProfile] = await pool.query('SELECT profile_picture_url FROM dogs WHERE id = ?', [id]);
+    if (!dogProfile[0].profile_picture_url) {
+      await pool.query('UPDATE dogs SET profile_picture_url = ? WHERE id = ?', [result.secure_url, id]);
+    }
+
     res.status(200).json({ imageUrl: result.secure_url });
   } catch (error) {
     console.error('Error uploading image:', error);
-    res.status(500).json({ error: 'Image upload failed' });
+    res.status(500).json({ error: 'Image upload failed. Please try again.' });
   }
 });
 

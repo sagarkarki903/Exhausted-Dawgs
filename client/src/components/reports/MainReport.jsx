@@ -12,16 +12,14 @@ const MainReport = () => {
   const [filteredReports, setFilteredReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Filters
   const [filters, setFilters] = useState({
     dog: "",
     walker: "",
     checkin: ""
   });
 
-  // Pagination
   const [currentPage, setCurrentPage] = useState(0);
-  const reportsPerPage = 10;
+  const reportsPerPage = 15;
 
   useEffect(() => {
     axios.get(`${backendUrl}/auth/profile`, { withCredentials: true })
@@ -60,7 +58,7 @@ const MainReport = () => {
     }
 
     setFilteredReports(temp);
-    setCurrentPage(0); // Reset to first page when filtering
+    setCurrentPage(0);
   }, [filters, reports]);
 
   const convertToCSV = (data) => {
@@ -87,6 +85,29 @@ const MainReport = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleDeleteRow = async (id) => {
+    if (!confirm("Are you sure you want to delete this report?")) return;
+    try {
+      await axios.delete(`${backendUrl}/reports/${id}`, { withCredentials: true });
+      setReports((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Delete failed.");
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (!confirm("Are you sure you want to delete ALL reports?")) return;
+    try {
+      await axios.delete(`${backendUrl}/reports`, { withCredentials: true });
+      setReports([]);
+      setFilteredReports([]);
+    } catch (err) {
+      console.error("Delete all failed:", err);
+      alert("Delete all failed.");
+    }
   };
 
   const pageCount = Math.ceil(filteredReports.length / reportsPerPage);
@@ -132,6 +153,12 @@ const MainReport = () => {
           >
             Download CSV
           </button>
+          <button
+            onClick={handleDeleteAll}
+            className="bg-red-600 text-white py-2 px-4 rounded"
+          >
+            Delete All Reports
+          </button>
         </div>
 
         <div className="overflow-x-auto">
@@ -145,6 +172,7 @@ const MainReport = () => {
                 <th className="border px-3 py-2">Walker</th>
                 <th className="border px-3 py-2">Marshal</th>
                 <th className="border px-3 py-2">Check-In</th>
+                <th className="border px-3 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -157,11 +185,23 @@ const MainReport = () => {
                   <td className="border px-3 py-2">{report.walker}</td>
                   <td className="border px-3 py-2">{report.marshal}</td>
                   <td className="border px-3 py-2">
-                    {report.check_in_status === "Checked In" ? (
-                      <span className="text-green-700 font-semibold">Checked In</span>
-                    ) : (
-                      <span className="text-red-500">Not Checked In</span>
-                    )}
+                    <span
+                      className={
+                        report.check_in_status === "Checked In"
+                          ? "text-green-700 font-semibold"
+                          : "text-red-500"
+                      }
+                    >
+                      {report.check_in_status}
+                    </span>
+                  </td>
+                  <td className="border px-3 py-2">
+                    <button
+                      className="bg-red-600 text-white px-2 py-1 rounded text-xs"
+                      onClick={() => handleDeleteRow(report.id)}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}

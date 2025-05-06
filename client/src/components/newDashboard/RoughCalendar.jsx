@@ -7,7 +7,7 @@ import { Navbar } from "../NavAndFoot/Navbar";
 import { NavUser } from "../NavAndFoot/NavUser";
 import { NavAdmin } from "../NavAndFoot/NavAdmin";
 import { Footer } from "../NavAndFoot/Footer";
-import { toast } from "react-hot-toast"; // Import toast for notifications
+ // Import toast for notifications
 
 const generateTimeSlots = () => {
   const slots = [];
@@ -87,7 +87,6 @@ export default function RoughCalendar() {
         setClosedDates(formatted);
       } catch (err) {
         console.error("Error fetching closed dates:", err);
-        toast.error("Failed to load closed dates.");
       }
     };
   
@@ -114,7 +113,6 @@ export default function RoughCalendar() {
         setAvailableDates(uniqueDates);
       } catch (err) {
         console.error("Failed to load sessions", err);
-        toast.error("Failed to load sessions.");
       }
     };
 

@@ -517,7 +517,8 @@ const SessionCard = ({ session, isAdminOrMarshal }) => {
           <div className="bg-white border border-gray-200 rounded-lg shadow-md p-4">
             <p className="text-gray-700">
               <strong>Date:</strong>{" "}
-              {new Date(session.date).toLocaleDateString()}
+              {new Date(session.date + 'T00:00:00Z').toLocaleDateString()
+              }
             </p>
             <p className="text-gray-700">
               <strong>Time:</strong> {session.time}
@@ -839,7 +840,50 @@ case 2: {
             </div>
           );
         case 1:
-          return <p>Your PUPS!</p>;
+          return (
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold mb-4">Saved Dogs / Favorites</h2>
+              {favoriteDogs.length === 0 ? (
+                <p>You have not favorited any dogs yet.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {favoriteDogs.map((dog, index) => {
+                    const profilePic = dog.profile_picture_url || "/dog2.jpeg";
+                    return (
+                      <div key={index} className="rounded-lg border border-gray-300 shadow-md">
+                        <img
+                          src={profilePic}
+                          alt={dog.name}
+                          className="h-60 w-full object-cover rounded-t-lg"
+                          onError={(e) => (e.target.src = "/dog2.jpeg")}
+                        />
+                        <div className="p-3">
+                          <h2 className="text-lg font-semibold">{dog.name}</h2>
+                          <p className="text-gray-600">{dog.breed}</p>
+                          <p className="text-gray-500 text-sm">Age: {dog.age} years</p>
+                          <div className="flex  items-end gap-4">
+                          <button
+                            onClick={() => navigate(`/dogs/${dog.id}`)}
+                            className="mt-2 w-full bg-red-900 text-white py-1 rounded hover:bg-red-800 transition"
+                          >
+                            Meet Me
+                          </button>
+                          <button 
+                                onClick={() => handleToggleFavorite(dog.id)}
+                                className="flex h-8 w-10 items-center justify-center rounded-lg border border-gray-300 text-gray-500 transition bg-yellow-500 hover:bg-white"
+                                aria-label="Remove from favorites"
+                              >
+                                <Heart className="h-5 w-5 " />
+                           </button>
+                           </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
         case 2:
               return (
               <div className="space-y-4">

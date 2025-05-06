@@ -103,7 +103,7 @@ export const ContactPage = () => {
   return (
     <div className="flex flex-col min-h-screen bg-background text-gray-900 relative">
       {/* Background paws */}
-      <motion.div
+      {/* <motion.div
         className="absolute inset-0 z-0 pointer-events-none"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -128,7 +128,7 @@ export const ContactPage = () => {
             <PawPrint />
           </motion.div>
         ))}
-      </motion.div>
+      </motion.div> */}
 
       {/* Navbar */}
       <div className="relative">

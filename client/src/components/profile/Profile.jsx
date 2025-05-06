@@ -515,11 +515,14 @@ const SessionCard = ({ session, isAdminOrMarshal }) => {
   // Default card view
   return (
           <div className="bg-white border border-gray-200 rounded-lg shadow-md p-4">
-            <p className="text-gray-700">
-              <strong>Date:</strong>{" "}
-              {new Date(session.date + 'T00:00:00Z').toLocaleDateString()
-              }
-            </p>
+           <p className="text-gray-700">
+  <strong>Date:</strong>{" "}
+  {(() => {
+    const [year, month, day] = session.date.split("-");
+    return `${Number(month)}/${Number(day)}/${year}`;
+  })()}
+</p>
+
             <p className="text-gray-700">
               <strong>Time:</strong> {session.time}
             </p>
@@ -679,7 +682,14 @@ const SessionCard = ({ session, isAdminOrMarshal }) => {
                   .map((walk, idx) => (
 
                     <div key={idx} className="bg-white border border-gray-200 rounded-lg shadow-md p-4">
-                      <p className="text-gray-700"><strong>Date:</strong> {new Date(walk.date).toLocaleDateString()}</p>
+                      <p className="text-gray-700">
+  <strong>Date:</strong>{" "}
+  {(() => {
+    const [year, month, day] = walk.date.split("-");
+    return `${Number(month)}/${Number(day)}/${year}`;
+  })()}
+</p>
+
                       <p className="text-gray-700"><strong>Time:</strong> {walk.time}</p>
                       <p className="text-gray-700"><strong>Walker:</strong> {walk.walker_name}</p>
                       <p className="text-gray-700"><strong>Marshal:</strong> {walk.marshal_name}</p>

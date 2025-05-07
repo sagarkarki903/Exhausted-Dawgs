@@ -266,7 +266,7 @@ router.get("/marshal/my-walks", authenticateUser, async (req, res) => {
         const [reports] = await pool.query(`
           SELECT 
             id, -- ✅ add this line to include the report ID
-            date,
+            DATE_FORMAT(date, '%Y-%m-%d') AS date,
             time,
             walker,
             marshal,
@@ -283,8 +283,6 @@ router.get("/marshal/my-walks", authenticateUser, async (req, res) => {
       }
     });
     
-
-
       
 
 // In reports.js or your route file

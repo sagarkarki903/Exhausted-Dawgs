@@ -565,7 +565,8 @@ export default function RoughCalendar() {
 ) : sessionDetails.length > 0 ? (
   sessionDetails.map((session, idx) => (
     <div key={idx} className="mb-4 border p-4 rounded bg-white shadow-sm">
-      <p><strong>Date:</strong> {new Date(session.date).toLocaleDateString("en-US")}</p>
+    {/* <p><strong>Date:</strong> {new Date(`${session.date}T00:00:00Z`).toLocaleDateString("en-US")}</p> */}
+
       <p><strong>Time:</strong> {session.time}</p>
       <p><strong>Marshal:</strong> {session.marshal_name}</p>
       <p><strong>Walkers Booked:</strong> {session.walkers_booked} out of 4</p>

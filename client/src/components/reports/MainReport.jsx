@@ -21,6 +21,12 @@ const MainReport = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const reportsPerPage = 15;
 
+  // ✅ Date formatting helper
+  const formatUTCDate = (dateStr) => {
+    const parsed = new Date(`${dateStr}T00:00:00Z`);
+    return isNaN(parsed.getTime()) ? "Invalid Date" : parsed.toISOString().split("T")[0];
+  };
+
   useEffect(() => {
     axios.get(`${backendUrl}/auth/profile`, { withCredentials: true })
       .then((res) => setUser(res.data))
@@ -66,7 +72,7 @@ const MainReport = () => {
     const rows = data.map((report, index) => [
       index + 1,
       report.dog_name || "-",
-      new Date(report.date).toLocaleDateString(),
+      formatUTCDate(report.date),
       report.time,
       report.walker,
       report.marshal,
@@ -180,7 +186,7 @@ const MainReport = () => {
                 <tr key={idx} className="hover:bg-gray-50">
                   <td className="border px-3 py-2">{offset + idx + 1}</td>
                   <td className="border px-3 py-2">{report.dog_name || "-"}</td>
-                  <td className="border px-3 py-2">{new Date(report.date).toLocaleDateString()}</td>
+                  <td className="border px-3 py-2">{formatUTCDate(report.date)}</td>
                   <td className="border px-3 py-2">{report.time}</td>
                   <td className="border px-3 py-2">{report.walker}</td>
                   <td className="border px-3 py-2">{report.marshal}</td>

@@ -36,7 +36,9 @@ export const Navbar = () => {
         <nav className="hidden md:flex items-center gap-6 text-base">
         <Link className="font-semibold hover:text-red-900 transition-colors" to="/">Home</Link>
         <Link className="font-semibold hover:text-red-900 transition-colors" to="/about">About</Link>
+        <Link className="font-semibold hover:text-red-900 transition-colors" to="/donate">Donate</Link>
         <Link className="font-semibold hover:text-red-900 transition-colors" to="/dogs">Dogs</Link>
+        <Link className="font-semibold hover:text-red-900 transition-colors" target="_blank" rel="noopener noreferrer" to="https://fundraise.givesmart.com/f/4yx1/n?vid=1hm1d">Donate</Link>
         <Link className="font-semibold hover:text-red-900 transition-colors" to="/gallery">Gallery</Link>
         <Link className="font-semibold hover:text-red-900 transition-colors" to="/rough-calendar">Schedule</Link>
         <Link className="font-semibold hover:text-red-900 transition-colors" to="/contact-page">Contact Us</Link>
@@ -67,6 +69,7 @@ export const Navbar = () => {
           <a className="block font-semibold text-gray-700 hover:text-red-900" href="/">Home</a>
           <a className="block font-semibold text-gray-700 hover:text-red-900" href="/about">About</a>
           <a className="block font-semibold text-gray-700 hover:text-red-900" href="/dogs">Dogs</a>
+          <a className="block font-semibold text-gray-700 hover:text-red-900" target="_blank" rel="noopener noreferrer" href="https://fundraise.givesmart.com/f/4yx1/n?vid=1hm1d">Donate</a>
           <a className="block font-semibold text-gray-700 hover:text-red-900" href="/gallery">Gallery</a>
           <a className="block font-semibold text-gray-700 hover:text-red-900" href="/rough-calendar">Schedule</a>
           <a className="block font-semibold text-gray-700 hover:text-red-900" href="/contact-page">Contact Us</a>

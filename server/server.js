@@ -14,7 +14,7 @@ const reportsRoutes = require("./reportserver/reports");
 const FRONTEND_URL = process.env.FRONTEND || 'http://localhost:5173';
 const galleryRoutes = require("./galleryRoutes");
 const axios = require("axios"); 
-
+const adoptionRequestsRouter = require('./adoptionRequestsRoutes');
 const pool = require('./db');
 
 //for login authorization added by Sagar on 3/20/2025 3: 46am
@@ -100,6 +100,8 @@ app.use("/reports", reportsRoutes);
 app.use("/gallery", galleryRoutes);
 
 app.use('/role-requests', roleRequestsRouter); // new
+
+app.use('/adoption-requests', adoptionRequestsRouter);
 
 
 

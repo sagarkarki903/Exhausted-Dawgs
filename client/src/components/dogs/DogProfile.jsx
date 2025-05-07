@@ -72,6 +72,44 @@ const DogProfile = () => {
 
   const [breedOptions, setBreedOptions] = useState([]);
   const [loadingBreeds, setLoadingBreeds] = useState(true);
+  const [adoptionRequest, setAdoptionRequest] = useState(null);
+  const [canReapplyAt, setCanReapplyAt] = useState(null);
+
+
+
+  // 1) fetch my requests
+useEffect(() => {
+  if (!loggedIn) return;
+  axios
+    .get(`${backendUrl}/adoption-requests/mine`, { withCredentials: true })
+    .then((r) => {
+      // find the one for this dog
+      const mine = r.data.find((r) => r.dog_id === +id);
+      setAdoptionRequest(mine || null);
+    })
+    .catch(console.error);
+}, [backendUrl, loggedIn, id]);
+
+// 2) handler
+const handleAdopt = () => {
+  axios
+    .post(
+      `${backendUrl}/adoption-requests`,
+      { dogId: id },
+      { withCredentials: true }
+    )
+    .then((r) => {
+      setAdoptionRequest(r.data);
+      toast.success('Adoption request submitted!');
+    })
+    .catch((err) => {
+      if (!loggedIn) {
+        toast.error('Please log in to request adoption.');
+      } else {
+      toast.error(err.response?.data?.error || 'Could not request adoption.')
+      }}
+    );
+};
 
   // load dog.ceo breed list on mount
 // NEW: always hit YOUR backend proxy
@@ -160,6 +198,18 @@ useEffect(() => {
 
     checkAuth();
   }, []);
+
+  // after you load `adoptionRequest`:
+  useEffect(() => {
+    if (
+      adoptionRequest?.status === "denied" &&
+      adoptionRequest.processed_at
+    ) {
+      const dt = new Date(adoptionRequest.processed_at);
+      dt.setDate(dt.getDate() + 7);
+      setCanReapplyAt(dt);
+    }
+  }, [adoptionRequest]);
 
   const handleInputChange = (e) => {
     setFormData({
@@ -302,6 +352,43 @@ const handleDeleteImage = async imageUrl => {
             )}
           </div>
         </div>
+
+        <div className="mb-8 space-y-4 text-center">
+  {adoptionRequest?.status === 'pending' && (
+    <p className="text-yellow-700">
+      ⏳ Adoption pending since{' '}
+      {new Date(adoptionRequest.requested_at).toLocaleDateString()}
+    </p>
+  )}
+  {adoptionRequest?.status === 'approved' && (
+    <p className="text-green-700">
+      ✅ Adopted on{' '}
+      {new Date(adoptionRequest.processed_at).toLocaleDateString()}
+    </p>
+  )}
+  {adoptionRequest?.status === 'denied' && (
+    <p className="text-red-700">
+      ❌ Adoption denied on{' '}
+      {new Date(adoptionRequest.processed_at).toLocaleDateString()}
+      <br />
+      You can reapply on{' '}
+      <strong>{canReapplyAt?.toLocaleDateString()}</strong>
+    </p>
+  )}
+
+  {!adoptionRequest && dog.status === 'Available' && (
+    <button
+      onClick={handleAdopt}
+      className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+    >
+      Adopt Me
+    </button>
+  )}
+
+  {!adoptionRequest && dog.status !== 'Available' && (
+    <p className="text-gray-600">Not available for adoption</p>
+  )}
+</div>
 
         {/* Dog Details Card */}
         <div className="bg-white rounded-lg shadow-md mb-8 border border-gray-300">

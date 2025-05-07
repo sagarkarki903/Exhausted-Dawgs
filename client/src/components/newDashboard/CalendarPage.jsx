@@ -1,9 +1,10 @@
 import { Calendar, momentLocalizer } from 'react-big-calendar';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { NewScheduler } from '../scheduling/NewScheduler';
 import axios from 'axios';
+import { toast } from 'react-hot-toast'; // Import toast for notifications
 
 const localizer = momentLocalizer(moment);
 
@@ -23,9 +24,11 @@ export const CalendarPage = () => {
         });
 
         console.log("User Data:", response.data);
+        // Check if the user is logged in
         setUser(response.data);
     } catch (error) {
         console.error("Error fetching user:", error);
+        toast.error("Failed to fetch user data.");
     }
 };
 //*************************************************************************************************************** */
@@ -48,6 +51,7 @@ const fetchEvents = async () => {
     setEvents(formattedEvents); // ✅ Store fetched events in state
   } catch (error) {
     console.error("Error fetching schedules:", error);
+    toast.error("Failed to fetch schedules.");
   }
 };
 
@@ -67,7 +71,7 @@ useEffect(() => {
 
   const handleBookAppointment = async () => {
     if (!startTime || !endTime || !selectedDate || !user) {
-        alert("Please select a valid date and time range.");
+        toast.error("Please fill in all fields.");
         return;
     }
 
@@ -76,7 +80,7 @@ useEffect(() => {
     const endMoment = moment(endTime, "HH:mm");
 
     if (endMoment.isSameOrBefore(startMoment)) {
-        alert("End time must be after the start time.");
+        toast.error("End time must be after the start time.");
         return;
     }
 
@@ -91,13 +95,13 @@ useEffect(() => {
             end_time: formattedEndTime,
         }, { withCredentials: true });
 
-        alert(response.data.message); // Show success message
+        toast.success(response.data.message); // Show success message
         setShowModal(false); // Close modal
         setStartTime('');
         setEndTime('');
     } catch (error) {
         console.error("Error saving appointment:", error);
-        alert("Failed to save appointment.");
+        toast.error("Failed to save appointment.");
     }
 };
 

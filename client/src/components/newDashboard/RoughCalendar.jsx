@@ -7,6 +7,10 @@ import { Navbar } from "../NavAndFoot/Navbar";
 import { NavUser } from "../NavAndFoot/NavUser";
 import { NavAdmin } from "../NavAndFoot/NavAdmin";
 import { Footer } from "../NavAndFoot/Footer";
+import { toast } from "react-hot-toast";
+
+
+ // Import toast for notifications
 
 const generateTimeSlots = () => {
   const slots = [];
@@ -122,9 +126,11 @@ export default function RoughCalendar() {
     const dateStr = arg.dateStr;
     setSelectedDate(dateStr);
     try {
+  
       const res = await axios.get(`${backendUrl}/calendar/sessions/${dateStr}`, 
         {  withCredentials: true,
       });
+      console.log(res.data);
       const sortedSessions = res.data.sort((a, b) => {
         const timeA = new Date(`1970-01-01T${a.time}`);
         const timeB = new Date(`1970-01-01T${b.time}`);
@@ -140,6 +146,8 @@ export default function RoughCalendar() {
 
   const [resUserId, setResUserId] = useState(null);
 
+  const [waiverStatus, setWaiverStatus] = useState("");  // ← Add this at the top with your other state
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -149,16 +157,21 @@ export default function RoughCalendar() {
         if (res.status === 200) {
           setLoggedIn(true);
           setRole(res.data.role);
-          setResUserId(res.data.id); // 👈 Save current user's ID
+          setResUserId(res.data.id);
+          setWaiverStatus(res.data.waiver);  // ✅ This is where you add it
+          console.log("Waiver status:", res.data.waiver);
         }
       } catch (err) {
         setLoggedIn(false);
         setRole("");
         setResUserId(null);
+        // setWaiverStatus("");  // Reset on failure
       }
     };
     checkAuth();
   }, []);
+  
+
 
 
   const isWeekend = (dateStr) => {
@@ -171,6 +184,115 @@ export default function RoughCalendar() {
   // if (!role) {
   //   return <div className="p-6">Loading...</div>;
   // }
+  //****************************************waiver form************************************************* */
+  const [showWaiverModal, setShowWaiverModal] = useState(false);
+  const [waiverAction, setWaiverAction] = useState(null); // 'openSlot' or session ID
+  const WaiverModal = () => {
+    const [consent, setConsent] = useState(false);
+    const [agreeTerms, setAgreeTerms] = useState(false);
+    const [is13OrOlder, setIs13OrOlder] = useState(false);
+  
+    const allChecked = consent && agreeTerms && is13OrOlder;
+  
+    const handleAgree = async () => {
+      try {
+        await axios.put(`${backendUrl}/auth/waiver`, {}, { withCredentials: true });
+        setWaiverStatus("Yes");
+        setShowWaiverModal(false);
+        toast.success("Waiver signed!");
+        if (waiverAction === "openSlot") {
+          setShowOpenSlotForm(true);
+        } else if (typeof waiverAction === "number") {
+          setBookingScheduleId(waiverAction);
+        }
+        setWaiverAction(null);
+      } catch (error) {
+        console.error("Failed to update waiver status", error);
+        toast.error("Something went wrong");
+      }
+    };
+  
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+        <div className="bg-white p-6 rounded-lg shadow-md max-w-2xl w-full max-h-[90vh] overflow-y-auto text-sm text-gray-800">
+          <h2 className="text-lg font-bold text-red-700 mb-4">Volunteer Liability Waiver</h2>
+          <p className="mb-4">
+            Please carefully read the terms of the HSAC volunteer liability waiver below. If you would prefer a paper waiver one will be provided in lieu of the digital waiver.
+          </p>
+          <div className="space-y-2 mb-4">
+            <p>
+              <strong>Consent for electronic signature:</strong> By checking the box below you are agreeing to the use of an electronic signature. If you would like to opt out, a paper copy is available upon request.
+            </p>
+            <p>
+              <strong>1. Waiver and Release:</strong> I release and forever discharge and hold harmless Humane Society Adoption Center of Monroe Inc. (HSAC) from any and all liability...
+            </p>
+            <p>
+              <strong>2. Insurance:</strong> I understand that HSAC does NOT assume any responsibility to provide me with financial or other assistance...
+            </p>
+            <p>
+              <strong>3. Medical Treatment:</strong> I hereby release HSAC from any claim whatsoever which may arise during my tenure...
+            </p>
+            <p>
+              <strong>4. Assumption and Risk:</strong> I understand that my volunteer services may include hazardous activities and I expressly assume the risks involved...
+            </p>
+            <p>
+              <strong>5. Photographic Release:</strong> I grant HSAC all rights to any images or recordings of me made in connection with my volunteer service.
+            </p>
+            <p>
+              <strong>6. Animal Care:</strong> I acknowledge that I will not train or raise my voice at animals, and I understand the risks involved in working with previously abused animals.
+            </p>
+          </div>
+  
+          <div className="mb-4 space-y-3">
+            <label className="flex items-start gap-2">
+              <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+              <span>I agree to the use of an electronic signature</span>
+            </label>
+            <label className="flex items-start gap-2">
+              <input type="checkbox" checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} />
+              <span>I have read and agree to the terms of the liability waiver</span>
+            </label>
+            <label className="flex items-start gap-2">
+              <input type="checkbox" checked={is13OrOlder} onChange={(e) => setIs13OrOlder(e.target.checked)} />
+              <span>I am 13 years of age or older</span>
+            </label>
+          </div>
+  
+          <div className="flex justify-end gap-4">
+            <button
+              className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+              onClick={() => {
+                setShowWaiverModal(false);
+                setWaiverAction(null);
+              }}
+            >
+              Disagree
+            </button>
+            <button
+              className={`px-4 py-2 rounded text-white ${allChecked ? "bg-green-600 hover:bg-green-700" : "bg-green-400 cursor-not-allowed"}`}
+              disabled={!allChecked}
+              onClick={handleAgree}
+            >
+              Agree
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  
+  const handleAgree = async () => {
+    try {
+      await axios.put(`${backendUrl}/auth/waiver`, {}, { withCredentials: true });
+      setWaiverStatus("Yes");
+      setShowWaiverModal(false);
+      toast.success("Waiver signed!");
+    } catch (error) {
+      console.error("Failed to update waiver status", error);
+      toast.error("Something went wrong");
+    }
+  };
   
 
   return (
@@ -189,8 +311,24 @@ export default function RoughCalendar() {
 
     <div className="flex flex-col md:flex-row gap-10 p-4">
     <div className="w-full md:w-[60%] max-w-4xl mx-auto">
+      
 
         <h2 className="text-2xl font-bold mb-4">Select Date & Time</h2>
+        {/* Calendar Legend */}
+  <div className="mb-6 text-sm text-gray-700 flex flex-wrap gap-6 justify-start">
+    <div className="flex items-center gap-2">
+      <div className="w-4 h-4 bg-[#991B1B] rounded-sm border border-gray-300" />
+      <span>Available Session</span>
+    </div>
+    <div className="flex items-center gap-2">
+      <div className="w-4 h-4 bg-[#9CA3AF] rounded-sm border border-gray-300" />
+      <span>Closed / Weekend</span>
+    </div>
+    <div className="flex items-center gap-2">
+      <div className="w-4 h-4 bg-yellow-300 rounded-sm border border-gray-300" />
+      <span>Today</span>
+    </div>
+  </div>
         <FullCalendar
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
@@ -221,12 +359,14 @@ export default function RoughCalendar() {
           />
 
       </div>
+      
 
       {selectedDate && (
         <div className="w-full md:w-1/3 bg-gray-50 p-5 rounded-lg shadow-md border">
           <h3 className="text-xl font-semibold mb-4 text-gray-800">
             Sessions for{" "}
-            {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-US", {
+            {new Date(`${selectedDate}T00:00:00`).toLocaleDateString("en-US", {
+
               weekday: "long",
               month: "long",
               day: "numeric",
@@ -276,7 +416,14 @@ export default function RoughCalendar() {
                 <div className="mb-5">
                   <button
                     className="bg-green-600 text-white px-4 py-2 rounded-md font-medium hover:bg-green-700 w-full"
-                    onClick={() => setShowOpenSlotForm(!showOpenSlotForm)}
+                    onClick={() => {
+                      if (waiverStatus === "Yes") {
+                        setShowOpenSlotForm(true);
+                      } else {
+                        setWaiverAction("openSlot");
+                        setShowWaiverModal(true);
+                      }
+                    }}
                   >
                     {showOpenSlotForm ? "Cancel" : "Open a Slot"}
                   </button>
@@ -495,7 +642,15 @@ export default function RoughCalendar() {
             !session.user_booked && (
               <button
                 className="mt-3 bg-blue-600 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-700"
-                onClick={() => setBookingScheduleId(session.id)}
+                onClick={() => {
+                  if (waiverStatus === "Yes") {
+                    setBookingScheduleId(session.id);
+                  } else {
+                    setWaiverAction(session.id);
+                    setShowWaiverModal(true);
+                  }
+                }}
+                
               >
                 Book this Slot
               </button>
@@ -516,6 +671,8 @@ export default function RoughCalendar() {
 
     </div>
   </main>
+  {showWaiverModal && <WaiverModal />}
+
   <Footer />
   </div>
   );

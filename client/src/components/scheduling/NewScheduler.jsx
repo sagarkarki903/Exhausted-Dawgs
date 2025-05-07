@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
+import { toast } from "react-hot-toast";
 
 export const NewScheduler = () => {
     const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
@@ -9,8 +10,6 @@ export const NewScheduler = () => {
     const [dogName, setDogName] = useState("");
     const [startTime, setStartTime] = useState("");
     const [endTime, setEndTime] = useState("");
-    const [errorMessage, setErrorMessage] = useState("");
-
     useEffect(() => {
         fetchSchedules();
         fetchUser();
@@ -22,6 +21,7 @@ export const NewScheduler = () => {
             setSchedules(response.data);
         } catch (error) {
             console.error("Error fetching schedules:", error);
+            toast.error("Failed to fetch schedules. Please try again later.");
         }
     };
 
@@ -33,6 +33,7 @@ export const NewScheduler = () => {
             setUser(response.data);
         } catch (error) {
             console.error("Error fetching user:", error);
+            toast.error("Failed to fetch user data. Please try again later.");
         }
     };
 
@@ -40,8 +41,7 @@ export const NewScheduler = () => {
         setExpandedSlot(expandedSlot === index ? null : index);
         setDogName("");
         setStartTime("");
-        setEndTime("");
-        setErrorMessage(""); 
+        setEndTime(""); 
     };
 
     // ✅ Function to format time in AM/PM
@@ -57,7 +57,7 @@ export const NewScheduler = () => {
 
     const handleBookWalker = async (schedule) => {
         if (!dogName || !startTime || !endTime) {
-            setErrorMessage("🚨 Please enter a dog name and a valid time range.");
+            toast.error("Please enter a dog name and a valid time range.");
             return;
         }
 
@@ -65,7 +65,7 @@ export const NewScheduler = () => {
         const formattedEndTime = endTime + ":00";
 
         try {
-            const response = await axios.post(
+             await axios.post(
                 `${backendUrl}/newschedule/book-walker`,
                 {
                     schedule_id: schedule.id,  
@@ -76,14 +76,13 @@ export const NewScheduler = () => {
                 { withCredentials: true }
             );
 
-            setErrorMessage("");
             setExpandedSlot(null);
             fetchSchedules(); // ✅ Refresh schedules after booking
         } catch (error) {
             if (error.response && error.response.status === 400) {
-                setErrorMessage(`❌ ${error.response.data.message}`);
+                toast.error(`${error.response.data.message}`);
             } else {
-                setErrorMessage("❌ Failed to book appointment.");
+                toast.error("Failed to book appointment.");
             }
         }
     };
@@ -157,11 +156,6 @@ export const NewScheduler = () => {
                                             />
                                         </div>
                                     </div>
-
-                                    {/* Error Message (if any) */}
-                                    {errorMessage && (
-                                        <p className="text-[#8B2232] font-semibold mt-2">{errorMessage}</p>
-                                    )}
 
                                     <div className="flex justify-between mt-6">
                                         <button

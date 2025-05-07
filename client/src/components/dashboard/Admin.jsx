@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import LogOutTest from '../../LogOutTest';
+import { toast } from "react-hot-toast";
 
 const Admin = () => {
   const [users, setUsers] = useState([]);
-  const backendUrl = process.env.REACT_APP_BACKEND; // Access the BACKEND variable
+  const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -14,17 +15,18 @@ const Admin = () => {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } 
         });
         setUsers(response.data);
+        toast.success("✅ Users loaded");
       } catch {
-        alert("Failed to fetch users.");
+        toast.error("Failed to fetch users.");
       }
     };
     fetchUsers();
-  }, []);
+  }, [backendUrl]);
 
 const editUser = async (id) => {
   const newRole = prompt("Enter new role (Admin, Marshal, Walker):");
   if (!["Admin", "Marshal", "Walker"].includes(newRole)) {
-    alert("Invalid role.");
+    toast.error("Invalid role.");
     return;
   }
 
@@ -37,11 +39,11 @@ const editUser = async (id) => {
     );
 
     console.log("Edit Response:", response.data);
-    alert("User role updated successfully.");
+    toast.success("User role updated successfully.");
     window.location.reload();
   } catch (error) {
     console.error("Error editing user:", error.response?.data || error);
-    alert("Failed to update user.");
+    toast.error("Failed to update user.");
   }
 };
 
@@ -56,11 +58,11 @@ const deleteUser = async (id) => {
     });
 
     console.log("Delete Response:", response.data);
-    alert("User deleted successfully.");
+    toast.success("User deleted successfully.");
     setUsers(users.filter(user => user.id !== id)); // Remove from state
   } catch (error) {
     console.error("Error deleting user:", error.response?.data || error);
-    alert("Failed to delete user.");
+    toast.error("Failed to delete user.");
   }
 };
 

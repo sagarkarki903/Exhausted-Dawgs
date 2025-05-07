@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { Footer } from "./NavAndFoot/Footer";
 import { useState, useEffect } from "react";
+import { toast } from "react-hot-toast";  // ← make sure Toaster is mounted in your App
 
 const fadeIn = {
   hidden: { opacity: 0, y: -20 },
@@ -19,89 +20,85 @@ const pawPrints = [
 ]
 
 export default function LoginPage() {
-
   const navigate = useNavigate();
 
-  //Login Form State
+  // Login Form State
   const [formData, setFormData] = useState({
     emailOrUsername: "",
     password: "",
   });
-
-
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-   // Scroll to top when error appears
-   useEffect(() => {
-    if (error || loading) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-   }, [error, loading]);
+  // Scroll to top when loading (optional)
+  useEffect(() => {
+    if (loading) window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [loading]);
 
+  // const handleChange = (e) => {
+  //   setFormData(f => ({ ...f, [e.target.name]: e.target.value }));
+  // };
 
-
-   // Handle Input Change
-   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError(""); //clear error when user types
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    const processedValue =
+      name === "emailOrUsername" ? value.replace(/\s+/g, "") : value;
+  
+    setFormData((prev) => ({
+      ...prev,
+      [name]: processedValue,
+    }));
   };
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-// Handle Form Submission
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
+    try {
+      const backendUrl = import.meta.env.VITE_BACKEND;
+       await axios.post(
+        `${backendUrl}/log-sign/login-server`,
+        formData,
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
 
-  try {
-    const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
-    const response = await axios.post(`${backendUrl}/log-sign/login-server`, formData, {
-      headers: { "Content-Type": "application/json" },
-      withCredentials: true, //needed to send cookies
-    });
-    const { token, user } = response.data;
+      // Show success toast
+      toast.success("Logged in successfully!");
+      // Redirect
+      navigate("/profile");
 
-    // localStorage.setItem("token", token);
-    // localStorage.setItem("userRole", user.role); // Store role
-    
-    console.log("User Role After Login:", user.role); // Debugging
-     // Navigate to Home Page after successful login
-    //  if (user.role === "Admin") {
-    //     navigate("/admin-dash"); // Redirect Admins
-    //   } else if (user.role === "Marshal") {
-    //     navigate("/marshal-dash"); // Redirect Marshal
-    //   }
-    //   else {
-    //     navigate("/walker-dash"); // Redirect Walkers to home page
-    //   }
-    navigate("/profile");
-
-  } catch (err) {
-    setError(err.response?.data?.message || "Login failed. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (err) {
+      // Grab server error message if present
+      const message = err.response?.data?.message || "Login failed. Please try again.";
+      // Show error toast
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#f9fafb] to-[#f3f4f6] relative overflow-hidden">
- <motion.div
-          className="flex gap-4 my-4 text-black px-4 py-2 w-56 items-center"
-          whileHover={{ scale: 1.03 }}
-        >
-          <MoveLeft />
-          <Link to="/" className="font-semibold text-xl hover:text-red-900">
-            Back to Home
-          </Link>
-        </motion.div>
-      {pawPrints.map((style, index) => (
+      <motion.div
+        className="flex gap-4 my-4 text-black px-4 py-2 w-56 items-center"
+        whileHover={{ scale: 1.03 }}
+      >
+        <MoveLeft />
+        <Link to="/" className="font-semibold text-xl hover:text-red-900">
+          Back to Home
+        </Link>
+      </motion.div>
+
+      {pawPrints.map((style, idx) => (
         <motion.div
-          key={index}
+          key={idx}
           className="absolute text-gray-300"
           style={style}
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: index * 0.2 }}
+          transition={{ delay: idx * 0.2 }}
         >
           <PawPrint size={40} />
         </motion.div>
@@ -120,6 +117,7 @@ const handleSubmit = async (e) => {
       >
         <Dog size={80} />
       </motion.div>
+
       <div className="flex-1 flex items-center justify-center p-4">
         <motion.div
           initial="hidden"
@@ -140,14 +138,12 @@ const handleSubmit = async (e) => {
               <p className="text-gray-500">Sign in to continue your adoption journey</p>
             </div>
 
-            {/* Error Message */}
-            {error && <p className="text-red-500 text-center">{error}</p>}
-
-
-           {/* Login Form */}
+            {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <motion.div className="space-y-2" variants={fadeIn}>
-                <label htmlFor="emailOrUsername" className="block font-medium text-gray-700">Email or Username</label>
+                <label htmlFor="emailOrUsername" className="block font-medium text-gray-700">
+                  Email or Username
+                </label>
                 <input
                   id="emailOrUsername"
                   type="text"
@@ -163,7 +159,9 @@ const handleSubmit = async (e) => {
               <motion.div className="space-y-2" variants={fadeIn}>
                 <div className="flex justify-between">
                   <label htmlFor="password" className="block font-medium text-gray-700">Password</label>
-                  <Link to="/forgot-password" className="text-sm text-[#8B2232] hover:underline">Forgot password?</Link>
+                  <Link to="/forgot-password" className="text-sm text-[#8B2232] hover:underline">
+                    Forgot password?
+                  </Link>
                 </div>
                 <input
                   id="password"
@@ -188,21 +186,15 @@ const handleSubmit = async (e) => {
               </motion.button>
             </form>
 
-            <div className="relative flex items-center">
-              <div className="flex-grow border-t border-gray-300"></div>
-              <span className="mx-4 text-gray-500">or</span>
-              <div className="flex-grow border-t border-gray-300"></div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button className="w-full bg-red-500 text-white py-3 rounded-lg shadow-md hover:bg-red-600 transition">Google</button>
-              <button className="w-full bg-blue-600 text-white py-3 rounded-lg shadow-md hover:bg-blue-700 transition">Facebook</button>
-            </div>
+           
 
             <div className="text-center text-sm text-gray-500 mt-4">
-              Don&apos;t have an account? <Link to="/signup" className="text-[#8B2232] hover:underline">Sign up</Link>
+              Don&apos;t have an account?{" "}
+              <Link to="/signup" className="text-[#8B2232] hover:underline">
+                Sign up
+              </Link>
             </div>
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-gray-500 mt-2">
               <Link to="/" className="hover:text-[#8B2232]">Return to home</Link>
             </div>
           </div>

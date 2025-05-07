@@ -13,14 +13,13 @@ const calendarRouter = require('./calendar/calendar'); // adjust the path if nee
 const reportsRoutes = require("./reportserver/reports");
 const FRONTEND_URL = process.env.FRONTEND || 'http://localhost:5173';
 const galleryRoutes = require("./galleryRoutes");
-
+const axios = require("axios"); 
+const adoptionRequestsRouter = require('./adoptionRequestsRoutes');
 const pool = require('./db');
 
 //for login authorization added by Sagar on 3/20/2025 3: 46am
 const authRouter = require("./authRoutes")
-
-
-
+const roleRequestsRouter = require('./roleRequestsRoutes');
 
 // Load environment variables from the .env file
 dotenv.config();
@@ -54,6 +53,7 @@ app.use((req, res, next) => {
 app.use(cookieParser()); // ✅ Middleware to handle cookies
 app.use(express.json()); // Parse JSON request bodies
 app.use("/auth", authRouter);
+app.use("/auth", require("./passwordRoutes")); // Password reset routes
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
  
@@ -69,6 +69,15 @@ app.get("/cookie-test", (req, res) => {
     });
   });
   
+app.get("/api/breeds", async (req, res) => {
+  try {
+    const dogRes = await axios.get("https://dog.ceo/api/breeds/list/all");
+    res.json(dogRes.data);
+  } catch (err) {
+    console.error("Error proxying breeds:", err);
+    res.status(502).json({ error: "Failed to fetch breeds" });
+  }
+});
 
 
 app.use('/dogs', dogsRouter);
@@ -89,6 +98,10 @@ app.use("/calendar", calendarRouter);
 app.use("/reports", reportsRoutes);
 
 app.use("/gallery", galleryRoutes);
+
+app.use('/role-requests', roleRequestsRouter); // new
+
+app.use('/adoption-requests', adoptionRequestsRouter);
 
 
 

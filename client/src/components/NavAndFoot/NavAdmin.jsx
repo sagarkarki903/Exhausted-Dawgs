@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { User, Moon, Sun } from "lucide-react"; // Import an icon
 import axios from "axios";
+import { toast } from "react-hot-toast"; // Import toast for notifications
 
 
 export const NavAdmin = ({ onDarkModeToggle, isDarkMode }) => {
@@ -27,7 +28,8 @@ export const NavAdmin = ({ onDarkModeToggle, isDarkMode }) => {
            setUser(res.data);
          }
        } catch (error) {
-         console.error("Failed to fetch user:", error);
+          console.error("❌ Error fetching user data:", error);
+          toast.error("Failed to fetch user data.");
        }
      };
    
@@ -65,7 +67,7 @@ export const NavAdmin = ({ onDarkModeToggle, isDarkMode }) => {
           { withCredentials: true }
         );
   
-        console.log("✅ Logout response:", response);
+        console.log("🔹 Logout response:", response);
   
         if (response.status === 200) {
           console.log("✅ Logout successful!");
@@ -73,10 +75,12 @@ export const NavAdmin = ({ onDarkModeToggle, isDarkMode }) => {
           setMobileDropdownOpen(false);
           navigate("/login");
         } else {
-          console.error("❌ Logout failed:", response);
+          console.error("❌ Logout failed:", response.data.message);
+          toast.error("Logout failed. Please try again.");
         }
       } catch (error) {
-        console.error("❌ Logout error:", error);
+        console.error("❌ Error during logout:", error);
+        toast.error("An error occurred during logout. Please try again.");
       }
     };
 

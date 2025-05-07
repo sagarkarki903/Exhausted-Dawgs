@@ -1,4 +1,3 @@
-import React from "react"
 import { motion } from "framer-motion"
 
 export const Footer = () => {
@@ -10,7 +9,7 @@ export const Footer = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="px-4 md:px-6">
-        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+        <div className="flex flex-col items-center justify-around gap-4 md:flex-row">
           <div className="flex items-center gap-2">
             <img
               src="/thumbnail_ulm_p40_underdogs_icon_ii_color_2024.png"
@@ -22,14 +21,14 @@ export const Footer = () => {
             <span className="text-sm text-gray-500">© 2024 Underdogs. All rights reserved.</span>
           </div>
           <nav className="flex gap-4">
-            <a className="text-sm text-gray-500 hover:text-primary transition-colors" href="#">
-              Privacy Policy
+            <a className="text-sm text-gray-500 hover:text-primary transition-colors" href="/about">
+              About Us
             </a>
-            <a className="text-sm text-gray-500 hover:text-primary transition-colors" href="#">
-              Terms of Service
+            <a className="text-sm text-gray-500 hover:text-primary transition-colors" href="/contact-page">
+              Contact Us
             </a>
-            <a className="text-sm text-gray-500 hover:text-primary transition-colors" href="#">
-              Contact
+            <a className="text-sm text-gray-500 hover:text-primary transition-colors" href="/gallery">
+              Gallery
             </a>
           </nav>
         </div>
@@ -37,3 +36,4 @@ export const Footer = () => {
     </motion.footer>
   )
 }
+ 

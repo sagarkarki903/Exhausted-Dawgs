@@ -17,34 +17,57 @@ router.get('/', checkAdmin, async (req, res) => {
 
 // UPDATE a user (Admins only)
 router.put('/:id', checkAdmin, async (req, res) => {
-    const { id } = req.params;
-    const { role, phone, firstname, lastname } = req.body;
-  
-    console.log(`🔄 Update Request for User ID: ${id}`);
-    console.log("Received Data:", req.body);
-  
-    if (!role || !["Admin", "Marshal", "Walker"].includes(role)) {
-      return res.status(400).json({ message: "Invalid role provided." });
+  const { id } = req.params;
+  const { role, phone, firstname, lastname } = req.body;
+
+  if (!role || !["Admin","Marshal","Walker"].includes(role)) {
+    return res.status(400).json({ message: "Invalid role provided." });
+  }
+
+  try {
+    // 1) update basic profile + role
+    const [result] = await pool.query(
+      `UPDATE users
+          SET firstname = ?,
+              lastname  = ?,
+              phone     = ?,
+              role      = ?
+        WHERE id = ?`,
+      [firstname, lastname, phone, role, id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "User not found or no changes made." });
     }
-  
-    try {
-      const [result] = await pool.query(
-        "UPDATE users SET firstname = ?, lastname = ?, phone = ?, role = ? WHERE id = ?",
-        [firstname, lastname, phone, role, id]
+
+    // 2) if demoted to Walker, clear any existing upgrade‐request state
+    if (role === 'Walker') {
+      await pool.query(
+        `UPDATE users
+            SET upgrade_status       = NULL,
+                upgrade_reason       = NULL,
+                upgrade_requested_at = NULL,
+                upgrade_processed_at = NULL
+          WHERE id = ?`,
+        [id]
       );
-  
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "User not found or no changes made." });
-      }
-  
-      console.log("✅ User updated successfully.");
-      res.json({ message: "User updated successfully." });
-    } catch (error) {
-      console.error("❌ Error updating user:", error);
-      res.status(500).json({ message: "Server error while updating user." });
     }
-  });
-  
+
+    // 3) fetch the fresh record (including upgrade_* columns)
+    const [[user]] = await pool.query(
+      `SELECT id, firstname, lastname, username, email, phone, role,
+              upgrade_status, upgrade_reason,
+              upgrade_requested_at, upgrade_processed_at
+         FROM users
+        WHERE id = ?`,
+      [id]
+    );
+
+    res.json(user);
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Server error while updating user." });
+  }
+});
 
 //  DELETE a user (Admins only)
 router.delete('/:id', checkAdmin, async (req, res) => {

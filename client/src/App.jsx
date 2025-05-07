@@ -31,6 +31,11 @@ import MainReport from './components/reports/MainReport';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useEffect } from 'react';
 
+import ForgotPasswordPage from "./components/ForgotPasswordPage";
+import ResetPasswordPage  from "./components/ResetPasswordPage";
+import AdoptDonate from './components/AdoptionDonation/adopt_donate';
+import { ContactPage } from './components/Contact/ContactPage';
+
 function App() {
   useEffect(() => {
     // Check if dark mode is enabled in localStorage
@@ -46,6 +51,8 @@ function App() {
         {/* 🌐 Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/logout" element={<LogOutTest />} />
         <Route path="/about" element={<AboutP40 />} />
@@ -106,6 +113,8 @@ function App() {
         {/* 📋 Reports */}
         <Route path="/marshal-report" element={<MarshalReport />} />
         <Route path="/walker-report" element={<WalkerReport />} />
+
+        <Route path="/donate" element={<AdoptDonate />} />
       </Routes>
     </Router>
   );

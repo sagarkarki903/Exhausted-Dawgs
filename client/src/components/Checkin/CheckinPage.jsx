@@ -5,6 +5,7 @@ import { NavUser } from "../NavAndFoot/NavUser";
 import { Footer } from "../NavAndFoot/Footer";
 import DogAssignModal from "./DogAssignModal";
 import { CheckCircle, XCircle } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 const CheckinPage = () => {
   const backendUrl = import.meta.env.VITE_BACKEND;
@@ -73,9 +74,11 @@ const CheckinPage = () => {
         { walkerId, sessionId },
         { withCredentials: true }
       );
+       toast.success("Walker checked in");
       refreshSessions();
     } catch (err) {
       console.error("Check-in failed:", err);
+      toast.error("Check-in failed");
     }
   };
 
@@ -89,6 +92,7 @@ const CheckinPage = () => {
       refreshSessions();
     } catch (err) {
       console.error("Undo check-in failed:", err);
+      toast.error("Undo check-in failed");
     }
   };
 
@@ -101,8 +105,9 @@ const CheckinPage = () => {
         { withCredentials: true }
       );
       refreshSessions();
-    } catch {
-      alert("Failed to complete walk");
+    } catch (err){
+      console.error("Complete walk failed:", err);
+      toast.error(" Failed to complete walk");
     }
   };
 
@@ -115,7 +120,7 @@ const CheckinPage = () => {
       );
       refreshSessions();
     } catch {
-      alert("Failed to cancel session");
+      toast.error("Failed to cancel session");
     }
   };
 
@@ -162,7 +167,8 @@ const CheckinPage = () => {
                   {session.walkers.map((walker, wIdx) => (
                     <tr key={`${idx}-${wIdx}`} className="text-sm">
                       <td className="border p-2 whitespace-nowrap">
-                        {new Date(session.date).toLocaleDateString()}
+                      {new Date(session.date).toLocaleDateString("en-US")}
+
                       </td>
                       <td className="border p-2 whitespace-nowrap">{session.time}</td>
                       <td className="border p-2 whitespace-nowrap">{session.marshal_name}</td>
@@ -247,12 +253,15 @@ const CheckinPage = () => {
           </table>
         </div>
       </main>
-      <DogAssignModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        walkerId={selectedWalkerId}
-        scheduleId={selectedScheduleId}
-      />
+      {showModal && selectedWalkerId && selectedScheduleId && (
+  <DogAssignModal
+    isOpen={showModal}
+    onClose={() => setShowModal(false)}
+    walkerId={selectedWalkerId}
+    scheduleId={selectedScheduleId}
+  />
+)}
+
       <Footer />
     </div>
   );

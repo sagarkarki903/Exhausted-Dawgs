@@ -74,7 +74,7 @@ router.get("/walker/my-walks", authenticateUser, async (req, res) => {
     const [rows] = await pool.query(`
       SELECT 
         ms.id AS session_id,
-        ms.date,
+        ms.date AS date
         ms.time,
         CONCAT(wu.firstname, ' ', wu.lastname) AS walker_name,
         CONCAT(mu.firstname, ' ', mu.lastname) AS marshal_name,
@@ -111,7 +111,7 @@ router.get("/marshal/my-walks", authenticateUser, async (req, res) => {
     const [rows] = await pool.query(`
       SELECT 
         ms.id AS session_id,
-        ms.date,
+        ms.date AS date
         ms.time,
         ws.user_id AS walker_id,
         ws.checked_in,
@@ -252,34 +252,34 @@ router.get("/marshal/my-walks", authenticateUser, async (req, res) => {
     });
     
 
-// GET all reports (for Admin to see all completed walks)
-router.get("/all", authenticateUser, async (req, res) => {
-  const userRole = req.user?.role;
-
-  if (userRole !== "Admin") {
-    return res.status(403).json({ message: "Access denied" });
-  }
-
-  try {
-    const [reports] = await pool.query(`
-      SELECT 
-        date,
-        time,
-        walker,
-        marshal,
-        dog_name, -- ✅ each row is dog-specific now
-        check_in_status
-      FROM report_table
-      ORDER BY date DESC, time DESC
-
-    `);
-
-    res.json(reports);
-  } catch (err) {
-    console.error("Error fetching reports:", err);
-    res.status(500).json({ message: "Failed to fetch reports" });
-  }
-});
+    router.get("/all", authenticateUser, async (req, res) => {
+      const userRole = req.user?.role;
+    
+      if (userRole !== "Admin") {
+        return res.status(403).json({ message: "Access denied" });
+      }
+    
+      try {
+        const [reports] = await pool.query(`
+          SELECT 
+            id, -- ✅ add this line to include the report ID
+            date,
+            time,
+            walker,
+            marshal,
+            dog_name,
+            check_in_status
+          FROM report_table
+          ORDER BY date DESC, time DESC
+        `);
+    
+        res.json(reports);
+      } catch (err) {
+        console.error("Error fetching reports:", err);
+        res.status(500).json({ message: "Failed to fetch reports" });
+      }
+    });
+    
 
 
       
@@ -381,6 +381,47 @@ router.put("/undo-check-in", authenticateUser, async (req, res) => {
 });
 
   
-  
+ 
+// for deleting from report table
+router.delete("/:id", authenticateUser, async (req, res) => {
+  const userRole = req.user?.role;
+  const reportId = req.params.id;
+
+  if (userRole !== "Admin") {
+    return res.status(403).json({ message: "Only Admins can delete reports" });
+  }
+
+  try {
+    const [result] = await pool.query(
+      `DELETE FROM report_table WHERE id = ?`,
+      [reportId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    res.json({ message: "Report deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting report:", err);
+    res.status(500).json({ message: "Failed to delete report" });
+  }
+});
+
+router.delete("/", authenticateUser, async (req, res) => {
+  const userRole = req.user?.role;
+
+  if (userRole !== "Admin") {
+    return res.status(403).json({ message: "Only Admins can delete all reports" });
+  }
+
+  try {
+    const [result] = await pool.query(`DELETE FROM report_table`);
+    res.json({ message: `Deleted ${result.affectedRows} report(s)` });
+  } catch (err) {
+    console.error("Error deleting all reports:", err);
+    res.status(500).json({ message: "Failed to delete all reports" });
+  }
+});
 
   module.exports = router;

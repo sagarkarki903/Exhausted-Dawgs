@@ -166,7 +166,9 @@ const AboutP40 = () => {
                   Schedule a Walk <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
-                  href="#donate"
+                  href="https://fundraise.givesmart.com/f/4yx1/n?vid=1hm1df"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="px-8 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors duration-300 flex items-center gap-2"
                 >
                   Donate Now <DollarSign className="h-4 w-4" />
@@ -268,7 +270,9 @@ const AboutP40 = () => {
                   Schedule a Walk
                 </a>
                 <a
-                  href="#donate"
+                  href="https://fundraise.givesmart.com/f/4yx1/n?vid=1hm1df"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="px-8 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors duration-300"
                 >
                   Donate Now

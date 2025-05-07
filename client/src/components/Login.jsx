@@ -175,20 +175,7 @@ export default function LoginPage() {
               </motion.button>
             </form>
 
-            <div className="relative flex items-center my-4">
-              <div className="flex-grow border-t border-gray-300"></div>
-              <span className="mx-4 text-gray-500">or</span>
-              <div className="flex-grow border-t border-gray-300"></div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button className="w-full bg-red-500 text-white py-3 rounded-lg shadow-md hover:bg-red-600 transition">
-                Google
-              </button>
-              <button className="w-full bg-blue-600 text-white py-3 rounded-lg shadow-md hover:bg-blue-700 transition">
-                Facebook
-              </button>
-            </div>
+           
 
             <div className="text-center text-sm text-gray-500 mt-4">
               Don&apos;t have an account?{" "}

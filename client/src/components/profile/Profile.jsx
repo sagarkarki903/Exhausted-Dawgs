@@ -18,199 +18,52 @@ import axios from "axios";
 
 const Profile = () => {
 
-  const backendUrl = import.meta.env.VITE_BACKEND; // Access the BACKEND variable
+  const backendUrl = import.meta.env.VITE_BACKEND;
+  const navigate = useNavigate();
+
+  // --- Core user state ---
   const [user, setUser] = useState(null);
-  const [favoriteDogs, setFavoriteDogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // --- Profile & UI state ---
+  const [favoriteDogs, setFavoriteDogs] = useState([]);
+  const [formattedDate, setFormattedDate] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewURL, setPreviewURL] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedPhone, setEditedPhone] = useState("");
   const [editedRole, setEditedRole] = useState("");
-  const [formattedDate, setFormattedDate] = useState("");
-  const [activeTab, setActiveTab] = useState(0); // 0 = first tab, 1 = second, etc.
+
+  // --- Tabs & data for walks & sessions ---
+  const [activeTab, setActiveTab] = useState(0);
   const [upcomingWalks, setUpcomingWalks] = useState([]);
   const [myWalks, setMyWalks] = useState([]);
   const [marshalSessions, setMarshalSessions] = useState([]);
 
+  // --- Dog‐assignment modal for Admin/Marshals ---
   const [showDogModal, setShowDogModal] = useState(false);
-const [selectedWalkerId, setSelectedWalkerId] = useState(null);
-const [selectedScheduleId, setSelectedScheduleId] = useState(null);
+  const [selectedWalkerId, setSelectedWalkerId] = useState(null);
+  const [selectedScheduleId, setSelectedScheduleId] = useState(null);
+  const [allDogs, setAllDogs] = useState([]);
 
-  
-  const navigate = useNavigate();
+  // --- Marshal‐upgrade requests ---
+  const [roleRequest, setRoleRequest] = useState(null);
+  const [allRoleRequests, setAllRoleRequests] = useState([]);
+  const [reason, setReason] = useState("");
+  const [showUpgradeForm, setShowUpgradeForm] = useState(false);
 
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [previewURL, setPreviewURL] = useState(null);
+  // --- Adoption requests ---
+  const [adoptionRequestsAdmin, setAdoptionRequestsAdmin] = useState([]);
+  const [adoptionRequests, setAdoptionRequests] = useState([]);
+  const [requestSubTab, setRequestSubTab] = useState('upgrade');
 
-const [roleRequest, setRoleRequest] = useState(null);        // walker’s own
-const [allRoleRequests, setAllRoleRequests] = useState([]);  // admin’s list
-const [reason, setReason] = useState('');
+  //
+  // ─── FETCHING DATA ON MOUNT ──────────────────────────────────────────────
+  //
 
-// at the top of your Profile component, alongside reason & roleRequest…
-const [showUpgradeForm, setShowUpgradeForm] = useState(false);
-
-
-
-
-// on mount fetch your own status
-useEffect(() => {
-  if (user) {
-    axios.get(`${backendUrl}/role-requests/mine`, { withCredentials: true })
-         .then(r => setRoleRequest(r.data))
-         .catch(err => console.error(err));
-  }
-}, [backendUrl, user]);
-
-
-
-const submitUpgrade = () => {
-  if (!reason.trim()) {
-    toast.error('Please tell us why you want to become a Marshal.');
-    return;
-  }
-  axios.post(
-    `${backendUrl}/role-requests`,
-    { reason },
-    { withCredentials: true }
-  )
-  .then(r => {
-    setRoleRequest(r.data);
-    toast.success('Request submitted!');
-  })
-  .catch(err => {
-    // if 400 comes back, show the server’s message
-    toast.error(err.response?.data?.error || 'Failed to submit request');
-  });
-};
-
-// on mount fetch all pending
-useEffect(() => {
-  if (user?.role === 'Admin') {
-    axios.get(`${backendUrl}/role-requests`, { withCredentials: true })
-         .then(r => setAllRoleRequests(r.data))
-         .catch(err => console.error(err));
-  }
-}, [backendUrl, user]);
-
-const handleDecision = (id, action, reason = '') => {
-  axios.put(`${backendUrl}/role-requests/${id}`, { action, reason }, { withCredentials: true })
-       .then(() => {
-         toast.success(`User ${action}d`);
-         // refresh
-         return axios.get(`${backendUrl}/role-requests`, { withCredentials: true });
-       })
-       .then(r => setAllRoleRequests(r.data))
-       .catch(err => {
-         console.error(err);
-         toast.error(`Failed to ${action}`);
-       });
-};
-
-
-  
-  const handleFileChange = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    setSelectedFile(file);
-    const preview = URL.createObjectURL(file);
-    setPreviewURL(preview);
-  }
-};
-
-
-const handleUpload = async () => {
-  if (!selectedFile) {
-    toast.error("Please select a file first.");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append('image', selectedFile);
-
-  
-
-
-  try {
-    const res = await axios.post(`${backendUrl}/auth/profile/upload`, formData, {
-      withCredentials: true,
-      headers: { "Content-Type": "multipart/form-data" }
-    });
-
-    toast.success("Profile picture updated!");
-    // update user context/state with new profile picture from backend
-    // assuming you have something like setUser
-    if (res.data?.profile_pic) {
-      setUser(prev => ({ ...prev, profile_pic: res.data.profile_pic }));
-      setPreviewURL(null); // clear preview, now we have the real one
-      setSelectedFile(null); // reset selection
-      window.location.reload(); // reload to see the new image
-    }
-
-  } catch (error) {
-    console.error("Error uploading profile picture:", error);
-    toast.error("Error uploading profile picture.");
-  }
-};
-
-
-// Toggle favorite
-  const handleToggleFavorite = async (dogId) => {
-    try {
-      const res = await axios.put(
-        `${backendUrl}/auth/favorite`,
-        { dogId },
-        { withCredentials: true }
-      );
-      toast.success("Favorites updated!");
-      const favArray = res.data.favorites;
-      setFavoriteDogs((prev) =>
-        prev.filter((dog) => !favArray.includes(dog.id))
-      );
-    } catch (err) {
-      console.error(err);
-      toast.error("Could not update favorites.");
-    }
-  };
-
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/login");
-    }
-  }, [loading, user, navigate]);
-
-
-  useEffect(() => {
-    if (user?.role === "Admin") {
-      axios.get(`${backendUrl}/reports/admin/upcoming-walks`, {
-        withCredentials: true,
-      })
-      .then((res) => setUpcomingWalks(res.data))
-      .catch((err) => console.error("Error fetching upcoming walks:", err));
-    }
-  }, [backendUrl, user]);
-
-  useEffect(() => {
-    if (user?.role === "Walker") {
-      axios.get(`${backendUrl}/reports/walker/my-walks`, {
-        withCredentials: true,
-      })
-      .then((res) => setMyWalks(res.data))
-      .catch((err) => console.error("Error fetching walker's walks:", err));
-    }
-  }, [backendUrl, user]);
-  
-  useEffect(() => {
-    if (user?.role === "Marshal") {
-      axios.get(`${backendUrl}/reports/marshal/my-walks`, {
-        withCredentials: true,
-      })
-      .then((res) => setMarshalSessions(res.data))
-      .catch((err) => console.error("Error fetching marshal walks:", err));
-    }
-  }, [backendUrl, user]);
-  
-  
-  useEffect(() => {
+  // Fetch user profile
+    useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await axios.get(`${backendUrl}/auth/profile`, {
@@ -241,7 +94,15 @@ const handleUpload = async () => {
     fetchUser();
   }, [backendUrl]);
 
- useEffect(() => {
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/login");
+    }
+  }, [loading, user, navigate]);
+
+  // Fetch favorite dogs
+  useEffect(() => {
     const fetchFavoriteDogs = async () => {
       if (user && user.favorite) {
         try {
@@ -274,11 +135,8 @@ const handleUpload = async () => {
     fetchFavoriteDogs();
   }, [backendUrl, user]);
 
-
-//for assigning dogs
-
-  const [allDogs, setAllDogs] = useState([]);
-useEffect(() => {
+  // Fetch all dogs (for assignment)
+  useEffect(() => {
   if (user?.role === "Admin" || user?.role === "Marshal") {
     axios.get(`${backendUrl}/dogs`, { withCredentials: true })
       .then((res) => setAllDogs(res.data))
@@ -286,9 +144,173 @@ useEffect(() => {
   }
 }, [backendUrl, user]);
 
+// Fetch role‐upgrade requests
+useEffect(() => {
+  if (user?.role === 'Admin') {
+    axios
+      .get(`${backendUrl}/adoption-requests`, { withCredentials: true })
+      .then((r) => setAdoptionRequestsAdmin(r.data))
+      .catch(console.error);
+  }
+}, [backendUrl, user]);
 
-  
+// on mount fetch all pending
+useEffect(() => {
+  if (user?.role === 'Admin') {
+    axios.get(`${backendUrl}/role-requests`, { withCredentials: true })
+         .then(r => setAllRoleRequests(r.data))
+         .catch(err => console.error(err));
+  }
+}, [backendUrl, user]);
 
+// Fetch walker’s own upgrade request
+useEffect(() => {
+  if (user) {
+    axios.get(`${backendUrl}/role-requests/mine`, { withCredentials: true })
+         .then(r => setRoleRequest(r.data))
+         .catch(err => console.error(err));
+  }
+}, [backendUrl, user]);
+
+// Fetch upcoming walks for Admin
+useEffect(() => {
+    if (user?.role === "Admin") {
+      axios.get(`${backendUrl}/reports/admin/upcoming-walks`, {
+        withCredentials: true,
+      })
+      .then((res) => setUpcomingWalks(res.data))
+      .catch((err) => console.error("Error fetching upcoming walks:", err));
+    }
+  }, [backendUrl, user]);
+
+// Fetch “My Walks” for Walkers
+useEffect(() => {
+    if (user?.role === "Walker") {
+      axios.get(`${backendUrl}/reports/walker/my-walks`, {
+        withCredentials: true,
+      })
+      .then((res) => setMyWalks(res.data))
+      .catch((err) => console.error("Error fetching walker's walks:", err));
+    }
+  }, [backendUrl, user]);
+
+  // Fetch “My Walks” for Marshals
+  useEffect(() => {
+    if (user?.role === "Marshal") {
+      axios.get(`${backendUrl}/reports/marshal/my-walks`, {
+        withCredentials: true,
+      })
+      .then((res) => setMarshalSessions(res.data))
+      .catch((err) => console.error("Error fetching marshal walks:", err));
+    }
+  }, [backendUrl, user]);
+
+   // Fetch adoption requests for Admin
+  useEffect(() => {
+    if (user?.role === "Admin") {
+      axios
+        .get(`${backendUrl}/adoption-requests`, { withCredentials: true })
+        .then((r) => setAdoptionRequestsAdmin(r.data))
+        .catch(console.error);
+    }
+  }, [backendUrl, user]);
+
+  // Fetch own adoption requests for Walker & Marshal
+    useEffect(() => {
+    if (user?.role === 'Walker' || user?.role === "Marshal"){
+      axios.get(`${backendUrl}/adoption-requests/mine`, { withCredentials: true })
+           .then(r => setAdoptionRequests(r.data))
+           .catch(console.error);
+    }
+  }, [backendUrl, user]);
+
+  //
+  // ─── ACTIONS ────────────────────────────────────────────────────────────
+  //
+
+  // File → preview
+    
+  const handleFileChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setSelectedFile(file);
+    const preview = URL.createObjectURL(file);
+    setPreviewURL(preview);
+  }
+};
+
+// Upload new profile pic
+const handleUpload = async () => {
+  if (!selectedFile) {
+    toast.error("Please select a file first.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('image', selectedFile);
+
+  try {
+    const res = await axios.post(`${backendUrl}/auth/profile/upload`, formData, {
+      withCredentials: true,
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+
+    toast.success("Profile picture updated!");
+    // update user context/state with new profile picture from backend
+    // assuming you have something like setUser
+    if (res.data?.profile_pic) {
+      setUser(prev => ({ ...prev, profile_pic: res.data.profile_pic }));
+      setPreviewURL(null); // clear preview, now we have the real one
+      setSelectedFile(null); // reset selection
+      window.location.reload(); // reload to see the new image
+    }
+
+  } catch (error) {
+    console.error("Error uploading profile picture:", error);
+    toast.error("Error uploading profile picture.");
+  }
+};
+
+// Toggle favorite dog
+const handleToggleFavorite = async (dogId) => {
+    try {
+      const res = await axios.put(
+        `${backendUrl}/auth/favorite`,
+        { dogId },
+        { withCredentials: true }
+      );
+      toast.success("Favorites updated!");
+      const favArray = res.data.favorites;
+      setFavoriteDogs((prev) =>
+        prev.filter((dog) => !favArray.includes(dog.id))
+      );
+    } catch (err) {
+      console.error(err);
+      toast.error("Could not update favorites.");
+    }
+  };
+
+// Save phone/role edit (Admin only)
+  const handleSave = async () => {
+    try {
+      const response = await axios.put(
+        `${backendUrl}/auth/update-user/${user.id}`,
+        { phone: editedPhone, role: editedRole },
+        { withCredentials: true }
+      );
+
+      if (response.status === 200) {
+        toast.success("User updated successfully!");
+        setUser({ ...user, phone: editedPhone, role: editedRole });
+        setIsEditing(false);
+      }
+    } catch (err) {
+      console.error("Error updating user:", err);
+      toast.error("Failed to update user.");
+    }
+  };
+
+  //Complete a walk or delete session
   const handleCompleteWalk = async (sessionId) => {
     if (!window.confirm("Are you sure you want to complete this walk?")) return;
   
@@ -317,32 +339,7 @@ useEffect(() => {
       toast.error("Failed to complete walk.");
     }
   };
-  
 
-
-
-
-
-  const handleSave = async () => {
-    try {
-      const response = await axios.put(
-        `${backendUrl}/auth/update-user/${user.id}`,
-        { phone: editedPhone, role: editedRole },
-        { withCredentials: true }
-      );
-
-      if (response.status === 200) {
-        toast.success("User updated successfully!");
-        setUser({ ...user, phone: editedPhone, role: editedRole });
-        setIsEditing(false);
-      }
-    } catch (err) {
-      console.error("Error updating user:", err);
-      toast.error("Failed to update user.");
-    }
-  };
-
-  
   const handleDeleteSession = async (sessionId) => {
     const confirmDelete = window.confirm("Are you sure you want to cancel this session? This will cancel all the walks for this session.");
     if (!confirmDelete) return;
@@ -371,9 +368,9 @@ useEffect(() => {
       toast.error(err.response?.data?.message || "Failed to delete session.");
     }
   };
-  
 
-  const handleCheckIn = async (walkerId, sessionId) => {
+// Check‐in walker
+const handleCheckIn = async (walkerId, sessionId) => {
     try {
       const response = await axios.put(
         `${backendUrl}/reports/check-in`,
@@ -402,10 +399,68 @@ useEffect(() => {
     }
   };
 
+// Marshal‐upgrade
+const submitUpgrade = () => {
+  if (!reason.trim()) {
+    toast.error('Please tell us why you want to become a Marshal.');
+    return;
+  }
+  axios.post(
+    `${backendUrl}/role-requests`,
+    { reason },
+    { withCredentials: true }
+  )
+  .then(r => {
+    setRoleRequest(r.data);
+    toast.success('Request submitted!');
+  })
+  .catch(err => {
+    // if 400 comes back, show the server’s message
+    toast.error(err.response?.data?.error || 'Failed to submit request');
+  });
+};
+
+// Admin decisions on upgrade
+const handleDecision = (id, action, reason = '') => {
+  axios.put(`${backendUrl}/role-requests/${id}`, { action, reason }, { withCredentials: true })
+       .then(() => {
+         toast.success(`User ${action}d`);
+         // refresh
+         return axios.get(`${backendUrl}/role-requests`, { withCredentials: true });
+       })
+       .then(r => setAllRoleRequests(r.data))
+       .catch(err => {
+         console.error(err);
+         toast.error(`Failed to ${action}`);
+       });
+};
+
+// Adoption‐request actions (Admin)
+const approveAdoption = (reqId) =>
+  axios
+    .put(
+      `${backendUrl}/adoption-requests/${reqId}`,
+      { action: 'approve' },
+      { withCredentials: true }
+    )
+    .then(() => refreshAdminRequests());
+const denyAdoption = (reqId) =>
+  axios
+    .put(
+      `${backendUrl}/adoption-requests/${reqId}`,
+      { action: 'deny' },
+      { withCredentials: true }
+    )
+    .then(() => refreshAdminRequests());
+
+function refreshAdminRequests() {
+  return axios
+    .get(`${backendUrl}/adoption-requests`, { withCredentials: true })
+    .then((r) => setAdoptionRequestsAdmin(r.data));
+}
+
 
   
-
-
 // helper function
 const SessionCard = ({ session, isAdminOrMarshal, openDogModal }) => {
   const [showDetails, setShowDetails] = useState(false);
@@ -589,8 +644,51 @@ const SessionCard = ({ session, isAdminOrMarshal, openDogModal }) => {
               )}
             </div>
           );
-        case 1:
-          return <p>Daily Reports section</p>;
+        case 1:{
+          return (
+          <div>
+    <h2 className="text-xl font-semibold mb-4">Adoption Requests</h2>
+    {adoptionRequestsAdmin.filter(r => r.status === 'pending').map((r) => (
+      <div
+        key={r.id}
+        className="p-4 border rounded-lg mb-4 flex justify-between items-center bg-white shadow"
+      >
+        <div>
+          <p>
+            <strong>
+              {r.firstname} {r.lastname}
+            </strong>{' '}
+            ({r.email}) wants <em>
+              <Link
+               to={`/dogs/${r.dog_id}`}
+               className="text-blue-600 hover:underline"
+             >
+                {r.dog_name}
+                </Link>
+              </em>
+          </p>
+          <p className="text-gray-600 text-sm">
+            Requested on {new Date(r.requested_at).toLocaleDateString()}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => approveAdoption(r.id)}
+            className="bg-green-600 text-white px-3 py-1 rounded"
+          >
+            Approve
+          </button>
+          <button
+            onClick={() => denyAdoption(r.id)}
+            className="bg-red-600 text-white px-3 py-1 rounded"
+          >
+            Deny
+          </button>
+        </div>
+      </div>
+    ))}
+  </div>
+  );}
         case 2:
             return (
               <div>
@@ -721,65 +819,126 @@ case 2: {
   }
 
   return (
-    <div className="bg-white shadow rounded-lg p-6 space-y-6">
-      {/* Heading */}
-      <h3 className="text-2xl font-semibold border-b pb-2">Marshal Upgrade</h3>
+    <div className="space-y-6">
+      {/* mini-tabs */}
+      <div className="flex border-b mb-4">
+        {['upgrade','adoption'].map(type => (
+          <button
+            key={type}
+            onClick={() => setRequestSubTab(type)}
+            className={`px-4 py-2 -mb-px ${
+              requestSubTab === type
+                ? 'border-b-2 border-red-900 font-semibold'
+                : 'text-gray-600'
+            }`}
+          >
+            {type === 'upgrade' ? 'Marshal Upgrade' : 'Adoption Requests'}
+          </button>
+        ))}
+      </div>
 
-      {/* Status Messages */}
-      {roleRequest?.status === 'pending' && (
-        <p className="text-yellow-700 font-medium">
-          ⏳ Pending since {new Date(roleRequest.requested_at).toLocaleDateString()}
-        </p>
-      )}
+      {requestSubTab === 'upgrade' ? (
+            <div className="bg-white shadow rounded-lg p-6 space-y-6">
+              {/* Heading */}
+              <h3 className="text-2xl font-semibold border-b pb-2">Marshal Upgrade</h3>
 
-      {roleRequest?.status === 'approved' && (
-        <p className="text-green-700 font-medium">
-          ✅ Approved on {new Date(roleRequest.processed_at).toLocaleDateString()}
-        </p>
-      )}
+              {/* Status Messages */}
+              {roleRequest?.status === 'pending' && (
+                <p className="text-yellow-700 font-medium">
+                  ⏳ Pending since {new Date(roleRequest.requested_at).toLocaleDateString()}
+                </p>
+              )}
 
-      {roleRequest?.status === 'denied' && (
-        <p className="text-red-700 font-medium">
-          ❌ Denied on {new Date(roleRequest.processed_at).toLocaleDateString()}.
-          <br />
-          You can reapply on <strong>{retryDate.toLocaleDateString()}</strong>.
-        </p>
-      )}
+              {roleRequest?.status === 'approved' && (
+                <p className="text-green-700 font-medium">
+                  ✅ Approved on {new Date(roleRequest.processed_at).toLocaleDateString()}
+                </p>
+              )}
 
-      {/* Request Form / Button */}
-      {(!roleRequest?.status || (roleRequest.status === 'denied' && Date.now() >= retryDate)) && (
-        <div className="border border-gray-200 rounded-lg p-4 space-y-4 items-center  flex justify-center">
-          {!showUpgradeForm ? (
-            <button
-              onClick={() => setShowUpgradeForm(true)}
-              className="bg-red-900 hover:bg-red-800 text-white font-semibold py-2 px-8 rounded cursor-pointer "
-            >
-              Request Upgrade to Marshal
-            </button>
-          ) : (
-            <div className="space-y-4 w-full flex flex-col items-center">
-              <label className="block font-medium text-gray-700">
-                Why do you want to become a Marshal?
-              </label>
-              <textarea
-                value={reason}
-                onChange={e => setReason(e.target.value)}
-                className="w-full border rounded p-2 focus:ring focus:ring-blue-200"
-                rows={4}
-                placeholder="Your reason..."
-              />
-              <button
-                onClick={submitUpgrade}
-                disabled={!reason.trim() || roleRequest?.status === 'pending'}
-                className="w-full bg-red-900 hover:bg-red-800 text-white font-semibold py-2 rounded disabled:opacity-50"
-              >
-                {roleRequest?.status === 'pending' ? 'Pending…' : 'Submit Request'}
-              </button>
+              {roleRequest?.status === 'denied' && (
+                <p className="text-red-700 font-medium">
+                  ❌ Denied on {new Date(roleRequest.processed_at).toLocaleDateString()}.
+                  <br />
+                  You can reapply on <strong>{retryDate.toLocaleDateString()}</strong>.
+                </p>
+              )}
+
+              {/* Request Form / Button */}
+              {(!roleRequest?.status || (roleRequest.status === 'denied' && Date.now() >= retryDate)) && (
+                <div className="border border-gray-200 rounded-lg p-4 space-y-4 items-center  flex justify-center">
+                  {!showUpgradeForm ? (
+                    <button
+                      onClick={() => setShowUpgradeForm(true)}
+                      className="bg-red-900 hover:bg-red-800 text-white font-semibold py-2 px-8 rounded cursor-pointer "
+                    >
+                      Request Upgrade to Marshal
+                    </button>
+                  ) : (
+                    <div className="space-y-4 w-full flex flex-col items-center">
+                      <label className="block font-medium text-gray-700">
+                        Why do you want to become a Marshal?
+                      </label>
+                      <textarea
+                        value={reason}
+                        onChange={e => setReason(e.target.value)}
+                        className="w-full border rounded p-2 focus:ring focus:ring-blue-200"
+                        rows={4}
+                        placeholder="Your reason..."
+                      />
+                      <button
+                        onClick={submitUpgrade}
+                        disabled={!reason.trim() || roleRequest?.status === 'pending'}
+                        className="w-full bg-red-900 hover:bg-red-800 text-white font-semibold py-2 rounded disabled:opacity-50"
+                      >
+                        {roleRequest?.status === 'pending' ? 'Pending…' : 'Submit Request'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          )}
+          ) : (
+        /* Adoption requests UI */
+        <div className="space-y-4">
+          {adoptionRequests.length === 0 ? (
+            <p className="text-gray-600">No adoption requests yet.</p>
+          ) : adoptionRequests.map(r => {
+            const deniedAt = new Date(r.processed_at);
+            const canReapply = r.status !== 'denied'
+              || Date.now() > deniedAt.getTime() + 7*24*60*60*1000;
+            return (
+              <div key={r.id} className="p-4 border rounded flex justify-between">
+                <div>
+                  <p>
+                    <span className="font-semibold">{r.dog_name}</span>
+                    &nbsp;– {r.status === 'pending'
+                      ? <span className="text-yellow-700">Pending</span>
+                      : r.status === 'approved'
+                        ? <span className="text-green-700">Approved</span>
+                        : <span className="text-red-700">Denied</span>}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Requested on {new Date(r.requested_at).toLocaleDateString()}
+                    {r.status==='denied' && (
+                      <>
+                        <br/>
+                        Denied on {deniedAt.toLocaleDateString()}.<br/>
+                        {canReapply
+                          ? 'You may reapply now.'
+                          : `You can reapply on ${(new Date(deniedAt.getTime()+7*24*60*60*1000))
+                              .toLocaleDateString()}`}
+                      </>
+                    )}
+                  </p>
+                </div>
+                {/* no actions here, just status */}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
+
   );
 }
 
@@ -865,6 +1024,25 @@ case 2: {
           );
         case 2:
               return (
+                <div className="space-y-6">
+                      {/* mini-tabs */}
+                      <div className="flex border-b mb-4">
+                        {['upgrade','adoption'].map(type => (
+                          <button
+                            key={type}
+                            onClick={() => setRequestSubTab(type)}
+                            className={`px-4 py-2 -mb-px ${
+                              requestSubTab === type
+                                ? 'border-b-2 border-red-900 font-semibold'
+                                : 'text-gray-600'
+                            }`}
+                          >
+                            {type === 'upgrade' ? 'Marshal Upgrade' : 'Adoption Requests'}
+                          </button>
+                        ))}
+                      </div>
+
+                      {requestSubTab === 'upgrade' ? (
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold mb-4">Notifications</h2>
 
@@ -883,6 +1061,48 @@ case 2: {
                   <p className="text-gray-600">No new notifications.</p>
                 )}
               </div>
+               ) : (
+        /* Adoption requests UI */
+        <div className="space-y-4">
+          {adoptionRequests.length === 0 ? (
+            <p className="text-gray-600">No adoption requests yet.</p>
+          ) : adoptionRequests.map(r => {
+            const deniedAt = new Date(r.processed_at);
+            const canReapply = r.status !== 'denied'
+              || Date.now() > deniedAt.getTime() + 7*24*60*60*1000;
+            return (
+              <div key={r.id} className="p-4 border rounded flex justify-between">
+                <div>
+                  <p>
+                    <span className="font-semibold">{r.dog_name}</span>
+                    &nbsp;– {r.status === 'pending'
+                      ? <span className="text-yellow-700">Pending</span>
+                      : r.status === 'approved'
+                        ? <span className="text-green-700">Approved</span>
+                        : <span className="text-red-700">Denied</span>}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Requested on {new Date(r.requested_at).toLocaleDateString()}
+                    {r.status==='denied' && (
+                      <>
+                        <br/>
+                        Denied on {deniedAt.toLocaleDateString()}.<br/>
+                        {canReapply
+                          ? 'You may reapply now.'
+                          : `You can reapply on ${(new Date(deniedAt.getTime()+7*24*60*60*1000))
+                              .toLocaleDateString()}`}
+                      </>
+                    )}
+                  </p>
+                </div>
+                {/* no actions here, just status */}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      </div>
+
             );
         default:
           return null;

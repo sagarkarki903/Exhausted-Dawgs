@@ -912,9 +912,19 @@ case 2: {
                   <p>
                     <span className="font-semibold">{r.dog_name}</span>
                     &nbsp;– {r.status === 'pending'
-                      ? <span className="text-yellow-700">Pending</span>
+                      ?   <>
+                          <span className="text-yellow-700">Pending</span>
+                          <Link
+                            to={`https://petstablished.com/adoptions/personal-information?application_type=Adopt&donation_section=false&form_id=13973&form_type=generic&generic_form_id=13973&pet_id=263621&section=1&selected_pets=false`}
+                            className="text-blue-600 hover:underline ml-2"
+                          >
+                            View Application
+                          </Link>
+                          </>
                       : r.status === 'approved'
-                        ? <span className="text-green-700">Approved</span>
+                        ? <div>
+                          <span className="text-green-700">Approved</span>
+                          </div>
                         : <span className="text-red-700">Denied</span>}
                   </p>
                   <p className="text-sm text-gray-500">

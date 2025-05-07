@@ -34,10 +34,21 @@ export default function LoginPage() {
     if (loading) window.scrollTo({ top: 0, behavior: "smooth" });
   }, [loading]);
 
-  const handleChange = (e) => {
-    setFormData(f => ({ ...f, [e.target.name]: e.target.value }));
-  };
+  // const handleChange = (e) => {
+  //   setFormData(f => ({ ...f, [e.target.name]: e.target.value }));
+  // };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    const processedValue =
+      name === "emailOrUsername" ? value.replace(/\s+/g, "") : value;
+  
+    setFormData((prev) => ({
+      ...prev,
+      [name]: processedValue,
+    }));
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);

@@ -167,7 +167,7 @@ const CheckinPage = () => {
                   {session.walkers.map((walker, wIdx) => (
                     <tr key={`${idx}-${wIdx}`} className="text-sm">
                       <td className="border p-2 whitespace-nowrap">
-                        {new Date(session.date).toLocaleDateString()}
+                      {new Date(`${session.date}T00:00:00`).toLocaleDateString("en-US")}
                       </td>
                       <td className="border p-2 whitespace-nowrap">{session.time}</td>
                       <td className="border p-2 whitespace-nowrap">{session.marshal_name}</td>

@@ -18,9 +18,10 @@ router.get("/profile", authenticateUser, async (req, res) => {
     try {
         // console.log("/auth/profile route hit!")
         const [users] = await pool.query(
-            "SELECT id, firstname, lastname, username, email, created_at, role, phone, profile_pic, favorite FROM users WHERE id = ?",
-            [req.user.id]
+          "SELECT id, firstname, lastname, username, email, created_at, role, phone, profile_pic, favorite, waiver FROM users WHERE id = ?",
+          [req.user.id]
         );
+        
 
         if (!users || users.length === 0) {
             return res.status(404).json({ message: "User not found" });
@@ -160,6 +161,31 @@ router.put("/favorite", authenticateUser, async (req, res) => {
     res.status(500).json({ error: "Failed to update favorites." });
   }
 });
+
+
+
+
+// PUT /auth/waiver - Update user's waiver status to 'Yes'
+router.put("/waiver", authenticateUser, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const [result] = await pool.query(
+      "UPDATE users SET waiver = 'Yes' WHERE id = ?",
+      [userId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "User not found or waiver already updated" });
+    }
+
+    res.status(200).json({ message: "Waiver status updated to Yes" });
+  } catch (err) {
+    console.error("Error updating waiver status:", err);
+    res.status(500).json({ message: "Failed to update waiver status" });
+  }
+});
+
+
 
 
 module.exports = router;

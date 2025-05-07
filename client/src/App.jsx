@@ -7,6 +7,7 @@ import Login from './components/Login';
 import SignUp from './components/SignUp';
 import LogOutTest from './LogOutTest';
 import AboutP40 from './components/AboutUs/aboutP40';
+import AdoptDonate from './components/AdoptionDonation/adopt_donate';
 import { ContactPage } from './components/Contact/ContactPage';
 import Gallery from './components/gallery/Gallery';
 import RoughCalendar from './components/newDashboard/RoughCalendar';
@@ -41,6 +42,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/logout" element={<LogOutTest />} />
         <Route path="/about" element={<AboutP40 />} />
+        <Route path="/donate" element={<AdoptDonate />} />
         <Route path="/contact-page" element={<ContactPage />} />
         <Route path="/gallery" element={<Gallery />} />
         <Route path="/dogs" element={<DogList />} />

@@ -365,7 +365,8 @@ export default function RoughCalendar() {
         <div className="w-full md:w-1/3 bg-gray-50 p-5 rounded-lg shadow-md border">
           <h3 className="text-xl font-semibold mb-4 text-gray-800">
             Sessions for{" "}
-            {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-US", {
+            {new Date(`${selectedDate}T00:00:00`).toLocaleDateString("en-US", {
+
               weekday: "long",
               month: "long",
               day: "numeric",

@@ -31,6 +31,9 @@ import MainReport from './components/reports/MainReport';
 
 import ProtectedRoute from './components/ProtectedRoute';
 
+import ForgotPasswordPage from "./components/ForgotPasswordPage";
+import ResetPasswordPage  from "./components/ResetPasswordPage";
+
 
 function App() {
   return (
@@ -39,6 +42,8 @@ function App() {
         {/* 🌐 Public Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/logout" element={<LogOutTest />} />
         <Route path="/about" element={<AboutP40 />} />

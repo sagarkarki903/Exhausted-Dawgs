@@ -216,7 +216,7 @@ const handleUpload = async () => {
         const response = await axios.get(`${backendUrl}/auth/profile`, {
           withCredentials: true,
         });
-        console.log("User profile:", response.data); // Debug log
+
         setUser(response.data);
         setEditedPhone(response.data.phone || "");
         setEditedRole(response.data.role || "");

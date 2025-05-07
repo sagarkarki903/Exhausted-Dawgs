@@ -9,6 +9,7 @@ const pool = mysql.createPool({
     port: process.env.DB_PORT,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
+    timezone: 'Z', // ✅ Forces UTC
     // ssl: {
     //     rejectUnauthorized: true, // Ensures secure SSL connection
     //     // Uncomment these if your cloud MySQL provider requires a CA cert

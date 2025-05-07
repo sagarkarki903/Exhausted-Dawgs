@@ -10,7 +10,6 @@ import { toast } from "react-hot-toast";
 const CheckinPage = () => {
   const backendUrl = import.meta.env.VITE_BACKEND;
   const [sessions, setSessions] = useState([]);
-  // Removed unused 'user' state variable
   const [role, setRole] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -19,29 +18,29 @@ const CheckinPage = () => {
   const [selectedWalkerId, setSelectedWalkerId] = useState(null);
   const [selectedScheduleId, setSelectedScheduleId] = useState(null);
 
+  // ✅ Date formatting helper
+  const formatUTCDate = (dateStr) => {
+    const parsed = new Date(`${dateStr}T00:00:00Z`);
+    return isNaN(parsed.getTime()) ? "Invalid Date" : parsed.toISOString().split("T")[0];
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await axios.get(`${backendUrl}/auth/profile`, {
           withCredentials: true,
         });
-        // Removed unused 'setUser' call
         setRole(res.data.role);
         setLoggedIn(true);
 
-        if (res.data.role === "Admin") {
-          const sessionRes = await axios.get(
-            `${backendUrl}/reports/admin/upcoming-walks`,
-            { withCredentials: true }
-          );
-          setSessions(sessionRes.data);
-        } else if (res.data.role === "Marshal") {
-          const sessionRes = await axios.get(
-            `${backendUrl}/reports/marshal/my-walks`,
-            { withCredentials: true }
-          );
-          setSessions(sessionRes.data);
-        }
+        const sessionUrl =
+          res.data.role === "Admin"
+            ? `${backendUrl}/reports/admin/upcoming-walks`
+            : `${backendUrl}/reports/marshal/my-walks`;
+        const sessionRes = await axios.get(sessionUrl, {
+          withCredentials: true,
+        });
+        setSessions(sessionRes.data);
       } catch (err) {
         console.error("Authentication/session fetch failed:", err);
         setLoggedIn(false);
@@ -74,7 +73,7 @@ const CheckinPage = () => {
         { walkerId, sessionId },
         { withCredentials: true }
       );
-       toast.success("Walker checked in");
+      toast.success("Walker checked in");
       refreshSessions();
     } catch (err) {
       console.error("Check-in failed:", err);
@@ -105,9 +104,9 @@ const CheckinPage = () => {
         { withCredentials: true }
       );
       refreshSessions();
-    } catch (err){
+    } catch (err) {
       console.error("Complete walk failed:", err);
-      toast.error(" Failed to complete walk");
+      toast.error("Failed to complete walk");
     }
   };
 
@@ -167,8 +166,7 @@ const CheckinPage = () => {
                   {session.walkers.map((walker, wIdx) => (
                     <tr key={`${idx}-${wIdx}`} className="text-sm">
                       <td className="border p-2 whitespace-nowrap">
-                      {new Date(session.date).toLocaleDateString("en-US")}
-
+                        {formatUTCDate(session.date)}
                       </td>
                       <td className="border p-2 whitespace-nowrap">{session.time}</td>
                       <td className="border p-2 whitespace-nowrap">{session.marshal_name}</td>
@@ -254,14 +252,13 @@ const CheckinPage = () => {
         </div>
       </main>
       {showModal && selectedWalkerId && selectedScheduleId && (
-  <DogAssignModal
-    isOpen={showModal}
-    onClose={() => setShowModal(false)}
-    walkerId={selectedWalkerId}
-    scheduleId={selectedScheduleId}
-  />
-)}
-
+        <DogAssignModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          walkerId={selectedWalkerId}
+          scheduleId={selectedScheduleId}
+        />
+      )}
       <Footer />
     </div>
   );

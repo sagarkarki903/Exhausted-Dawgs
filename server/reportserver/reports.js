@@ -14,7 +14,8 @@ router.get("/admin/upcoming-walks", authenticateUser, async (req, res) => {
     const [rows] = await pool.query(`
       SELECT 
         ms.id AS session_id,
-        ms.date,
+        DATE_FORMAT(ms.date, '%Y-%m-%d') AS date,
+
         ms.time,
         ws.user_id AS walker_id,
         ws.checked_in,
@@ -74,7 +75,8 @@ router.get("/walker/my-walks", authenticateUser, async (req, res) => {
     const [rows] = await pool.query(`
       SELECT 
         ms.id AS session_id,
-        ms.date AS date
+        DATE_FORMAT(ms.date, '%Y-%m-%d') AS date,
+
         ms.time,
         CONCAT(wu.firstname, ' ', wu.lastname) AS walker_name,
         CONCAT(mu.firstname, ' ', mu.lastname) AS marshal_name,
@@ -111,7 +113,8 @@ router.get("/marshal/my-walks", authenticateUser, async (req, res) => {
     const [rows] = await pool.query(`
       SELECT 
         ms.id AS session_id,
-        ms.date AS date
+        DATE_FORMAT(ms.date, '%Y-%m-%d') AS date,
+
         ms.time,
         ws.user_id AS walker_id,
         ws.checked_in,

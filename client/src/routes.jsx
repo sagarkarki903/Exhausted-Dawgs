@@ -16,7 +16,7 @@ import MarshalReport from './components/reports/MarshalReport';
 import WalkerReport from './components/reports/WalkerReport';
 import AllUsers from './components/users/AllUsers';
 import AboutP40 from './components/AboutUs/aboutP40';
-import ContactPage from './components/Contact/ContactPage';
+import ContactUs from './components/ContactUs/ContactUs';
 import RoughCalendar from './components/calendar/RoughCalendar';
 import Gallery from './components/gallery/Gallery';
 import MainReport from './components/reports/MainReport';
@@ -43,7 +43,7 @@ const AppRoutes = () => {
       <Route path="/walker-report" element={<WalkerReport />} />
       <Route path="/all-users" element={<AllUsers />} />
       <Route path="/about" element={<AboutP40 />} />
-      <Route path="/contact-page" element={<ContactPage />} />
+      <Route path="/contact-page" element={<ContactUs />} />
       <Route path="/rough-calendar" element={<RoughCalendar />} />
       <Route path="/gallery" element={<Gallery />} />
 

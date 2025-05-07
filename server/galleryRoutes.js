@@ -1,10 +1,29 @@
 const express = require("express");
-const pool = require("./db"); // MySQL pool
+const pool = require("./db"); // MySQL promise pool
 const router = express.Router();
 const cloudinary = require("./config/cloudinary");
 const authenticateUser = require("./middleware/authMiddleware");
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" }); // Temporary storage
+
+// Create gallery table if it doesn't exist
+const createGalleryTable = async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS gallery (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        image_url VARCHAR(255) NOT NULL,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log("Gallery table created or already exists");
+  } catch (error) {
+    console.error("Error creating gallery table:", error);
+  }
+};
+
+// Initialize the table
+createGalleryTable();
 
 // Helper function: Extract Cloudinary public_id from an image URL
 function getPublicIdFromUrl(url) {
@@ -62,7 +81,9 @@ router.post("/upload", authenticateUser, upload.single("image"), async (req, res
 router.get("/", async (req, res) => {
   try {
     // Ensure that the images come sorted descending by upload time (newest first)
+    console.log("Fetching gallery images...");
     const [images] = await pool.query("SELECT * FROM gallery ORDER BY uploaded_at DESC");
+    console.log("Gallery images:", images);
     res.status(200).json(images);
   } catch (error) {
     console.error("Error retrieving gallery images:", error);

@@ -9,6 +9,13 @@ const pool = mysql.createPool({
     port: process.env.DB_PORT,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
+    connectTimeout: 60000, // 60 seconds
+    acquireTimeout: 60000, // 60 seconds
+    timeout: 60000, // 60 seconds
+    waitForConnections: true,
+    queueLimit: 0,
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0,
     // ssl: {
     //     rejectUnauthorized: true, // Ensures secure SSL connection
     //     // Uncomment these if your cloud MySQL provider requires a CA cert

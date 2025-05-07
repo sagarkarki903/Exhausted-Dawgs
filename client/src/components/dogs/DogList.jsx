@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { AnimatePresence, motion } from "framer-motion";
-import { Search, Filter, Heart, PawPrint } from "lucide-react";
+import { Search, Filter, Heart, PawPrint, Moon, Sun } from "lucide-react";
 import Select from "react-select";
 import { Navbar } from "../NavAndFoot/Navbar";
 import { NavUser } from "../NavAndFoot/NavUser";
@@ -51,6 +51,7 @@ export const DogList = () => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [role, setRole] = useState("");
   const [favoriteDogIds, setFavoriteDogIds] = useState([]);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const [filters, setFilters] = useState({
     name: "", breed: "", size: "", status: "", demeanors: []
@@ -126,6 +127,22 @@ export const DogList = () => {
     checkAuth();
   }, [backendUrl]);
 
+  useEffect(() => {
+    // Check if dark mode is enabled in localStorage
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    setIsDarkMode(darkMode);
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode);
+    document.documentElement.classList.toggle('dark');
+  };
+
   // Filter logic
   const filteredDogs = dogs.filter(dog => {
     return (!filters.name || dog.name.toLowerCase().includes(filters.name.toLowerCase())) &&
@@ -161,42 +178,48 @@ export const DogList = () => {
     <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-cyan-100 dark:from-gray-900 dark:to-gray-800 text-gray-900 dark:text-white transition-colors duration-700">
       {/* Navigation */}
       <div className="sticky top-0 z-50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-lg">
-        {loading ? null : (
-          !loggedIn ? <Navbar /> : role === "Admin" ? <NavAdmin /> : <NavUser />
+      {loading ? null : (
+          !loggedIn ? (
+            <Navbar onDarkModeToggle={toggleDarkMode} isDarkMode={isDarkMode} />
+          ) : role === "Admin" ? (
+            <NavAdmin onDarkModeToggle={toggleDarkMode} isDarkMode={isDarkMode} />
+          ) : (
+            <NavUser onDarkModeToggle={toggleDarkMode} isDarkMode={isDarkMode} />
+          )
         )}
       </div>
 
       <div className="container mx-auto px-4 py-8">
         {/* Animated Background */}
-        <motion.div
-          className="absolute inset-0 z-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1 }}
-        >
-          {[...Array(20)].map((_, i) => (
-            <motion.div
-              key={i}
+      <motion.div
+        className="absolute inset-0 z-0"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+      >
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
               className="absolute z-2 text-gray-400/30"
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                fontSize: `${Math.random() * 20 + 10}px`,
-              }}
-              animate={{
-                y: [0, 10, 0],
-                rotate: [0, 360],
-              }}
-              transition={{
-                duration: Math.random() * 5 + 5,
-                repeat: Number.POSITIVE_INFINITY,
-                ease: "linear",
-              }}
-            >
-              <PawPrint />
-            </motion.div>
-          ))}
-        </motion.div>
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              fontSize: `${Math.random() * 20 + 10}px`,
+            }}
+            animate={{
+              y: [0, 10, 0],
+              rotate: [0, 360],
+            }}
+            transition={{
+              duration: Math.random() * 5 + 5,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "linear",
+            }}
+          >
+            <PawPrint />
+          </motion.div>
+        ))}
+      </motion.div>
 
         {/* Header Section */}
         <motion.div
@@ -242,15 +265,15 @@ export const DogList = () => {
         >
           <div className="flex flex-wrap gap-4">
             <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={filters.name}
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={filters.name}
                 onChange={(e) => handleFilterChange("name", e.target.value)}
-                placeholder="Search by name..."
+              placeholder="Search by name..."
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300"
-              />
-            </div>
+            />
+          </div>
 
             <Select
               options={breedOptions}

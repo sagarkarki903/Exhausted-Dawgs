@@ -264,7 +264,7 @@ const DogProfile = () => {
       console.error('Error uploading image:', err);
     }
   };
-  
+
   const handleDeleteImage = async (imageUrl) => {
     try {
       await axios.delete(`${backendUrl}/dogs/${id}/images`, {

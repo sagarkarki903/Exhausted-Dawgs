@@ -7,7 +7,7 @@ import Login from './components/Login';
 import SignUp from './components/SignUp';
 import LogOutTest from './LogOutTest';
 import AboutP40 from './components/AboutUs/aboutP40';
-import { ContactPage } from './components/Contact/ContactPage';
+import ContactUs from './components/ContactUs/ContactUs';
 import Gallery from './components/gallery/Gallery';
 import RoughCalendar from './components/newDashboard/RoughCalendar';
 
@@ -29,8 +29,17 @@ import { WalkerReport } from './components/reports/WalkerReport';
 import MainReport from './components/reports/MainReport';
 
 import ProtectedRoute from './components/ProtectedRoute';
+import { useEffect } from 'react';
 
 function App() {
+  useEffect(() => {
+    // Check if dark mode is enabled in localStorage
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    }
+  }, []);
+
   return (
     <Router>
       <Routes>
@@ -40,7 +49,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/logout" element={<LogOutTest />} />
         <Route path="/about" element={<AboutP40 />} />
-        <Route path="/contact-page" element={<ContactPage />} />
+        <Route path="/contact-page" element={<ContactUs />} />
         <Route path="/gallery" element={<Gallery />} />
         <Route path="/dogs" element={<DogList />} />
         <Route path="/dogs/:id" element={<DogProfile />} />

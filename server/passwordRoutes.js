@@ -7,34 +7,35 @@ const FRONTEND_URL = process.env.FRONTEND;
 
 // 1) Request password reset link
 // POST /auth/forgot-password
+// POST /auth/forgot-password
 router.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
-  if (!email) return res.json({ message: "If that email exists, a reset link has been sent." });
+  if (!email) return res.status(400).json({ message: "Email is required." });
 
   // Look up user
-  const [[user]] = await pool.query("SELECT id FROM users WHERE email = ?", [email]);
+  const [[user]] = await pool.query(
+    "SELECT id FROM users WHERE email = ?",
+    [email]
+  );
   if (!user) {
-    // always 200 so as not to enumerate emails
-    return res.json({ message: "If that email exists, a reset link has been sent." });
+    return res.status(404).json({ message: "That email address is not registered." });
   }
 
-  // generate token
+  // … generate token, save it, build resetUrl …
   const token = crypto.randomBytes(20).toString("hex");
   const expires = new Date(Date.now() + 3600 * 1000); // 1h
-
-  // save to user
   await pool.query(
     "UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?",
     [token, expires, user.id]
   );
 
-  // send email (you can plug in nodemailer, or whatever)
   const resetUrl = `${FRONTEND_URL}/reset-password/${token}`;
-    res.json({
-    message: "If that email exists, a reset link has been sent.",
-    resetUrl
-    });
+  res.json({
+    message: "Password reset link generated.",
+    resetUrl,
+  });
 });
+
 
 // 2) Perform the reset
 // POST /auth/reset-password

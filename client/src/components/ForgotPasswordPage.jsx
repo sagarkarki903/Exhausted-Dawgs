@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { Link } from "react-router-dom";
@@ -14,9 +14,12 @@ export default function ForgotPasswordPage() {
   const backendUrl = import.meta.env.VITE_BACKEND;
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const hasSubmitted     = useRef(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (hasSubmitted.current) return;
+    hasSubmitted.current = true;
     try {
       // 1) Ask your server for a reset URL
       const { data } = await axios.post(
@@ -34,11 +37,19 @@ export default function ForgotPasswordPage() {
         },
         publicKey
       );
-      toast.success("If that email exists, a reset link has been sent.");
+      toast.success("Reset link sent! Check your inbox.");
       setSent(true);
     } catch (err) {
-      console.error("EmailJS error:", err);
-      toast.error(err.response?.data?.message || "Failed to send reset link.");
+     if (err.response?.status === 404) {
+       // explicitly unregistered
+       toast.error(err.response.data.message);
+     } else {
+        toast.error(
+          err.response?.data?.message ||
+          err.text ||
+          "Something went wrong."
+        );
+     }
     }
   };
 

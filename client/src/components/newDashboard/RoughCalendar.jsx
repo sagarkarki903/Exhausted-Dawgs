@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -91,7 +91,7 @@ export default function RoughCalendar() {
     };
   
     fetchClosedDates();
-  }, []); // Fetch closed dates when the component mounts or when showCloseForm changes
+  }, []);
   
   const isClosedDate = (dateStr) => closedDates.includes(dateStr);
 
@@ -139,7 +139,7 @@ export default function RoughCalendar() {
     }
   };
 
-  // Removed unused resUserId state variable
+  const [resUserId, setResUserId] = useState(null);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -150,13 +150,12 @@ export default function RoughCalendar() {
         if (res.status === 200) {
           setLoggedIn(true);
           setRole(res.data.role);
-          // Removed setting resUserId as it is unused
+          setResUserId(res.data.id); // 👈 Save current user's ID
         }
       } catch (err) {
-        console.error("Error checking authentication:", err);
-
         setLoggedIn(false);
         setRole("");
+        setResUserId(null);
       }
     };
     checkAuth();
@@ -191,8 +190,24 @@ export default function RoughCalendar() {
 
     <div className="flex flex-col md:flex-row gap-10 p-4">
     <div className="w-full md:w-[60%] max-w-4xl mx-auto">
+      
 
         <h2 className="text-2xl font-bold mb-4">Select Date & Time</h2>
+        {/* Calendar Legend */}
+  <div className="mb-6 text-sm text-gray-700 flex flex-wrap gap-6 justify-start">
+    <div className="flex items-center gap-2">
+      <div className="w-4 h-4 bg-[#991B1B] rounded-sm border border-gray-300" />
+      <span>Available Session</span>
+    </div>
+    <div className="flex items-center gap-2">
+      <div className="w-4 h-4 bg-[#9CA3AF] rounded-sm border border-gray-300" />
+      <span>Closed / Weekend</span>
+    </div>
+    <div className="flex items-center gap-2">
+      <div className="w-4 h-4 bg-yellow-300 rounded-sm border border-gray-300" />
+      <span>Today</span>
+    </div>
+  </div>
         <FullCalendar
             plugins={[dayGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
@@ -223,6 +238,7 @@ export default function RoughCalendar() {
           />
 
       </div>
+      
 
       {selectedDate && (
         <div className="w-full md:w-1/3 bg-gray-50 p-5 rounded-lg shadow-md border">

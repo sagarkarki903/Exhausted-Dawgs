@@ -36,6 +36,7 @@ export const Navbar = () => {
         <nav className="hidden md:flex items-center gap-6 text-base">
         <Link className="font-semibold hover:text-red-900 transition-colors" to="/">Home</Link>
         <Link className="font-semibold hover:text-red-900 transition-colors" to="/about">About</Link>
+        <Link className="font-semibold hover:text-red-900 transition-colors" to="/donate">Donate</Link>
         <Link className="font-semibold hover:text-red-900 transition-colors" to="/dogs">Dogs</Link>
         <Link className="font-semibold hover:text-red-900 transition-colors" target="_blank" rel="noopener noreferrer" to="https://fundraise.givesmart.com/f/4yx1/n?vid=1hm1d">Donate</Link>
         <Link className="font-semibold hover:text-red-900 transition-colors" to="/gallery">Gallery</Link>

@@ -259,15 +259,24 @@ export default function RoughCalendar() {
           </div>
   
           <div className="flex justify-end gap-4">
-            <button
-              className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-              onClick={() => {
-                setShowWaiverModal(false);
-                setWaiverAction(null);
-              }}
-            >
-              Disagree
-            </button>
+          <button
+  className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+  onClick={() => {
+    setShowWaiverModal(false);
+    
+    // Rollback any partial state based on intent
+    if (waiverAction === "openSlot") {
+      setShowOpenSlotForm(false);
+    } else if (typeof waiverAction === "number") {
+      setBookingScheduleId(null);
+    }
+
+    setWaiverAction(null);
+  }}
+>
+  Disagree
+</button>
+
             <button
               className={`px-4 py-2 rounded text-white ${allChecked ? "bg-green-600 hover:bg-green-700" : "bg-green-400 cursor-not-allowed"}`}
               disabled={!allChecked}
@@ -414,19 +423,20 @@ export default function RoughCalendar() {
               {/* Open Slot Button */}
               {loggedIn && (role === "Admin" || role === "Marshal") && (
                 <div className="mb-5">
-                  <button
-                    className="bg-green-600 text-white px-4 py-2 rounded-md font-medium hover:bg-green-700 w-full"
-                    onClick={() => {
-                      if (waiverStatus === "Yes") {
-                        setShowOpenSlotForm(true);
-                      } else {
-                        setWaiverAction("openSlot");
-                        setShowWaiverModal(true);
-                      }
-                    }}
-                  >
-                    {showOpenSlotForm ? "Cancel" : "Open a Slot"}
-                  </button>
+              <button
+  className="bg-green-600 text-white px-4 py-2 rounded-md font-medium hover:bg-green-700 w-full"
+  onClick={() => {
+    if (waiverStatus === "Yes") {
+      setShowOpenSlotForm((prev) => !prev); // Toggle only if waiver is signed
+    } else {
+      setWaiverAction("openSlot");
+      setShowWaiverModal(true);
+    }
+  }}
+>
+  {waiverStatus !== "Yes" || !showOpenSlotForm ? "Open a Slot" : "Cancel"}
+</button>
+
 
                   {showOpenSlotForm && (
                     <>

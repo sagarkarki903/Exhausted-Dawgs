@@ -106,7 +106,7 @@ export const NavUser = () => {
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/">Home</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/about">About</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/dogs">Dogs</Link>
-          <Link className="font-semibold hover:text-red-900 transition-colors" target="_blank" rel="noopener noreferrer" to="https://fundraise.givesmart.com/f/4yx1/n?vid=1hm1d">Donate</Link>
+          <Link className="font-semibold hover:text-red-900 transition-colors" target="_blank" rel="noopener noreferrer" to="https://www.clover.com/pay-widgets/d682cd3a-15d8-4ba1-8bfb-b0d73eeb867b">Donate</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/gallery">Gallery</Link>
           <Link className="font-semibold hover:text-red-900 transition-colors" to="/rough-calendar">Schedule</Link>
           {(user?.role === "Admin" || user?.role === "Marshal") && (
@@ -201,7 +201,7 @@ export const NavUser = () => {
                   Dogs
                 </button>
               </Link>
-              <Link className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100" target="_blank" rel="noopener noreferrer" to="https://fundraise.givesmart.com/f/4yx1/n?vid=1hm1d">Donate</Link>
+              <Link className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100" target="_blank" rel="noopener noreferrer" to="https://www.clover.com/pay-widgets/d682cd3a-15d8-4ba1-8bfb-b0d73eeb867b">Donate</Link>
               <Link to="/gallery">
                 <button className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100">
                   Gallery

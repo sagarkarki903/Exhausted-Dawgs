@@ -166,7 +166,7 @@ const AboutP40 = () => {
                   Schedule a Walk <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
-                  href="https://fundraise.givesmart.com/f/4yx1/n?vid=1hm1df"
+                  href="https://www.clover.com/pay-widgets/d682cd3a-15d8-4ba1-8bfb-b0d73eeb867b"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-8 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors duration-300 flex items-center gap-2"
@@ -270,7 +270,7 @@ const AboutP40 = () => {
                   Schedule a Walk
                 </a>
                 <a
-                  href="https://fundraise.givesmart.com/f/4yx1/n?vid=1hm1df"
+                  href="https://www.clover.com/pay-widgets/d682cd3a-15d8-4ba1-8bfb-b0d73eeb867b"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-8 py-3 bg-transparent border-2 border-white text-white font-semibold rounded-full hover:bg-white/10 transition-colors duration-300"

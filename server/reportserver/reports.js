@@ -265,15 +265,22 @@ router.get("/marshal/my-walks", authenticateUser, async (req, res) => {
       try {
         const [reports] = await pool.query(`
           SELECT 
-            id, -- ✅ add this line to include the report ID
-            DATE_FORMAT(date, '%Y-%m-%d') AS date,
-            time,
-            walker,
-            marshal,
-            dog_name,
-            check_in_status
-          FROM report_table
-          ORDER BY date DESC, time DESC
+            r.id,
+            DATE_FORMAT(r.date, '%Y-%m-%d') AS date,
+            r.time,
+            r.walker,
+            r.marshal,
+            r.dog_id,
+            r.dog_name,
+            r.check_in_status,
+            (
+              SELECT COUNT(*) 
+              FROM report_table r2
+              WHERE r2.dog_id = r.dog_id
+                AND YEARWEEK(r2.date, 1) = YEARWEEK(r.date, 1)
+            ) AS weekly_walk_count
+          FROM report_table r
+          ORDER BY r.date DESC, r.time DESC
         `);
     
         res.json(reports);
@@ -282,6 +289,7 @@ router.get("/marshal/my-walks", authenticateUser, async (req, res) => {
         res.status(500).json({ message: "Failed to fetch reports" });
       }
     });
+    
     
       
 

@@ -13,12 +13,18 @@ const CheckinPage = () => {
   const [role, setRole] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
-
   const [showModal, setShowModal] = useState(false);
   const [selectedWalkerId, setSelectedWalkerId] = useState(null);
   const [selectedScheduleId, setSelectedScheduleId] = useState(null);
 
-  // ✅ Date formatting helper
+  const [filters, setFilters] = useState({
+    walker: "",
+    marshal: "",
+    date: "",
+    time: "",
+    dog: "",
+  });
+
   const formatUTCDate = (dateStr) => {
     const parsed = new Date(`${dateStr}T00:00:00Z`);
     return isNaN(parsed.getTime()) ? "Invalid Date" : parsed.toISOString().split("T")[0];
@@ -113,10 +119,9 @@ const CheckinPage = () => {
   const handleCancel = async (sessionId) => {
     if (!window.confirm("Cancel this session and all bookings?")) return;
     try {
-      await axios.delete(
-        `${backendUrl}/reports/delete-session/${sessionId}`,
-        { withCredentials: true }
-      );
+      await axios.delete(`${backendUrl}/reports/delete-session/${sessionId}`, {
+        withCredentials: true,
+      });
       refreshSessions();
     } catch {
       toast.error("Failed to cancel session");
@@ -146,6 +151,45 @@ const CheckinPage = () => {
       {role === "Admin" ? <NavAdmin /> : <NavUser />}
       <main className="flex-grow w-full max-w-6xl mx-auto px-4 py-10">
         <h1 className="text-2xl font-bold mb-6">Check-In Sessions</h1>
+
+        {/* 🔍 Filter Inputs */}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+          <input
+            type="text"
+            placeholder="Search Walker"
+            className="border px-2 py-1"
+            value={filters.walker}
+            onChange={(e) => setFilters({ ...filters, walker: e.target.value })}
+          />
+          <input
+            type="text"
+            placeholder="Search Marshal"
+            className="border px-2 py-1"
+            value={filters.marshal}
+            onChange={(e) => setFilters({ ...filters, marshal: e.target.value })}
+          />
+          <input
+            type="date"
+            className="border px-2 py-1"
+            value={filters.date}
+            onChange={(e) => setFilters({ ...filters, date: e.target.value })}
+          />
+          <input
+            type="text"
+            placeholder="Search Time"
+            className="border px-2 py-1"
+            value={filters.time}
+            onChange={(e) => setFilters({ ...filters, time: e.target.value })}
+          />
+          <input
+            type="text"
+            placeholder="Search Dog"
+            className="border px-2 py-1"
+            value={filters.dog}
+            onChange={(e) => setFilters({ ...filters, dog: e.target.value })}
+          />
+        </div>
+
         <div className="overflow-x-auto">
           <table className="min-w-full table-auto border border-gray-300">
             <thead>
@@ -161,96 +205,101 @@ const CheckinPage = () => {
               </tr>
             </thead>
             <tbody>
-              {sessions.map((session, idx) => (
-                <React.Fragment key={idx}>
-                  {session.walkers.map((walker, wIdx) => (
-                    <tr key={`${idx}-${wIdx}`} className="text-sm">
-                      <td className="border p-2 whitespace-nowrap">
-                        {formatUTCDate(session.date)}
-                      </td>
-                      <td className="border p-2 whitespace-nowrap">{session.time}</td>
-                      <td className="border p-2 whitespace-nowrap">{session.marshal_name}</td>
-                      <td className="border p-2 font-semibold whitespace-nowrap">
-                        {walker.walker_name}
-                      </td>
-                      <td className="border p-2 whitespace-nowrap">
-                        {walker.dog_names || "-"}
-                      </td>
-                      <td className="border p-2 whitespace-nowrap">
-                        {walker.checked_in ? (
-                          <span className="text-green-600 font-semibold">Checked In</span>
-                        ) : (
-                          <span className="text-red-600 font-semibold">Not Checked In</span>
-                        )}
-                      </td>
-                      <td className="border p-2 space-y-1">
-                        {walker.checked_in ? (
-                          <button
-                            onClick={() =>
-                              handleUndoCheckIn(walker.walker_id, session.session_id)
-                            }
-                            className="bg-gray-600 text-white px-2 py-1 rounded text-xs hover:bg-gray-700"
-                          >
-                            Undo Check In
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() =>
-                              handleCheckIn(walker.walker_id, session.session_id)
-                            }
-                            className="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700"
-                          >
-                            Check In
-                          </button>
-                        )}
-                        <button
-                          onClick={() => {
-                            if (!walker.checked_in) return;
-                            setSelectedWalkerId(walker.walker_id);
-                            setSelectedScheduleId(session.session_id);
-                            setShowModal(true);
-                          }}
-                          disabled={!walker.checked_in}
-                          className={`px-2 py-1 rounded text-xs ${
-                            walker.checked_in
-                              ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                              : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                          }`}
-                        >
-                          Assign Dogs
-                        </button>
-                      </td>
-                      {wIdx === 0 ? (
-                        <td rowSpan={session.walkers.length} className="align-middle">
-                          <div className="flex justify-center items-center gap-6 py-6">
-                            <button
-                              onClick={() => handleComplete(session.session_id)}
-                              className="text-green-600 hover:text-green-800"
-                              title="Complete Session"
-                            >
-                              <CheckCircle size={32} />
-                            </button>
-                            <button
-                              onClick={() => handleCancel(session.session_id)}
-                              className="text-red-600 hover:text-red-800"
-                              title="Cancel Session"
-                            >
-                              <XCircle size={32} />
-                            </button>
-                          </div>
+              {sessions
+                .filter((session) => {
+                  const matchDate = !filters.date || formatUTCDate(session.date).includes(filters.date);
+                  const matchTime = !filters.time || session.time.toLowerCase().includes(filters.time.toLowerCase());
+                  const matchMarshal = !filters.marshal || session.marshal_name.toLowerCase().includes(filters.marshal.toLowerCase());
+
+                  const hasMatchingWalker = session.walkers.some((walker) => {
+                    const matchWalker = !filters.walker || walker.walker_name.toLowerCase().includes(filters.walker.toLowerCase());
+                    const matchDog = !filters.dog || (walker.dog_names || "").toLowerCase().includes(filters.dog.toLowerCase());
+                    return matchWalker && matchDog;
+                  });
+
+                  return matchDate && matchTime && matchMarshal && hasMatchingWalker;
+                })
+                .map((session, idx) => (
+                  <React.Fragment key={idx}>
+                    {session.walkers.map((walker, wIdx) => (
+                      <tr key={`${idx}-${wIdx}`} className="text-sm">
+                        <td className="border p-2 whitespace-nowrap">{formatUTCDate(session.date)}</td>
+                        <td className="border p-2 whitespace-nowrap">{session.time}</td>
+                        <td className="border p-2 whitespace-nowrap">{session.marshal_name}</td>
+                        <td className="border p-2 font-semibold whitespace-nowrap">{walker.walker_name}</td>
+                        <td className="border p-2 whitespace-nowrap">{walker.dog_names || "-"}</td>
+                        <td className="border p-2 whitespace-nowrap">
+                          {walker.checked_in ? (
+                            <span className="text-green-600 font-semibold">Checked In</span>
+                          ) : (
+                            <span className="text-red-600 font-semibold">Not Checked In</span>
+                          )}
                         </td>
-                      ) : null}
+                        <td className="border p-2 space-y-1">
+                          {walker.checked_in ? (
+                            <button
+                              onClick={() => handleUndoCheckIn(walker.walker_id, session.session_id)}
+                              className="bg-gray-600 text-white px-2 py-1 rounded text-xs hover:bg-gray-700"
+                            >
+                              Undo Check In
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleCheckIn(walker.walker_id, session.session_id)}
+                              className="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700"
+                            >
+                              Check In
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              if (!walker.checked_in) return;
+                              setSelectedWalkerId(walker.walker_id);
+                              setSelectedScheduleId(session.session_id);
+                              setShowModal(true);
+                            }}
+                            disabled={!walker.checked_in}
+                            className={`px-2 py-1 rounded text-xs ${
+                              walker.checked_in
+                                ? "bg-yellow-500 text-white hover:bg-yellow-600"
+                                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            }`}
+                          >
+                            Assign Dogs
+                          </button>
+                        </td>
+                        {wIdx === 0 ? (
+                          <td rowSpan={session.walkers.length} className="align-middle">
+                            <div className="flex justify-center items-center gap-6 py-6">
+                              <button
+                                onClick={() => handleComplete(session.session_id)}
+                                className="text-green-600 hover:text-green-800"
+                                title="Complete Session"
+                              >
+                                <CheckCircle size={32} />
+                              </button>
+                              <button
+                                onClick={() => handleCancel(session.session_id)}
+                                className="text-red-600 hover:text-red-800"
+                                title="Cancel Session"
+                              >
+                                <XCircle size={32} />
+                              </button>
+                            </div>
+                          </td>
+                        ) : null}
+                      </tr>
+                    ))}
+                    <tr>
+                      <td colSpan="8" className="py-2"></td>
                     </tr>
-                  ))}
-                  <tr>
-                    <td colSpan="8" className="py-2"></td>
-                  </tr>
-                </React.Fragment>
-              ))}
+                  </React.Fragment>
+                ))}
             </tbody>
           </table>
         </div>
       </main>
+
       {showModal && selectedWalkerId && selectedScheduleId && (
         <DogAssignModal
           isOpen={showModal}
@@ -259,6 +308,7 @@ const CheckinPage = () => {
           scheduleId={selectedScheduleId}
         />
       )}
+
       <Footer />
     </div>
   );

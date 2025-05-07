@@ -15,13 +15,14 @@ const MainReport = () => {
   const [filters, setFilters] = useState({
     dog: "",
     walker: "",
-    checkin: ""
+    checkin: "",
+    startDate: "",
+    endDate: "",
   });
 
   const [currentPage, setCurrentPage] = useState(0);
   const reportsPerPage = 15;
 
-  // ✅ Date formatting helper
   const formatUTCDate = (dateStr) => {
     const parsed = new Date(`${dateStr}T00:00:00Z`);
     return isNaN(parsed.getTime()) ? "Invalid Date" : parsed.toISOString().split("T")[0];
@@ -63,21 +64,42 @@ const MainReport = () => {
       );
     }
 
+    if (filters.startDate) {
+      temp = temp.filter(r => r.date >= filters.startDate);
+    }
+
+    if (filters.endDate) {
+      temp = temp.filter(r => r.date <= filters.endDate);
+    }
+
     setFilteredReports(temp);
     setCurrentPage(0);
   }, [filters, reports]);
 
+  const getTotalWalksMap = () => {
+    const counts = {};
+    filteredReports.forEach((r) => {
+      const name = r.dog_name || "-";
+      counts[name] = (counts[name] || 0) + 1;
+    });
+    return counts;
+  };
+
   const convertToCSV = (data) => {
-    const header = ["#", "Dog", "Date", "Time", "Walker", "Marshal", "Check-In"];
+    const header = ["#", "Dog", "Total Walks", "Date", "Time", "Walker", "Marshal", "Check-In"];
+    const totalMap = getTotalWalksMap();
+
     const rows = data.map((report, index) => [
       index + 1,
       report.dog_name || "-",
+      totalMap[report.dog_name || "-"] || 0,
       formatUTCDate(report.date),
       report.time,
       report.walker,
       report.marshal,
       report.check_in_status === "Checked In" ? "Checked In" : "Not Checked In"
     ]);
+
     return [header, ...rows].map((row) => row.join(",")).join("\n");
   };
 
@@ -119,6 +141,7 @@ const MainReport = () => {
   const pageCount = Math.ceil(filteredReports.length / reportsPerPage);
   const offset = currentPage * reportsPerPage;
   const currentPageReports = filteredReports.slice(offset, offset + reportsPerPage);
+  const totalMap = getTotalWalksMap();
 
   if (loading) return <p className="text-center mt-6 text-gray-500">Loading reports...</p>;
 
@@ -153,6 +176,18 @@ const MainReport = () => {
             <option value="Checked In">Checked In</option>
             <option value="Not Checked In">Not Checked In</option>
           </select>
+          <input
+            type="date"
+            value={filters.startDate}
+            onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+            className="border px-3 py-2 rounded shadow-sm"
+          />
+          <input
+            type="date"
+            value={filters.endDate}
+            onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+            className="border px-3 py-2 rounded shadow-sm"
+          />
           <button
             onClick={downloadCSV}
             className="ml-auto bg-blue-600 text-white py-2 px-4 rounded"
@@ -173,6 +208,7 @@ const MainReport = () => {
               <tr>
                 <th className="border px-3 py-2">#</th>
                 <th className="border px-3 py-2">Dog</th>
+                <th className="border px-3 py-2">Total Walks</th>
                 <th className="border px-3 py-2">Date</th>
                 <th className="border px-3 py-2">Time</th>
                 <th className="border px-3 py-2">Walker</th>
@@ -186,6 +222,7 @@ const MainReport = () => {
                 <tr key={idx} className="hover:bg-gray-50">
                   <td className="border px-3 py-2">{offset + idx + 1}</td>
                   <td className="border px-3 py-2">{report.dog_name || "-"}</td>
+                  <td className="border px-3 py-2">{totalMap[report.dog_name || "-"] || 0}</td>
                   <td className="border px-3 py-2">{formatUTCDate(report.date)}</td>
                   <td className="border px-3 py-2">{report.time}</td>
                   <td className="border px-3 py-2">{report.walker}</td>

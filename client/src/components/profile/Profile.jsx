@@ -530,9 +530,10 @@ const SessionCard = ({ session, isAdminOrMarshal, openDogModal }) => {
   return (
           <div className="bg-white border border-gray-200 rounded-lg shadow-md p-4">
             <p className="text-gray-700">
-              <strong>Date:</strong>{" "}
-              {new Date(session.date).toLocaleDateString()}
-            </p>
+  <strong>Date:</strong>{" "}
+  {new Date(`${session.date}T00:00:00Z`).toISOString().split("T")[0]}
+</p>
+
             <p className="text-gray-700">
               <strong>Time:</strong> {session.time}
             </p>
@@ -702,7 +703,8 @@ const SessionCard = ({ session, isAdminOrMarshal, openDogModal }) => {
                           {req.firstname} {req.lastname} <span className="text-sm text-gray-500">({req.email})</span>
                         </p>
                         <p className="text-gray-600 text-sm mb-2">
-                          Requested on {new Date(req.requested_at).toLocaleDateString()}
+                        Requested on {new Date(`${req.requested_at}T00:00:00Z`).toLocaleDateString()}
+
                         </p>
                         <p className="italic text-gray-700 bg-gray-100 p-2 rounded">
                           “{req.reason}”
@@ -746,7 +748,8 @@ const SessionCard = ({ session, isAdminOrMarshal, openDogModal }) => {
                   .map((walk, idx) => (
 
                     <div key={idx} className="bg-white border border-gray-200 rounded-lg shadow-md p-4">
-                      <p className="text-gray-700"><strong>Date:</strong> {new Date(walk.date).toLocaleDateString()}</p>
+<p className="text-gray-700"><strong>Date:</strong> {new Date(`${walk.date}T00:00:00Z`).toISOString().split("T")[0]}</p>
+
                       <p className="text-gray-700"><strong>Time:</strong> {walk.time}</p>
                       <p className="text-gray-700"><strong>Walker:</strong> {walk.walker_name}</p>
                       <p className="text-gray-700"><strong>Marshal:</strong> {walk.marshal_name}</p>
@@ -928,7 +931,7 @@ case 2: {
                         : <span className="text-red-700">Denied</span>}
                   </p>
                   <p className="text-sm text-gray-500">
-                    Requested on {new Date(r.requested_at).toLocaleDateString()}
+                  Requested on {new Date(`${r.requested_at}T00:00:00Z`).toLocaleDateString()}
                     {r.status==='denied' && (
                       <>
                         <br/>
